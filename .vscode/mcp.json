@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "pinksundew": {
+      "args": [],
+      "command": "/opt/homebrew/bin/pinksundew-mcp",
+      "env": {
+        "PINKSUNDEW_CLIENT": "vscode"
+      },
+      "type": "stdio"
+    }
+  }
+}

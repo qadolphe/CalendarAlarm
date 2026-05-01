@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "pinksundew": {
+      "args": [],
+      "command": "/opt/homebrew/bin/pinksundew-mcp",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PINKSUNDEW_CLIENT": "cursor"
+      },
+      "type": "stdio"
+    }
+  }
+}
