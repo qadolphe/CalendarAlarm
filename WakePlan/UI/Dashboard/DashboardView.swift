@@ -13,23 +13,31 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     topBar
 
-                    if let permissionBanner = viewModel.permissionBanner {
-                        banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
+                    if !appState.preferences.isSystemEnabled {
+                        systemDisabledBanner
                     }
 
-                    if let noticeMessage = appState.noticeMessage {
-                        banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
+                    VStack(alignment: .leading, spacing: 24) {
+                        if let permissionBanner = viewModel.permissionBanner {
+                            banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
+                        }
+
+                        if let noticeMessage = appState.noticeMessage {
+                            banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
+                        }
+
+                        if let errorMessage = appState.errorMessage {
+                            banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
+                        }
+
+                        content(viewModel: viewModel)
+
+                        quickActionRow
                     }
-
-                    if let errorMessage = appState.errorMessage {
-                        banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
-                    }
-
-                    content(viewModel: viewModel)
-
-                    quickActionRow
+                    .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
+                    .disabled(!appState.preferences.isSystemEnabled)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
                 .padding(.top, 12)
                 .padding(.bottom, 28)
             }
@@ -254,6 +262,38 @@ struct DashboardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
+    private var systemDisabledBanner: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "power.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.red)
+                Text("System Disabled")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+            }
+            Text("WakePlan is completely disabled. No alarms will run.")
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+            
+            Button {
+                var copy = appState.preferences
+                copy.isSystemEnabled = true
+                Task { await appState.updatePreferences(copy) }
+            } label: {
+                Text("Reactivate")
+                    .font(.headline)
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(WPStyles.primaryOrange)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .padding(.top, 4)
+        }
+        .cardStyle()
+    }
+
     private var quickActionRow: some View {
         Button(action: {
             Task { await appState.refreshPlan() }
@@ -309,7 +349,7 @@ struct DashboardView: View {
             return "pause.circle"
         case .disabled:
             return "bed.double.fill"
-        case .fallback, .authorizationMissing, .manualOverride, .event:
+        case .fallback, .authorizationMissing, .manualOverride, .event, .systemDisabled:
             return "moon.zzz.fill"
         }
     }

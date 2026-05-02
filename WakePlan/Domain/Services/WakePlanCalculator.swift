@@ -25,6 +25,30 @@ struct WakePlanCalculator {
         let timingRules = preferences.timing
         let weekday = calendar.component(.weekday, from: targetDay.date)
 
+        if !preferences.isSystemEnabled {
+            let dayFallback = preferences.fallbackWakeTime(for: weekday)
+            return WakeUpPlan(
+                id: hasher.makeID(
+                    kind: "systemDisabled",
+                    components: [
+                        timestamp(targetDay.date),
+                        "\(dayFallback.hour)",
+                        "\(dayFallback.minute)"
+                    ]
+                ),
+                targetDay: targetDay,
+                targetEvent: nil,
+                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
+                eventStartTime: nil,
+                prepTime: timingRules.prepTime,
+                commuteTime: timingRules.defaultCommuteTime,
+                isFallback: true,
+                reason: .systemDisabled,
+                appliedRuleName: nil,
+                matchedRuleNames: []
+            )
+        }
+
         if !scheduleRules.activeDays.contains(weekday) {
             let dayFallback = preferences.fallbackWakeTime(for: weekday)
             return WakeUpPlan(

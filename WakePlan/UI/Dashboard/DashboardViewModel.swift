@@ -155,6 +155,8 @@ struct DashboardViewModel {
             return "Inactive day"
         case .disabled:
             return "Auto-Pilot paused"
+        case .systemDisabled:
+            return "System disabled"
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return "Fallback wake time"
         }
@@ -170,6 +172,8 @@ struct DashboardViewModel {
             return "Not scheduled on this weekday"
         case .disabled:
             return "Turn Auto-Pilot back on in Schedule"
+        case .systemDisabled:
+            return "Turn system on in Settings to reactivate"
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return "No matching event found"
         }

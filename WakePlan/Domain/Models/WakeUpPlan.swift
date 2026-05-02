@@ -7,6 +7,7 @@ enum WakePlanReason: String, Codable, Equatable, Sendable {
     case inactiveDay
     case authorizationMissing
     case manualOverride
+    case systemDisabled
 }
 
 struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {

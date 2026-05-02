@@ -65,18 +65,21 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
     var filters: EventFilterRules
     var locationRules: [LocationRule]
     var alarmRules: [AlarmRule]
+    var isSystemEnabled: Bool
 
     init(
         schedule: ScheduleRules,
         timing: TimingRules,
         filters: EventFilterRules,
         locationRules: [LocationRule],
-        alarmRules: [AlarmRule] = []
+        alarmRules: [AlarmRule] = [],
+        isSystemEnabled: Bool = true
     ) {
         self.schedule = schedule
         self.timing = timing
         self.filters = filters
         self.locationRules = locationRules
+        self.isSystemEnabled = isSystemEnabled
         self.alarmRules = Self.normalizedAlarmRules(
             alarmRules,
             timing: timing,
@@ -204,6 +207,7 @@ extension AlarmPreferences {
         case filters
         case locationRules
         case alarmRules
+        case isSystemEnabled
 
         case isEnabled
         case prepTime
@@ -230,6 +234,7 @@ extension AlarmPreferences {
             filters = try container.decodeIfPresent(EventFilterRules.self, forKey: .filters) ?? .default
             locationRules = try container.decodeIfPresent([LocationRule].self, forKey: .locationRules) ?? []
             let decoded = try container.decodeIfPresent([AlarmRule].self, forKey: .alarmRules) ?? []
+            isSystemEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSystemEnabled) ?? true
             alarmRules = Self.normalizedAlarmRules(
                 decoded,
                 timing: decodedTiming,
@@ -237,6 +242,8 @@ extension AlarmPreferences {
             )
             return
         }
+
+        isSystemEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSystemEnabled) ?? true
 
         schedule = ScheduleRules(
             isEnabled: try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? ScheduleRules.default.isEnabled,
@@ -275,5 +282,6 @@ extension AlarmPreferences {
         try container.encode(filters, forKey: .filters)
         try container.encode(locationRules, forKey: .locationRules)
         try container.encode(alarmRules, forKey: .alarmRules)
+        try container.encode(isSystemEnabled, forKey: .isSystemEnabled)
     }
 }

@@ -13,45 +13,37 @@ struct RulesView: View {
                 autoPilotCard
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
 
                 fallbackTimesCard
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
             }
 
             // MARK: Rules
-            if !appState.preferences.customAlarmRules.isEmpty {
-                Section(header: sectionHeader("Custom Rules")) {
-                    ForEach(appState.preferences.customAlarmRules) { rule in
+            Section(header: sectionHeader("Rules")) {
+                let allRules = [appState.preferences.defaultAlarmRule] + appState.preferences.customAlarmRules.sorted { $0.name.lowercased() < $1.name.lowercased() }
+                
+                ForEach(allRules) { rule in
+                    ZStack(alignment: .leading) {
+                        ruleCard(rule)
                         NavigationLink(destination: RuleEditorView(appState: appState, mode: .edit(rule))) {
-                            ruleCard(rule)
+                            EmptyView()
                         }
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        .opacity(0)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        if !rule.isDefault {
                             Button(role: .destructive) { deleteRule(rule) } label: {
                                 Label("Delete", systemImage: "trash")
                             }
                         }
                     }
                 }
-            }
-
-            Section(header: sectionHeader("Default Rule")) {
-                NavigationLink(
-                    destination: RuleEditorView(
-                        appState: appState,
-                        mode: .edit(appState.preferences.defaultAlarmRule)
-                    )
-                ) {
-                    ruleCard(appState.preferences.defaultAlarmRule)
-                }
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
             }
         }
         .listStyle(.plain)

@@ -13,8 +13,14 @@ struct SettingsView: View {
             Color.clear.withAppBackground()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    appSettingsLinks
+                VStack(alignment: .leading, spacing: 24) {
+                    systemToggleCard
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        appSettingsLinks
+                    }
+                    .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
+                    .disabled(!appState.preferences.isSystemEnabled)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -71,6 +77,35 @@ struct SettingsView: View {
             .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
+    }
+
+    private var systemToggleCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("System Active")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                Toggle("", isOn: isSystemEnabledBinding)
+                    .labelsHidden()
+                    .tint(WPStyles.primaryOrange)
+            }
+            Text(appState.preferences.isSystemEnabled ? "WakePlan will schedule alarms based on your rules." : "WakePlan is completely disabled. No alarms will run.")
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+        }
+        .cardStyle()
+    }
+
+    private var isSystemEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { appState.preferences.isSystemEnabled },
+            set: { v in
+                var copy = appState.preferences
+                copy.isSystemEnabled = v
+                Task { await appState.updatePreferences(copy) }
+            }
+        )
     }
 }
 
