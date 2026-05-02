@@ -13,6 +13,10 @@ struct DashboardView: View {
                         banner(permissionBanner, tint: .amber)
                     }
 
+                    if let noticeMessage = appState.noticeMessage {
+                        banner(noticeMessage, tint: .green)
+                    }
+
                     if let errorMessage = appState.errorMessage {
                         banner(errorMessage, tint: .red)
                     }
@@ -32,12 +36,25 @@ struct DashboardView: View {
                         }
                     }
 
-                    Button("Refresh") {
-                        Task {
-                            await appState.refreshPlan()
+                    VStack(alignment: .leading, spacing: 12) {
+                        Button(AppConfiguration.testAlarmButtonTitle) {
+                            Task {
+                                await appState.scheduleTestAlarm()
+                            }
                         }
+                        .buttonStyle(.bordered)
+
+                        Text(AppConfiguration.testAlarmDescription)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+
+                        Button("Refresh") {
+                            Task {
+                                await appState.refreshPlan()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding()

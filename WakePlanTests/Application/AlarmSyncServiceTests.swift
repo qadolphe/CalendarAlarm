@@ -169,6 +169,70 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
     }
 
+    func testSchedulesTestAlarmWithoutReplacingManagedAlarm() async throws {
+        let calendar = configuredCalendar()
+        let now = makeDate(
+            year: 2026,
+            month: 5,
+            day: 2,
+            hour: 7,
+            minute: 24,
+            second: 42,
+            calendar: calendar
+        )
+        let alarmStore = FakeScheduledAlarmStore()
+        alarmStore.record = ScheduledAlarmRecord(
+            planID: "managed-plan",
+            nativeAlarmID: "managed-alarm",
+            scheduledWakeTime: now.addingTimeInterval(86_400),
+            targetEventID: "event-1",
+            createdAt: now,
+            updatedAt: now
+        )
+        let alarmScheduler = FakeAlarmScheduler()
+
+        let service = AlarmSyncService(
+            calendarReader: FakeCalendarReader(events: [makeEvent(startOffset: 3_600)]),
+            alarmScheduler: alarmScheduler,
+            preferencesStore: FakePreferencesStore(),
+            alarmStore: alarmStore
+        )
+
+        let plan = try await service.scheduleTestAlarm(now: now, calendar: calendar)
+
+        XCTAssertEqual(plan.reason, .manualOverride)
+        XCTAssertEqual(plan.calculatedWakeTime, makeDate(
+            year: 2026,
+            month: 5,
+            day: 2,
+            hour: 7,
+            minute: 25,
+            second: 0,
+            calendar: calendar
+        ))
+        XCTAssertEqual(alarmScheduler.scheduledPlans.count, 1)
+        XCTAssertEqual(alarmStore.record?.planID, "managed-plan")
+        XCTAssertTrue(alarmScheduler.canceledIDs.isEmpty)
+    }
+
+    func testTestAlarmReturnsAuthorizationMissingWhenAlarmAccessDenied() async throws {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.state = .denied
+
+        let service = AlarmSyncService(
+            calendarReader: FakeCalendarReader(events: [makeEvent(startOffset: 3_600)]),
+            alarmScheduler: alarmScheduler,
+            preferencesStore: FakePreferencesStore(),
+            alarmStore: FakeScheduledAlarmStore()
+        )
+
+        let plan = try await service.scheduleTestAlarm(now: now)
+
+        XCTAssertEqual(plan.reason, .authorizationMissing)
+        XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
+    }
+
     private func makeEvent(startOffset: TimeInterval) -> ParsedEvent {
         ParsedEvent(
             id: "event-\(startOffset)",
@@ -183,6 +247,34 @@ final class AlarmSyncServiceTests: XCTestCase {
             location: nil,
             notes: nil
         )
+    }
+
+    private func configuredCalendar() -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Detroit")!
+        return calendar
+    }
+
+    private func makeDate(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        second: Int,
+        calendar: Calendar
+    ) -> Date {
+        let components = DateComponents(
+            timeZone: calendar.timeZone,
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute,
+            second: second
+        )
+
+        return calendar.date(from: components)!
     }
 }
 

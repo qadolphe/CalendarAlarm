@@ -72,6 +72,31 @@ final class AlarmSyncService {
         return plan
     }
 
+    func scheduleTestAlarm(
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) async throws -> WakeUpPlan {
+        let plan = makeTestAlarmPlan(now: now, calendar: calendar)
+        let alarmAuthorization = try await resolvedAlarmAuthorization()
+
+        guard alarmAuthorization == .authorized else {
+            return WakeUpPlan(
+                id: plan.id,
+                targetDay: plan.targetDay,
+                targetEvent: plan.targetEvent,
+                calculatedWakeTime: plan.calculatedWakeTime,
+                eventStartTime: plan.eventStartTime,
+                prepTime: plan.prepTime,
+                commuteTime: plan.commuteTime,
+                isFallback: plan.isFallback,
+                reason: .authorizationMissing
+            )
+        }
+
+        _ = try await alarmScheduler.schedule(plan: plan)
+        return plan
+    }
+
     private func resolvedAlarmAuthorization() async throws -> AlarmAuthorizationState {
         let currentState = await alarmScheduler.authorizationState()
 
@@ -80,5 +105,38 @@ final class AlarmSyncService {
         }
 
         return try await alarmScheduler.requestAuthorization()
+    }
+
+    private func makeTestAlarmPlan(
+        now: Date,
+        calendar: Calendar
+    ) -> WakeUpPlan {
+        let wakeTime = nextMinute(after: now, calendar: calendar)
+
+        return WakeUpPlan(
+            id: WakePlanID(rawValue: "test-\(Int(wakeTime.timeIntervalSince1970))"),
+            targetDay: TargetDay(date: wakeTime, calendar: calendar),
+            targetEvent: nil,
+            calculatedWakeTime: wakeTime,
+            eventStartTime: nil,
+            prepTime: Minutes(0),
+            commuteTime: Minutes(0),
+            isFallback: false,
+            reason: .manualOverride
+        )
+    }
+
+    private func nextMinute(
+        after date: Date,
+        calendar: Calendar
+    ) -> Date {
+        let minuteComponents = calendar.dateComponents(
+            [.year, .month, .day, .hour, .minute],
+            from: date
+        )
+        let startOfMinute = calendar.date(from: minuteComponents) ?? date
+
+        return calendar.date(byAdding: .minute, value: 1, to: startOfMinute)
+            ?? date.addingTimeInterval(60)
     }
 }

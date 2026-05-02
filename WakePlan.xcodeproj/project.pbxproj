@@ -12,7 +12,6 @@
 		AA0000000000000000000202 /* Application/PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000102 /* Application/PermissionService.swift */; };
 		AA0000000000000000000203 /* Application/WakePlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000103 /* Application/WakePlanService.swift */; };
 		AA0000000000000000000204 /* Configuration/AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104 /* Configuration/AppConfiguration.swift */; };
-		AA0000000000000000000204A /* Configuration/AppRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104A /* Configuration/AppRuntime.swift */; };
 		AA0000000000000000000205 /* Domain/Models/AlarmPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* Domain/Models/AlarmPreferences.swift */; };
 		AA0000000000000000000206 /* Domain/Models/CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000106 /* Domain/Models/CalendarSource.swift */; };
 		AA0000000000000000000207 /* Domain/Models/ParsedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */; };
@@ -30,7 +29,6 @@
 		AA0000000000000000000213 /* Infrastructure/Alarm/AlarmScheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000113 /* Infrastructure/Alarm/AlarmScheduling.swift */; };
 		AA0000000000000000000214 /* Infrastructure/Calendar/CalendarReading.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000114 /* Infrastructure/Calendar/CalendarReading.swift */; };
 		AA0000000000000000000215 /* Infrastructure/Calendar/EventKitCalendarReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000115 /* Infrastructure/Calendar/EventKitCalendarReader.swift */; };
-		AA0000000000000000000215A /* Infrastructure/Calendar/FakeCalendarReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000115A /* Infrastructure/Calendar/FakeCalendarReader.swift */; };
 		AA0000000000000000000216 /* Infrastructure/Calendar/EventKitMappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000116 /* Infrastructure/Calendar/EventKitMappers.swift */; };
 		AA0000000000000000000217 /* Infrastructure/Persistence/PreferencesStoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000117 /* Infrastructure/Persistence/PreferencesStoring.swift */; };
 		AA0000000000000000000218 /* Infrastructure/Persistence/ScheduledAlarmStoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000118 /* Infrastructure/Persistence/ScheduledAlarmStoring.swift */; };
@@ -71,7 +69,6 @@
 		AA0000000000000000000102 /* Application/PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/PermissionService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000103 /* Application/WakePlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/WakePlanService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000104 /* Configuration/AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration/AppConfiguration.swift; sourceTree = "<group>"; };
-		AA0000000000000000000104A /* Configuration/AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration/AppRuntime.swift; sourceTree = "<group>"; };
 		AA0000000000000000000105 /* Domain/Models/AlarmPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmPreferences.swift; sourceTree = "<group>"; };
 		AA0000000000000000000106 /* Domain/Models/CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/CalendarSource.swift; sourceTree = "<group>"; };
 		AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/ParsedEvent.swift; sourceTree = "<group>"; };
@@ -89,7 +86,6 @@
 		AA0000000000000000000113 /* Infrastructure/Alarm/AlarmScheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Alarm/AlarmScheduling.swift; sourceTree = "<group>"; };
 		AA0000000000000000000114 /* Infrastructure/Calendar/CalendarReading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Calendar/CalendarReading.swift; sourceTree = "<group>"; };
 		AA0000000000000000000115 /* Infrastructure/Calendar/EventKitCalendarReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Calendar/EventKitCalendarReader.swift; sourceTree = "<group>"; };
-		AA0000000000000000000115A /* Infrastructure/Calendar/FakeCalendarReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Calendar/FakeCalendarReader.swift; sourceTree = "<group>"; };
 		AA0000000000000000000116 /* Infrastructure/Calendar/EventKitMappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Calendar/EventKitMappers.swift; sourceTree = "<group>"; };
 		AA0000000000000000000117 /* Infrastructure/Persistence/PreferencesStoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Persistence/PreferencesStoring.swift; sourceTree = "<group>"; };
 		AA0000000000000000000118 /* Infrastructure/Persistence/ScheduledAlarmStoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Persistence/ScheduledAlarmStoring.swift; sourceTree = "<group>"; };
@@ -186,7 +182,6 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000104 /* Configuration/AppConfiguration.swift */,
-				AA0000000000000000000104A /* Configuration/AppRuntime.swift */,
 			);
 			name = Configuration;
 			sourceTree = "<group>";
@@ -278,7 +273,6 @@
 			children = (
 				AA0000000000000000000114 /* Infrastructure/Calendar/CalendarReading.swift */,
 				AA0000000000000000000115 /* Infrastructure/Calendar/EventKitCalendarReader.swift */,
-				AA0000000000000000000115A /* Infrastructure/Calendar/FakeCalendarReader.swift */,
 				AA0000000000000000000116 /* Infrastructure/Calendar/EventKitMappers.swift */,
 			);
 			name = Calendar;
@@ -445,7 +439,6 @@
 				AA0000000000000000000202 /* Application/PermissionService.swift in Sources */,
 				AA0000000000000000000203 /* Application/WakePlanService.swift in Sources */,
 				AA0000000000000000000204 /* Configuration/AppConfiguration.swift in Sources */,
-				AA0000000000000000000204A /* Configuration/AppRuntime.swift in Sources */,
 				AA0000000000000000000205 /* Domain/Models/AlarmPreferences.swift in Sources */,
 				AA0000000000000000000206 /* Domain/Models/CalendarSource.swift in Sources */,
 				AA0000000000000000000207 /* Domain/Models/ParsedEvent.swift in Sources */,
@@ -463,7 +456,6 @@
 				AA0000000000000000000213 /* Infrastructure/Alarm/AlarmScheduling.swift in Sources */,
 				AA0000000000000000000214 /* Infrastructure/Calendar/CalendarReading.swift in Sources */,
 				AA0000000000000000000215 /* Infrastructure/Calendar/EventKitCalendarReader.swift in Sources */,
-				AA0000000000000000000215A /* Infrastructure/Calendar/FakeCalendarReader.swift in Sources */,
 				AA0000000000000000000216 /* Infrastructure/Calendar/EventKitMappers.swift in Sources */,
 				AA0000000000000000000217 /* Infrastructure/Persistence/PreferencesStoring.swift in Sources */,
 				AA0000000000000000000218 /* Infrastructure/Persistence/ScheduledAlarmStoring.swift in Sources */,

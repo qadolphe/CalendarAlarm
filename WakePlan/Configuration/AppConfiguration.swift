@@ -3,6 +3,9 @@ import Foundation
 enum AppConfiguration {
     static let appName = "WakePlan"
     static let genericAlarmTitle = "Wake up"
+    static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
+    static let testAlarmDescription =
+        "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
 
     static let calendarPermissionExplanation =
         "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time."
@@ -16,5 +19,9 @@ enum AppConfiguration {
         }
 
         return "Wake up for \(eventTitle)"
+    }
+
+    static func testAlarmScheduledMessage(for wakeTime: Date) -> String {
+        "Test alarm scheduled for \(wakeTime.formatted(date: .omitted, time: .shortened))."
     }
 }

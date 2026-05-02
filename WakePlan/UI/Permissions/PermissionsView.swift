@@ -35,12 +35,6 @@ struct PermissionsView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                if appState.permissions.alarm == .notDetermined {
-                    Text("If no system prompt appears here, WakePlan will ask again when it tries to create the first alarm.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
                 if appState.permissions.alarm != .authorized {
                     Button("Allow Alarm Access") {
                         Task {

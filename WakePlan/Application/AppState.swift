@@ -8,9 +8,9 @@ final class AppState {
     var preferences: AlarmPreferences = .default
     var calendars: [CalendarSource] = []
     var permissions: PermissionSnapshot = .initial
-    let usesFakeCalendarData: Bool
 
     var isLoading = false
+    var noticeMessage: String?
     var errorMessage: String?
 
     private let preferencesStore: PreferencesStoring
@@ -22,18 +22,17 @@ final class AppState {
         preferencesStore: PreferencesStoring,
         wakePlanService: WakePlanService,
         permissionService: PermissionService,
-        alarmSyncService: AlarmSyncService,
-        usesFakeCalendarData: Bool = false
+        alarmSyncService: AlarmSyncService
     ) {
         self.preferencesStore = preferencesStore
         self.wakePlanService = wakePlanService
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
-        self.usesFakeCalendarData = usesFakeCalendarData
     }
 
     func load() async {
         isLoading = true
+        noticeMessage = nil
         errorMessage = nil
         defer { isLoading = false }
 
@@ -54,6 +53,7 @@ final class AppState {
     }
 
     func updatePreferences(_ newPreferences: AlarmPreferences) async {
+        noticeMessage = nil
         errorMessage = nil
 
         do {
@@ -70,6 +70,7 @@ final class AppState {
     }
 
     func refreshPlan() async {
+        noticeMessage = nil
         errorMessage = nil
 
         do {
@@ -87,6 +88,7 @@ final class AppState {
     }
 
     func requestCalendarAccess() async {
+        noticeMessage = nil
         errorMessage = nil
 
         do {
@@ -98,6 +100,7 @@ final class AppState {
     }
 
     func requestAlarmAccess() async {
+        noticeMessage = nil
         errorMessage = nil
 
         do {
@@ -106,8 +109,29 @@ final class AppState {
             currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
 
             if requestedState == .notDetermined, permissions.alarm == .notDetermined {
-                errorMessage = "Alarm access is still waiting for AlarmKit to present authorization. WakePlan will try again when it schedules the next alarm."
+                noticeMessage = "Alarm access is still pending. WakePlan will ask again the next time it needs to create an alarm."
             }
+        } catch {
+            errorMessage = format(error)
+        }
+    }
+
+    func scheduleTestAlarm() async {
+        noticeMessage = nil
+        errorMessage = nil
+
+        do {
+            let plan = try await alarmSyncService.scheduleTestAlarm()
+            permissions = await permissionService.currentStatus()
+
+            if plan.reason == .authorizationMissing {
+                noticeMessage = AppConfiguration.alarmPermissionExplanation
+                return
+            }
+
+            noticeMessage = AppConfiguration.testAlarmScheduledMessage(
+                for: plan.calculatedWakeTime
+            )
         } catch {
             errorMessage = format(error)
         }
@@ -144,7 +168,6 @@ final class AppState {
     }
 
     private func format(_ error: Error) -> String {
-        let nsError = error as NSError
-        return "\(nsError.localizedDescription) [\(nsError.domain) \(nsError.code)]"
+        error.localizedDescription
     }
 }
