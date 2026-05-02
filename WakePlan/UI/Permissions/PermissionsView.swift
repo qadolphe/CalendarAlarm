@@ -14,11 +14,12 @@ struct PermissionsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     Text("Permissions")
                         .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
 
                     Text("WakePlan keeps your alarm plan on-device and only requests the access it needs.")
                         .font(.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WPStyles.secondaryText)
 
                     if let errorMessage = appState.errorMessage {
                         statusBanner(errorMessage, tint: .red)
@@ -76,9 +77,10 @@ struct PermissionsView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
+                        .foregroundStyle(WPStyles.primaryText)
                     Text(description)
                         .font(.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WPStyles.secondaryText)
                 }
                 Spacer()
             }
@@ -86,10 +88,10 @@ struct PermissionsView: View {
             HStack {
                 Text(status)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isAuthorized ? Color.green : .secondary)
+                    .foregroundStyle(isAuthorized ? WPStyles.successGreen : WPStyles.secondaryText)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background((isAuthorized ? Color.green : Color.secondary).opacity(0.12))
+                    .background((isAuthorized ? WPStyles.successGreen : WPStyles.surfaceRaised).opacity(0.18))
                     .clipShape(Capsule())
 
                 Spacer()
@@ -114,7 +116,7 @@ struct PermissionsView: View {
                 .foregroundStyle(tint)
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(WPStyles.primaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)

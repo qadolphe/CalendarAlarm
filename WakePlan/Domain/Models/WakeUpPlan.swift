@@ -4,6 +4,7 @@ enum WakePlanReason: String, Codable, Equatable, Sendable {
     case event
     case fallback
     case disabled
+    case inactiveDay
     case authorizationMissing
     case manualOverride
 }

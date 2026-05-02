@@ -6,231 +6,313 @@ struct DashboardView: View {
     var body: some View {
         let viewModel = DashboardViewModel(appState: appState)
 
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    header(viewModel: viewModel)
-                    content(viewModel: viewModel)
-                    actionCard
+        ZStack {
+            Color.clear.withAppBackground()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    topBar
 
                     if let permissionBanner = viewModel.permissionBanner {
-                        banner(permissionBanner, tint: WPStyles.warningBanner)
+                        banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
                     }
 
                     if let noticeMessage = appState.noticeMessage {
-                        banner(noticeMessage, tint: .green)
+                        banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
                     }
 
                     if let errorMessage = appState.errorMessage {
-                        banner(errorMessage, tint: .red)
+                        banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
                     }
 
-#if DEBUG
-                    VStack(alignment: .leading, spacing: 12) {
-                        Button(AppConfiguration.testAlarmButtonTitle) {
-                            Task {
-                                await appState.scheduleTestAlarm()
-                            }
-                        }
-                        .buttonStyle(.bordered)
+                    content(viewModel: viewModel)
 
-                        Text(AppConfiguration.testAlarmDescription)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 20)
-#endif
+                    quickActionRow
                 }
-                .padding(24)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 28)
             }
-            .withAppBackground()
-            .navigationTitle(AppConfiguration.appName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        SettingsView(appState: appState)
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                    }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: SettingsView(appState: appState)) {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundStyle(WPStyles.secondaryText)
                 }
             }
         }
-    }
-
-    private func header(viewModel: DashboardViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(viewModel.title)
-                .font(.title2.weight(.bold))
-                .foregroundStyle(.primary)
-
-            Text("A gentle plan for tomorrow morning.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+        .task {
+            await appState.loadIfNeeded()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
     }
 
-    private var actionCard: some View {
-        VStack(spacing: 0) {
-            Button {
-                Task { await appState.refreshPlan() }
-            } label: {
-                actionLabel("Refresh Plan", systemName: "arrow.clockwise")
-            }
-            .buttonStyle(.plain)
-
-            Divider().padding(.vertical, 14)
-
-            NavigationLink {
-                TimingSettingsView(appState: appState)
-            } label: {
-                actionLabel("Edit Timing", systemName: "clock")
-            }
-            .buttonStyle(.plain)
-
-            Divider().padding(.vertical, 14)
-
-            NavigationLink {
-                RulesView(appState: appState)
-            } label: {
-                actionLabel("View Rules", systemName: "line.3.horizontal.decrease.circle")
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.vertical, 8)
-        .cardStyle()
-    }
-
-    private func actionLabel(_ title: String, systemName: String) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: systemName)
-                .foregroundStyle(WPStyles.primaryOrange)
-                .font(.title3)
-                .frame(width: 24)
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.primary)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.tertiary)
-                .font(.subheadline.weight(.semibold))
-        }
-        .contentShape(Rectangle())
-    }
-
+    @ViewBuilder
     private func content(viewModel: DashboardViewModel) -> some View {
-        Group {
-            switch appState.dashboardState {
-            case .loading:
-                ProgressView("Calculating wake-up plan...")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .cardStyle()
-                    .frame(minHeight: 220)
-            case .needsCalendarPermission:
-                messageCard(
-                    title: "Calendar access needed",
-                    message: "Connect your calendar to calculate tomorrow's alarm."
-                )
-            case .error:
-                messageCard(
-                    title: "Wake-up plan unavailable",
-                    message: "Refresh to try again."
-                )
-            case .needsAlarmPermission(let viewState),
-                 .ready(let viewState),
-                 .emptyFallback(let viewState):
+        switch appState.dashboardState {
+        case .loading:
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Next Alarm")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+
+                ProgressView()
+                    .tint(WPStyles.primaryOrange)
+                    .scaleEffect(1.5)
+                    .frame(maxWidth: .infinity, minHeight: 180)
+            }
+            .cardStyle()
+        case .needsCalendarPermission, .needsAlarmPermission(_):
+            permissionPromptCard(viewModel: viewModel)
+        case .error:
+            ContentUnavailableView("Unavailable", systemImage: "exclamationmark.triangle")
+        case .ready(let viewState), .emptyFallback(let viewState):
+            VStack(alignment: .leading, spacing: 24) {
                 planCard(for: viewState.plan, viewModel: viewModel)
+                tomorrowFlowCard(for: viewState.plan)
             }
         }
-    }
-
-    private func messageCard(title: String, message: String) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.title2.weight(.bold))
-
-            Text(message)
-                .font(.body)
-                .foregroundStyle(.secondary)
-        }
-        .cardStyle()
     }
 
     @ViewBuilder
     private func planCard(for plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(plan.calculatedWakeTime, style: .time)
-                        .font(WPStyles.timeDisplayFont)
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Next Alarm")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(WPStyles.primaryText)
 
-                    if let eventSummary = viewModel.eventSummary {
-                        Text(eventSummary)
-                            .font(.title3.weight(.medium))
-                            .foregroundStyle(.primary)
-                    }
-                }
-
-                Spacer()
-
-                statusPill(viewModel.statusTitle)
+            if let timeUntilWake = viewModel.timeUntilWake {
+                Text(timeUntilWake)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(WPStyles.secondaryText)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                if let timingSummary = viewModel.timingSummary {
-                    Text(timingSummary)
+            Text(plan.calculatedWakeTime, style: .time)
+                .font(WPStyles.timeDisplayFont)
+                .monospacedDigit()
+                .foregroundStyle(WPStyles.primaryText)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+
+            HStack(spacing: 10) {
+                infoPill(icon: "calendar_month", text: viewModel.heroContext)
+                infoPill(icon: "auto_awesome", text: "Auto-Pilot")
+            }
+
+            VStack(alignment: .leading, spacing: 16) {
+                if let event = plan.targetEvent {
+                    HStack {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(WPStyles.primaryOrange)
+                        Text(event.title)
+                            .font(.headline)
+                            .lineLimit(1)
+                            .foregroundStyle(WPStyles.primaryText)
+                        Spacer()
+                        Text(event.startDate, style: .time)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(WPStyles.secondaryText)
+                    }
+
+                    Divider()
+
+                    timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
+                    timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
+                } else {
+                    HStack {
+                        Image(systemName: "moon.zzz.fill")
+                            .foregroundStyle(.indigo)
+                        Text("No early events")
+                            .font(.headline)
+                            .foregroundStyle(WPStyles.primaryText)
+                        Spacer()
+                    }
+                    Divider()
+                    Text(viewModel.statusMessage ?? "Sleeping in until your baseline limit.")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WPStyles.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+            }
+            .padding(20)
+            .insetSurfaceStyle(cornerRadius: 24)
+        }
+        .cardStyle()
+    }
 
-                if let calendarSummary = viewModel.calendarSummary {
-                    Text(calendarSummary)
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(.secondary)
+    private func tomorrowFlowCard(for plan: WakeUpPlan) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Tomorrow's Flow")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                NavigationLink(destination: TimingSettingsView(appState: appState)) {
+                    Text("Edit")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(WPStyles.secondaryBlue)
                 }
+            }
 
-                if let statusMessage = viewModel.statusMessage {
-                    Text(statusMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
+            timelineEntry(
+                title: "Morning Routine",
+                subtitle: "\(plan.prepTime.rawValue) mins",
+                icon: "cup.and.saucer.fill"
+            )
+
+            if let event = plan.targetEvent {
+                timelineEntry(
+                    title: event.title,
+                    subtitle: viewModelCalendarLabel(for: event),
+                    icon: "calendar"
+                )
+            } else {
+                timelineEntry(
+                    title: "Baseline Wake Limit",
+                    subtitle: "No calendar event matched",
+                    icon: "moon.zzz.fill"
+                )
             }
         }
         .cardStyle()
     }
 
-    private func statusPill(_ title: String) -> some View {
-        Text(title)
-            .font(.caption.weight(.bold))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(WPStyles.pillBackground)
-            )
-            .foregroundStyle(WPStyles.pillText)
+    private var topBar: some View {
+        HStack {
+            Text(AppConfiguration.appName)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(WPStyles.secondaryText)
+
+            Spacer()
+
+#if DEBUG
+            Button(AppConfiguration.testAlarmButtonTitle) {
+                Task { await appState.scheduleTestAlarm() }
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(WPStyles.secondaryBlue)
+#endif
+        }
+    }
+
+    private func timelineRow(icon: String, label: String, value: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .frame(width: 20)
+                .foregroundStyle(WPStyles.tertiaryText)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+            Spacer()
+            Text("-\(value)")
+                .font(.subheadline.monospacedDigit().weight(.medium))
+                .foregroundStyle(WPStyles.primaryText)
+        }
     }
 
     @ViewBuilder
-    private func banner(_ text: String, tint: Color) -> some View {
+    private func permissionPromptCard(viewModel: DashboardViewModel) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(WPStyles.primaryOrange)
+
+            Text("Setup Required")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(WPStyles.primaryText)
+
+            Text(viewModel.permissionBanner ?? "Please complete setup in settings.")
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+                .multilineTextAlignment(.center)
+
+            NavigationLink(destination: PermissionsView(appState: appState)) {
+                Text("Fix Permissions")
+                    .font(.headline)
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(WPStyles.primaryOrange)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .padding(.top, 8)
+        }
+        .padding(24)
+        .cardStyle()
+    }
+
+    @ViewBuilder
+    private func banner(_ text: String, tint: Color, icon: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            Image(systemName: icon)
                 .foregroundStyle(tint)
             Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(WPStyles.primaryText)
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(tint.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var quickActionRow: some View {
+        Button(action: {
+            Task { await appState.refreshPlan() }
+        }) {
+            Label("Recalculate Plan", systemImage: "arrow.triangle.2.circlepath")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(WPStyles.secondaryText)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 24)
+                .background(Capsule().fill(WPStyles.surfaceRaised))
+        }
+    }
+
+    private func infoPill(icon: String, text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+            Text(text)
+                .lineLimit(1)
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(WPStyles.secondaryText)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Capsule().fill(WPStyles.surfaceRaised))
+    }
+
+    private func timelineEntry(title: String, subtitle: String, icon: String) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(WPStyles.surfaceRaised)
+                    .frame(width: 36, height: 36)
+                Image(systemName: icon)
+                    .foregroundStyle(WPStyles.primaryOrange)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(WPStyles.tertiaryText)
+        }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(tint.opacity(0.12))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(tint.opacity(0.25), lineWidth: 1)
-        )
+        .insetSurfaceStyle(cornerRadius: 20)
+    }
+
+    private func viewModelCalendarLabel(for event: ParsedEvent) -> String {
+        appState.calendars.first(where: { $0.id == event.calendarID })?.title ?? "Scheduled event"
     }
 }

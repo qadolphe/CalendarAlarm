@@ -12,13 +12,14 @@ struct CalendarSelectionView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Select Calendars")
+                    Text("Calendars")
                         .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
 
                     Text(viewModel.helperText)
                         .font(.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WPStyles.secondaryText)
 
                     if appState.permissions.calendar != .authorized {
                         permissionCard
@@ -39,10 +40,11 @@ struct CalendarSelectionView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Calendar access needed")
                 .font(.title3.weight(.semibold))
+                .foregroundStyle(WPStyles.primaryText)
 
             Text(AppConfiguration.calendarPermissionExplanation)
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WPStyles.secondaryText)
 
             Button("Allow Calendar Access") {
                 Task { await appState.requestCalendarAccess() }
@@ -56,14 +58,15 @@ struct CalendarSelectionView: View {
         VStack(spacing: 16) {
             Image(systemName: "calendar.badge.exclamationmark")
                 .font(.system(size: 48))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(WPStyles.tertiaryText)
             
             Text("No Calendars Found")
                 .font(.headline)
+                .foregroundStyle(WPStyles.primaryText)
             
             Text("Make sure WakePlan has permission to read your calendars.")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WPStyles.secondaryText)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -76,7 +79,7 @@ struct CalendarSelectionView: View {
             HStack {
                 Text("Choose which calendars WakePlan should scan.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WPStyles.secondaryText)
 
                 Spacer()
 
@@ -84,6 +87,7 @@ struct CalendarSelectionView: View {
                     Task { await appState.selectAllCalendars() }
                 }
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(WPStyles.secondaryBlue)
                 .disabled(allCalendarsSelected)
             }
 
@@ -94,14 +98,18 @@ struct CalendarSelectionView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: calendar.isSelected ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(calendar.isSelected ? WPStyles.primaryOrange : .secondary)
+                                .foregroundStyle(calendar.isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
                                 .font(.title3)
 
                             Text(calendar.title)
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(WPStyles.primaryText)
 
                             Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(WPStyles.tertiaryText)
                         }
                         .padding(.vertical, 14)
                     }
@@ -115,7 +123,7 @@ struct CalendarSelectionView: View {
 
             Text(helperText)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WPStyles.secondaryText)
         }
         .cardStyle()
     }

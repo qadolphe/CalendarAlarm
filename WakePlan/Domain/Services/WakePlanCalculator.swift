@@ -21,6 +21,32 @@ struct WakePlanCalculator {
     ) -> WakeUpPlan {
         _ = now
 
+        let weekday = calendar.component(.weekday, from: targetDay.date)
+
+        if !preferences.activeDays.contains(weekday) {
+            return WakeUpPlan(
+                id: hasher.makeID(
+                    kind: "inactive-day",
+                    components: [
+                        timestamp(targetDay.date),
+                        "\(weekday)",
+                        "\(preferences.prepTime.rawValue)",
+                        "\(preferences.defaultCommuteTime.rawValue)",
+                        "\(preferences.latestWakeTime.hour)",
+                        "\(preferences.latestWakeTime.minute)"
+                    ]
+                ),
+                targetDay: targetDay,
+                targetEvent: nil,
+                calculatedWakeTime: preferences.latestWakeTime.date(on: targetDay, calendar: calendar),
+                eventStartTime: nil,
+                prepTime: preferences.prepTime,
+                commuteTime: preferences.defaultCommuteTime,
+                isFallback: true,
+                reason: .inactiveDay
+            )
+        }
+
         if !preferences.isEnabled {
             return WakeUpPlan(
                 id: hasher.makeID(

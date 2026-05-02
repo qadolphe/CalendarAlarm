@@ -2,286 +2,104 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Bindable var appState: AppState
-    let onFinish: () -> Void
-
-    @State private var step = 0
-    @State private var draftPreferences = AlarmPreferences.default
+    @Environment(\.dismiss) private var dismiss
+    var onFinish: (() -> Void)? = nil
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    progressHeader
-                    
-                    VStack(spacing: 0) {
-                        stepContent
+        ZStack {
+            Color.clear.withAppBackground()
+
+            VStack(spacing: 28) {
+                Spacer()
+
+                VStack(spacing: 18) {
+                    ZStack {
+                        Circle()
+                            .fill(WPStyles.surfaceRaised)
+                            .frame(width: 132, height: 132)
+                        Image(systemName: "alarm.waves.left.and.right.fill")
+                            .font(.system(size: 62))
+                            .foregroundStyle(WPStyles.primaryOrange)
                     }
-                    .cardStyle()
-                    
-                    Spacer()
-                    footer
+
+                    VStack(spacing: 10) {
+                        Text("Welcome to \(AppConfiguration.appName)")
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(WPStyles.primaryText)
+                        Text("Your alarm, perfectly synced with your morning schedule.")
+                            .font(.body)
+                            .foregroundStyle(WPStyles.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                 }
-                .padding(24)
-            }
-            .withAppBackground()
-            .navigationBarTitleDisplayMode(.inline)
-            .task {
-                draftPreferences = appState.preferences
-                alignStepWithPermissions()
-            }
-            .onChange(of: appState.permissions) { _, _ in
-                alignStepWithPermissions()
-            }
-        }
-    }
 
-    private var progressHeader: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("WakePlan")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("How it works")
+                        .font(.caption.weight(.bold))
+                        .tracking(1.8)
+                        .foregroundStyle(WPStyles.secondaryText)
 
-            HStack(spacing: 8) {
-                ForEach(0..<4, id: \.self) { index in
-                    Capsule()
-                        .fill(index <= step ? WPStyles.primaryOrange : WPStyles.primaryOrange.opacity(0.18))
-                        .frame(height: 8)
+                    featureRow(icon: "calendar.badge.clock", color: WPStyles.primaryOrange, title: "Calendar Sync", desc: "We scan your first event of the day.")
+                    featureRow(icon: "car.fill", color: WPStyles.secondaryBlue, title: "Smart Buffers", desc: "Automatically subtracts prep and commute time.")
+                    featureRow(icon: "moon.zzz.fill", color: .indigo, title: "Sleep In", desc: "No morning meetings? The alarm defers to your preferred limit.")
                 }
-            }
-        }
-    }
+                .cardStyle()
 
-    @ViewBuilder
-    private var stepContent: some View {
-        switch step {
-        case 0:
-            introStep
-        case 1:
-            calendarStep
-        case 2:
-            timingStep
-        default:
-            alarmStep
-        }
-    }
+                Spacer()
 
-    private var introStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Wake up based on tomorrow's calendar.")
-                .font(WPStyles.heroTitleFont)
-                .foregroundStyle(.primary)
+                VStack(spacing: 16) {
+                    Button(action: {
+                        Task {
+                            await appState.requestCalendarAccess()
+                            await appState.requestAlarmAccess()
+                            finish()
+                        }
+                    }) {
+                        Text("Grant Access & Start")
+                            .font(.headline)
+                            .foregroundStyle(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(WPStyles.primaryOrange)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
 
-            Text("WakePlan finds your first important event and sets a real alarm.")
-                .font(.title3.weight(.medium))
-                .foregroundStyle(.secondary)
-
-            Text("A calm plan for the morning, without extra setup every night.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var calendarStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Connect your calendar.")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            Text("WakePlan reads your events on-device to calculate your wake-up time.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-
-            statusLine(
-                title: "Calendar access",
-                value: PermissionsViewModel(appState: appState).calendarStatus
-            )
-
-            Button("Connect Apple Calendar") {
-                Task { await appState.requestCalendarAccess() }
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.top, 8)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var timingStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Set your morning buffer.")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            VStack(spacing: 20) {
-                stepperRow(
-                    title: "Prep time",
-                    value: $draftPreferences.prepTime,
-                    range: 0...180
-                )
-
-                Divider()
-
-                stepperRow(
-                    title: "Commute buffer",
-                    value: $draftPreferences.defaultCommuteTime,
-                    range: 0...180
-                )
-
-                Divider()
-
-                DatePicker(
-                    "Fallback wake time",
-                    selection: fallbackWakeTimeBinding,
-                    displayedComponents: .hourAndMinute
-                )
-                .datePickerStyle(.compact)
-                .font(.headline)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var alarmStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Allow alarm access.")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            Text("WakePlan needs permission to schedule real alarms.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-
-            statusLine(
-                title: "Alarm access",
-                value: PermissionsViewModel(appState: appState).alarmStatus
-            )
-
-            Button("Allow Alarm Access") {
-                Task { await appState.requestAlarmAccess() }
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.top, 8)
-
-            if appState.permissions.alarm != .authorized {
-                Button("Continue to Dashboard") {
-                    onFinish()
+                    Text("Data never leaves your device.")
+                        .font(.caption)
+                        .foregroundStyle(WPStyles.tertiaryText)
                 }
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 8)
+                .padding(.horizontal, 4)
+                .padding(.bottom, 24)
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var footer: some View {
-        HStack {
-            if step > 0 {
-                Button("Back") {
-                    step -= 1
-                }
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .padding(.vertical, 16)
-                .padding(.horizontal, 24)
-                .background(Color.secondary.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-
-            Spacer()
-
-            Button(primaryActionTitle) {
-                Task { await handlePrimaryAction() }
-            }
-            .buttonStyle(PrimaryButtonStyle())
+            .padding(.horizontal, 20)
         }
     }
 
-    private var primaryActionTitle: String {
-        switch step {
-        case 0:
-            return "Get Started"
-        case 1:
-            return appState.permissions.calendar == .authorized ? "Continue" : "Skip for Now"
-        case 2:
-            return "Save Timing"
-        default:
-            return appState.permissions.alarm == .authorized ? "Open Dashboard" : "Finish Later"
-        }
-    }
+    private func featureRow(icon: String, color: Color, title: String, desc: String) -> some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title)
+                .foregroundStyle(color)
+                .frame(width: 40)
 
-    private var fallbackWakeTimeBinding: Binding<Date> {
-        Binding(
-            get: {
-                let targetDay = TargetDay(date: Date())
-                return draftPreferences.latestWakeTime.date(on: targetDay)
-            },
-            set: { newValue in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-
-                guard let hour = components.hour, let minute = components.minute else { return }
-                draftPreferences.latestWakeTime = ClockTime(hour: hour, minute: minute)
-            }
-        )
-    }
-
-    private func handlePrimaryAction() async {
-        switch step {
-        case 0:
-            step = 1
-        case 1:
-            step = 2
-        case 2:
-            await appState.updatePreferences(draftPreferences)
-            step = 3
-        default:
-            onFinish()
-        }
-    }
-
-    private func alignStepWithPermissions() {
-        if step == 1, appState.permissions.calendar == .authorized {
-            step = 2
-        }
-
-        if step == 3, appState.permissions.alarm == .authorized {
-            onFinish()
-        }
-    }
-
-    private func stepperRow(
-        title: String,
-        value: Binding<Minutes>,
-        range: ClosedRange<Int>
-    ) -> some View {
-        Stepper(
-            value: Binding(
-                get: { value.wrappedValue.rawValue },
-                set: { value.wrappedValue = Minutes($0) }
-            ),
-            in: range,
-            step: 5
-        ) {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.headline)
-                Text("\(value.wrappedValue.rawValue) min")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WPStyles.primaryText)
+                Text(desc)
                     .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
+                    .lineLimit(2)
             }
         }
     }
 
-    private func statusLine(title: String, value: String) -> some View {
-        HStack {
-            Text(title)
-                .font(.headline)
-            Spacer()
-            Text(value)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+    private func finish() {
+        if let onFinish {
+            onFinish()
+        } else {
+            dismiss()
         }
-        .padding(.vertical, 8)
     }
 }

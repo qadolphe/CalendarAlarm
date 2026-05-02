@@ -13,18 +13,18 @@ struct TimingSettingsView: View {
 
     var body: some View {
         ZStack {
-            WPStyles.bgGradientStart.ignoresSafeArea()
-                .withAppBackground()
+            Color.clear.withAppBackground()
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text("Edit Timing")
                         .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
                     
                     Text("Adjust how WakePlan calculates your morning alarm.")
                         .font(.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WPStyles.secondaryText)
                     
                     VStack(spacing: 20) {
                         stepperRow(
@@ -46,6 +46,7 @@ struct TimingSettingsView: View {
                         HStack {
                             Text("Fallback wake time")
                                 .font(.headline)
+                                .foregroundStyle(WPStyles.primaryText)
                             Spacer()
                             DatePicker(
                                 "",
@@ -54,6 +55,7 @@ struct TimingSettingsView: View {
                             )
                             .labelsHidden()
                             .datePickerStyle(.compact)
+                            .colorScheme(.dark)
                         }
                     }
                     .padding(.vertical, 8)
@@ -105,8 +107,9 @@ struct TimingSettingsView: View {
             VStack(alignment: .leading) {
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
                 Text("\(value.wrappedValue.rawValue) min")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WPStyles.secondaryText)
                     .font(.subheadline)
             }
         }

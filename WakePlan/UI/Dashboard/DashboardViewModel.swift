@@ -33,6 +33,32 @@ struct DashboardViewModel {
         return "Fallback wake time for tomorrow"
     }
 
+    var heroContext: String {
+        guard let plan else { return "Baseline wake limit" }
+
+        if let event = plan.targetEvent {
+            return "Based on \"\(event.title)\""
+        }
+
+        return "No calendar event found"
+    }
+
+    var timeUntilWake: String? {
+        guard let plan else { return nil }
+
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .full
+        formatter.maximumUnitCount = 2
+
+        let interval = max(plan.calculatedWakeTime.timeIntervalSinceNow, 0)
+        guard let formatted = formatter.string(from: interval), !formatted.isEmpty else {
+            return nil
+        }
+
+        return "In \(formatted)"
+    }
+
     var timingSummary: String? {
         guard let plan else { return nil }
         return "\(plan.prepTime.rawValue) min prep · \(plan.commuteTime.rawValue) min commute"
@@ -82,6 +108,9 @@ struct DashboardViewModel {
 
         switch viewState.alarmStatus {
         case .scheduled:
+            if plan.reason == .inactiveDay {
+                return "Auto-Pilot is paused for that day based on your active schedule."
+            }
             if plan.reason == .fallback {
                 return "Fallback wake time is scheduled because no event matched your filters."
             }

@@ -80,6 +80,24 @@ final class WakePlanCalculatorTests: XCTestCase {
         XCTAssertNil(plan.targetEvent)
     }
 
+    func testInactiveDayReturnsInactiveDayPlan() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.activeDays = [2, 3, 4, 5, 6]
+
+        let plan = calculator.calculate(
+            events: [event()],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .inactiveDay)
+        XCTAssertTrue(plan.isFallback)
+        XCTAssertNil(plan.targetEvent)
+    }
+
     func testDoesNotMutateEvents() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
