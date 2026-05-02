@@ -74,15 +74,11 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         self.timing = timing
         self.filters = filters
         self.locationRules = locationRules
-        // Ensure there is always a default rule.
-        if alarmRules.contains(where: { $0.isDefault }) {
-            self.alarmRules = alarmRules
-        } else {
-            self.alarmRules = alarmRules + [AlarmRule.makeDefault(
-                prepTime: timing.prepTime,
-                commuteTime: timing.defaultCommuteTime
-            )]
-        }
+        self.alarmRules = Self.normalizedAlarmRules(
+            alarmRules,
+            timing: timing,
+            legacySelectedCalendarIDs: filters.selectedCalendarIDs
+        )
     }
 
     static let `default` = AlarmPreferences(
@@ -157,13 +153,39 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
     var defaultAlarmRule: AlarmRule {
         alarmRules.first(where: { $0.isDefault }) ?? AlarmRule.makeDefault(
             prepTime: timing.prepTime,
-            commuteTime: timing.defaultCommuteTime
+            commuteTime: timing.defaultCommuteTime,
+            selectedCalendarIDs: filters.selectedCalendarIDs
         )
     }
 
     /// User-created rules (non-default, evaluated before the default).
     var customAlarmRules: [AlarmRule] {
         alarmRules.filter { !$0.isDefault }
+    }
+
+    private static func normalizedAlarmRules(
+        _ alarmRules: [AlarmRule],
+        timing: TimingRules,
+        legacySelectedCalendarIDs: Set<String>
+    ) -> [AlarmRule] {
+        var normalized = alarmRules
+
+        if let defaultIndex = normalized.firstIndex(where: { $0.isDefault }) {
+            if normalized[defaultIndex].selectedCalendarIDs.isEmpty,
+               !legacySelectedCalendarIDs.isEmpty {
+                normalized[defaultIndex].selectedCalendarIDs = legacySelectedCalendarIDs
+            }
+            return normalized
+        }
+
+        normalized.append(
+            AlarmRule.makeDefault(
+                prepTime: timing.prepTime,
+                commuteTime: timing.defaultCommuteTime,
+                selectedCalendarIDs: legacySelectedCalendarIDs
+            )
+        )
+        return normalized
     }
 }
 
@@ -200,11 +222,11 @@ extension AlarmPreferences {
             filters = try container.decodeIfPresent(EventFilterRules.self, forKey: .filters) ?? .default
             locationRules = try container.decodeIfPresent([LocationRule].self, forKey: .locationRules) ?? []
             let decoded = try container.decodeIfPresent([AlarmRule].self, forKey: .alarmRules) ?? []
-            if decoded.contains(where: { $0.isDefault }) {
-                alarmRules = decoded
-            } else {
-                alarmRules = decoded + [AlarmRule.makeDefault(prepTime: decodedTiming.prepTime, commuteTime: decodedTiming.defaultCommuteTime)]
-            }
+            alarmRules = Self.normalizedAlarmRules(
+                decoded,
+                timing: decodedTiming,
+                legacySelectedCalendarIDs: filters.selectedCalendarIDs
+            )
             return
         }
 
@@ -230,11 +252,11 @@ extension AlarmPreferences {
         )
         locationRules = try container.decodeIfPresent([LocationRule].self, forKey: .locationRules) ?? []
         let legacyDecoded = try container.decodeIfPresent([AlarmRule].self, forKey: .alarmRules) ?? []
-        if legacyDecoded.contains(where: { $0.isDefault }) {
-            alarmRules = legacyDecoded
-        } else {
-            alarmRules = legacyDecoded + [AlarmRule.makeDefault(prepTime: timing.prepTime, commuteTime: timing.defaultCommuteTime)]
-        }
+        alarmRules = Self.normalizedAlarmRules(
+            legacyDecoded,
+            timing: timing,
+            legacySelectedCalendarIDs: filters.selectedCalendarIDs
+        )
     }
 
     func encode(to encoder: Encoder) throws {

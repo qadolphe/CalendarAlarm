@@ -32,12 +32,12 @@ final class EventFilterTests: XCTestCase {
         XCTAssertFalse(filter.shouldInclude(event(availability: .free), preferences: preferences))
     }
 
-    func testRespectsCalendarSelection() {
+    func testDoesNotFilterByLegacyCalendarSelection() {
         var preferences = AlarmPreferences.default
         preferences.selectedCalendarIDs = ["work"]
 
         XCTAssertTrue(filter.shouldInclude(event(calendarID: "work"), preferences: preferences))
-        XCTAssertFalse(filter.shouldInclude(event(calendarID: "personal"), preferences: preferences))
+        XCTAssertTrue(filter.shouldInclude(event(calendarID: "personal"), preferences: preferences))
     }
 
     func testRespectsTitleBlocklist() {
@@ -81,6 +81,7 @@ final class EventFilterTests: XCTestCase {
         XCTAssertEqual(preferences.schedule.activeDays, Set([1, 2, 3, 4, 5]))
         XCTAssertEqual(preferences.timing.prepTime, Minutes(35))
         XCTAssertEqual(preferences.timing.defaultCommuteTime, Minutes(15))
+        XCTAssertEqual(preferences.defaultAlarmRule.selectedCalendarIDs, Set(["work"]))
         XCTAssertEqual(preferences.filters.selectedCalendarIDs, Set(["work"]))
         XCTAssertEqual(preferences.filters.titleKeywords.blockedKeywords, ["vacation"])
         XCTAssertEqual(preferences.filters.titleKeywords.allowedKeywords, ["onsite"])

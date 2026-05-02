@@ -46,18 +46,21 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var name: String
     /// When true this rule matches every event (no conditions evaluated).
     var isDefault: Bool
+    var selectedCalendarIDs: Set<String>
     var conditions: [AlarmRuleCondition]
     var prepTime: Minutes
     var commuteTime: Minutes
 
     static func makeDefault(
         prepTime: Minutes = Minutes(45),
-        commuteTime: Minutes = Minutes(20)
+        commuteTime: Minutes = Minutes(20),
+        selectedCalendarIDs: Set<String> = []
     ) -> AlarmRule {
         AlarmRule(
             id: UUID(),
             name: "Default",
             isDefault: true,
+            selectedCalendarIDs: selectedCalendarIDs,
             conditions: [],
             prepTime: prepTime,
             commuteTime: commuteTime
@@ -66,8 +69,13 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
 
     /// Returns true when this rule should apply to a given event.
     func matches(event: ParsedEvent) -> Bool {
+        if !selectedCalendarIDs.isEmpty,
+           !selectedCalendarIDs.contains(event.calendarID) {
+            return false
+        }
+
         if isDefault { return true }
-        guard !conditions.isEmpty else { return false }
+        guard !conditions.isEmpty else { return true }
         return conditions.allSatisfy { condition in
             switch condition {
             case .titleContains(let keyword):

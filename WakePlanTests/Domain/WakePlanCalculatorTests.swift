@@ -155,6 +155,36 @@ final class WakePlanCalculatorTests: XCTestCase {
         XCTAssertEqual(components.minute, 25)
     }
 
+    func testSkipsEventsOutsideRuleCalendarSelection() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        let personalEvent = event(
+            id: "personal",
+            calendarID: "personal",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 8, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar)
+        )
+        let workEvent = event(
+            id: "work",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar)
+        )
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [
+            AlarmRule.makeDefault(selectedCalendarIDs: ["work"])
+        ]
+
+        let plan = calculator.calculate(
+            events: [personalEvent, workEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.targetEvent?.id, "work")
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -163,12 +193,13 @@ final class WakePlanCalculatorTests: XCTestCase {
 
     private func event(
         id: String = UUID().uuidString,
+        calendarID: String = "work",
         startDate: Date = Date(timeIntervalSince1970: 1_000),
         endDate: Date = Date(timeIntervalSince1970: 2_000)
     ) -> ParsedEvent {
         ParsedEvent(
             id: id,
-            calendarID: "work",
+            calendarID: calendarID,
             title: "Standup",
             startDate: startDate,
             endDate: endDate,

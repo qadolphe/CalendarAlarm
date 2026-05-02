@@ -48,7 +48,7 @@ final class WakePlanService {
     ) async throws -> WakeUpPlan {
         let events = try await calendarReader.events(
             for: targetDay,
-            selectedCalendarIDs: preferences.selectedCalendarIDs
+            selectedCalendarIDs: []
         )
 
         return calculator.calculate(

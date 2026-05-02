@@ -129,6 +129,10 @@ struct RulesView: View {
                     }
                 }
 
+                Label(calendarSummary(for: rule), systemImage: "calendar")
+                    .font(.caption)
+                    .foregroundStyle(WPStyles.tertiaryText)
+
                 HStack(spacing: 12) {
                     timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
                     timingBadge(icon: "car.fill", value: rule.commuteTime.rawValue, unit: "commute")
@@ -163,6 +167,28 @@ struct RulesView: View {
         }
     }
 
+    private func calendarSummary(for rule: AlarmRule) -> String {
+        if rule.selectedCalendarIDs.isEmpty {
+            return "All calendars"
+        }
+
+        let selectedCalendars = appState.calendars.filter { rule.selectedCalendarIDs.contains($0.id) }
+
+        if selectedCalendars.count == 1 {
+            return selectedCalendars[0].title
+        }
+
+        if selectedCalendars.count == 2 {
+            return selectedCalendars.map(\ .title).joined(separator: ", ")
+        }
+
+        if !selectedCalendars.isEmpty {
+            return "\(selectedCalendars.count) calendars"
+        }
+
+        return "\(rule.selectedCalendarIDs.count) calendars"
+    }
+
     private func deleteRule(_ rule: AlarmRule) {
         var copy = appState.preferences
         copy.alarmRules.removeAll { $0.id == rule.id }
@@ -190,6 +216,7 @@ struct RuleEditorView: View {
 
     @State private var name: String
     @State private var conditions: [AlarmRuleCondition]
+    @State private var selectedCalendarIDs: Set<String>
     @State private var prepTime: Minutes
     @State private var commuteTime: Minutes
     @State private var newTitleKeyword = ""
@@ -208,11 +235,13 @@ struct RuleEditorView: View {
             let dr = appState.preferences.defaultAlarmRule
             _name = State(initialValue: "")
             _conditions = State(initialValue: [])
+            _selectedCalendarIDs = State(initialValue: dr.selectedCalendarIDs)
             _prepTime = State(initialValue: dr.prepTime)
             _commuteTime = State(initialValue: dr.commuteTime)
         case .edit(let rule):
             _name = State(initialValue: rule.name)
             _conditions = State(initialValue: rule.conditions)
+            _selectedCalendarIDs = State(initialValue: rule.selectedCalendarIDs)
             _prepTime = State(initialValue: rule.prepTime)
             _commuteTime = State(initialValue: rule.commuteTime)
         }
@@ -228,6 +257,7 @@ struct RuleEditorView: View {
                         nameSection
                         conditionsSection
                     }
+                    calendarsSection
                     timingSection
                 }
                 .padding(24)
@@ -246,6 +276,66 @@ struct RuleEditorView: View {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(WPStyles.secondaryText)
                 }
+            }
+        }
+    }
+
+    private var calendarsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                sectionLabel("Calendars")
+                Spacer()
+                if !selectedCalendarIDs.isEmpty {
+                    Button("Use All") {
+                        selectedCalendarIDs = []
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WPStyles.secondaryBlue)
+                }
+            }
+
+            if appState.permissions.calendar != .authorized {
+                Button("Allow Calendar Access") {
+                    Task { await appState.requestCalendarAccess() }
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            } else if appState.calendars.isEmpty {
+                Text("All calendars")
+                    .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(appState.calendars) { calendar in
+                        let isSelected = selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.id)
+
+                        Button {
+                            toggleCalendar(calendar.id)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+
+                                Text(calendar.title)
+                                    .foregroundStyle(WPStyles.primaryText)
+
+                                Spacer()
+                            }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                        }
+                        .buttonStyle(.plain)
+
+                        if calendar.id != appState.calendars.last?.id {
+                            Divider().overlay(WPStyles.cardBorder)
+                        }
+                    }
+                }
+                .background(WPStyles.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(WPStyles.cardBorder, lineWidth: 1)
+                )
             }
         }
     }
@@ -419,6 +509,7 @@ struct RuleEditorView: View {
                 id: UUID(),
                 name: name.isEmpty ? "New Rule" : name,
                 isDefault: false,
+                selectedCalendarIDs: selectedCalendarIDs,
                 conditions: conditions,
                 prepTime: prepTime,
                 commuteTime: commuteTime
@@ -431,6 +522,7 @@ struct RuleEditorView: View {
         case .edit(let rule):
             if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
                 copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
+                copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
                 copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
                 copy.alarmRules[idx].prepTime = prepTime
                 copy.alarmRules[idx].commuteTime = commuteTime
@@ -438,6 +530,23 @@ struct RuleEditorView: View {
         }
         Task { await appState.updatePreferences(copy) }
         dismiss()
+    }
+
+    private func toggleCalendar(_ id: String) {
+        if selectedCalendarIDs.isEmpty {
+            selectedCalendarIDs = [id]
+            return
+        }
+
+        if selectedCalendarIDs.contains(id) {
+            selectedCalendarIDs.remove(id)
+            if selectedCalendarIDs.isEmpty {
+                return
+            }
+            return
+        }
+
+        selectedCalendarIDs.insert(id)
     }
 }
 
@@ -474,13 +583,6 @@ private struct FlowLayout: Layout {
 
 struct EventFilterSettingsView: View {
     @Bindable var appState: AppState
-    @Environment(\.dismiss) private var dismiss
-    @State private var draft: AlarmPreferences
-
-    init(appState: AppState) {
-        self.appState = appState
-        self._draft = State(initialValue: appState.preferences)
-    }
 
     var body: some View {
         ZStack {
@@ -488,10 +590,10 @@ struct EventFilterSettingsView: View {
 
             List {
                 Section {
-                    filterToggle("All-Day Events", isOn: $draft.ignoreAllDayEvents)
-                    filterToggle("Tentative Events", isOn: $draft.ignoreTentativeEvents)
-                    filterToggle("Canceled Events", isOn: $draft.ignoreCanceledEvents)
-                    filterToggle("Free Events", isOn: $draft.ignoreFreeEvents)
+                    filterToggle("All-Day Events", isOn: filterBinding(\.ignoreAllDayEvents))
+                    filterToggle("Tentative Events", isOn: filterBinding(\.ignoreTentativeEvents))
+                    filterToggle("Canceled Events", isOn: filterBinding(\.ignoreCanceledEvents))
+                    filterToggle("Free Events", isOn: filterBinding(\.ignoreFreeEvents))
                 } header: {
                     Text("Ignore")
                 } footer: {
@@ -503,21 +605,23 @@ struct EventFilterSettingsView: View {
         }
         .navigationTitle("Event Filters")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
-                    Task { await appState.updatePreferences(draft); dismiss() }
-                }
-                .fontWeight(.semibold)
-                .foregroundStyle(WPStyles.primaryOrange)
-            }
-        }
     }
 
     private func filterToggle(_ label: String, isOn: Binding<Bool>) -> some View {
         Toggle(label, isOn: isOn)
             .tint(WPStyles.primaryOrange)
             .foregroundStyle(WPStyles.primaryText)
+    }
+
+    private func filterBinding(_ keyPath: WritableKeyPath<AlarmPreferences, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { appState.preferences[keyPath: keyPath] },
+            set: { value in
+                var copy = appState.preferences
+                copy[keyPath: keyPath] = value
+                Task { await appState.updatePreferences(copy) }
+            }
+        )
     }
 }
 

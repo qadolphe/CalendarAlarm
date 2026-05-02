@@ -1,0 +1,60 @@
+# ===== Xcode =====
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+*.xcarchive
+
+# ===== Swift Package Manager =====
+.build/
+.swiftpm/xcode/
+
+# ===== CocoaPods =====
+Pods/
+Podfile.lock
+
+# ===== Carthage =====
+Carthage/Build/
+
+# ===== Build artefacts =====
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.DocumentRevisions-V100
+.TemporaryItems
+
+# ===== Editor / IDE configs that may hold secrets =====
+.cursor/mcp.json
+.vscode/mcp.json
+.mcp.json
+
+# ===== Stitch downloads (local design artefacts) =====
+stitch-downloads/
+
+# ===== Environment / secrets =====
+.env
+.env.local
+.env.*.local
+
+# ===== Logs =====
+*.log

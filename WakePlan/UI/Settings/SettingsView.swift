@@ -169,9 +169,6 @@ struct SettingsView: View {
 
             List {
                 Section {
-                    navRow(title: "Calendars", icon: "calendar.badge.clock") {
-                        CalendarSelectionView(appState: appState)
-                    }
                     navRow(title: "Event Filters", icon: "line.3.horizontal.decrease.circle") {
                         EventFilterSettingsView(appState: appState)
                     }

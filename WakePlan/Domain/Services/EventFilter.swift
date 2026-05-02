@@ -4,11 +4,6 @@ struct EventFilter {
     func shouldInclude(_ event: ParsedEvent, preferences: AlarmPreferences) -> Bool {
         let filters = preferences.filters
 
-        if !filters.selectedCalendarIDs.isEmpty,
-           !filters.selectedCalendarIDs.contains(event.calendarID) {
-            return false
-        }
-
         if filters.ignoreAllDayEvents && event.isAllDay {
             return false
         }

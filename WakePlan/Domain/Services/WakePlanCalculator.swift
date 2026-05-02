@@ -77,7 +77,20 @@ struct WakePlanCalculator {
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
             .sorted { $0.startDate < $1.startDate }
 
-        guard let firstEvent = validEvents.first else {
+        let defaultRule = preferences.defaultAlarmRule
+        let matchedEventAndRule = validEvents.compactMap { event in
+            if let customRule = preferences.customAlarmRules.first(where: { $0.matches(event: event) }) {
+                return (event, customRule)
+            }
+
+            if defaultRule.matches(event: event) {
+                return (event, defaultRule)
+            }
+
+            return nil
+        }.first
+
+        guard let (firstEvent, matchingRule) = matchedEventAndRule else {
             let fallbackWakeTime = timingRules.latestWakeTime.date(on: targetDay, calendar: calendar)
 
             return WakeUpPlan(
@@ -101,9 +114,6 @@ struct WakePlanCalculator {
             )
         }
 
-        // Find the first custom rule that matches this event; fall back to the default rule.
-        let matchingRule = preferences.customAlarmRules.first { $0.matches(event: firstEvent) }
-            ?? preferences.defaultAlarmRule
         let effectivePrepTime = matchingRule.prepTime
         let effectiveCommuteTime = matchingRule.commuteTime
 
