@@ -24,7 +24,9 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     let isFallback: Bool
     let reason: WakePlanReason
 
-    /// Names of all rules that matched the chosen event (earliest-wake-time winner).
-    /// Empty when isFallback or when only one rule matched.
+    /// Name of the rule that produced the chosen wake time.
+    var appliedRuleName: String?
+
+    /// Names of all rules that matched the chosen event (only populated when >1 rule matched).
     let matchedRuleNames: [String]
 }

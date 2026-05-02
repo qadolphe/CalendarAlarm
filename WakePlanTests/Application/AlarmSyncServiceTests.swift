@@ -94,6 +94,7 @@ final class AlarmSyncServiceTests: XCTestCase {
             commuteTime: plan.commuteTime,
             isFallback: plan.isFallback,
             reason: .disabled,
+            appliedRuleName: nil,
             matchedRuleNames: []
         )
         let alarmStore = FakeScheduledAlarmStore()

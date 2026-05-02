@@ -26,50 +26,50 @@ struct WakePlanCalculator {
         let weekday = calendar.component(.weekday, from: targetDay.date)
 
         if !scheduleRules.activeDays.contains(weekday) {
+            let dayFallback = preferences.fallbackWakeTime(for: weekday)
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "inactive-day",
                     components: [
                         timestamp(targetDay.date),
                         "\(weekday)",
-                        "\(timingRules.prepTime.rawValue)",
-                        "\(timingRules.defaultCommuteTime.rawValue)",
-                        "\(timingRules.latestWakeTime.hour)",
-                        "\(timingRules.latestWakeTime.minute)"
+                        "\(dayFallback.hour)",
+                        "\(dayFallback.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: timingRules.latestWakeTime.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .inactiveDay,
+                appliedRuleName: nil,
                 matchedRuleNames: []
             )
         }
 
         if !scheduleRules.isEnabled {
+            let dayFallback = preferences.fallbackWakeTime(for: weekday)
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "disabled",
                     components: [
                         timestamp(targetDay.date),
-                        "\(timingRules.prepTime.rawValue)",
-                        "\(timingRules.defaultCommuteTime.rawValue)",
-                        "\(timingRules.latestWakeTime.hour)",
-                        "\(timingRules.latestWakeTime.minute)"
+                        "\(dayFallback.hour)",
+                        "\(dayFallback.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: timingRules.latestWakeTime.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .disabled,
+                appliedRuleName: nil,
                 matchedRuleNames: []
             )
         }
@@ -110,16 +110,15 @@ struct WakePlanCalculator {
 
         // Choose the candidate with the earliest wake time (not earliest event start)
         guard let winner = candidates.min(by: { $0.wakeTime < $1.wakeTime }) else {
-            let fallbackWakeTime = timingRules.latestWakeTime.date(on: targetDay, calendar: calendar)
+            let dayFallback = preferences.fallbackWakeTime(for: weekday)
+            let fallbackWakeTime = dayFallback.date(on: targetDay, calendar: calendar)
 
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "fallback",
                     components: [
                         timestamp(targetDay.date),
-                        timestamp(fallbackWakeTime),
-                        "\(timingRules.prepTime.rawValue)",
-                        "\(timingRules.defaultCommuteTime.rawValue)"
+                        timestamp(fallbackWakeTime)
                     ]
                 ),
                 targetDay: targetDay,
@@ -130,6 +129,7 @@ struct WakePlanCalculator {
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .fallback,
+                appliedRuleName: nil,
                 matchedRuleNames: []
             )
         }
@@ -167,6 +167,7 @@ struct WakePlanCalculator {
             commuteTime: winningRule.commuteTime,
             isFallback: false,
             reason: .event,
+            appliedRuleName: winningRule.name,
             matchedRuleNames: matchedRuleNames
         )
     }

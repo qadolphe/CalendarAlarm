@@ -9,10 +9,13 @@ struct LocationRule: Codable, Equatable, Sendable {
 struct ScheduleRules: Codable, Equatable, Sendable {
     var isEnabled: Bool
     var activeDays: Set<Int>
+    /// Per-weekday fallback wake times. Missing key = use `TimingRules.latestWakeTime`.
+    var fallbackWakeTimes: [Int: ClockTime]
 
     static let `default` = ScheduleRules(
         isEnabled: true,
-        activeDays: Set(1...7)
+        activeDays: Set(1...7),
+        fallbackWakeTimes: [:]
     )
 }
 
@@ -149,6 +152,11 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         set { filters.titleKeywords.allowedKeywords = newValue }
     }
 
+    /// Effective fallback wake time for a given weekday (1=Sun…7=Sat).
+    func fallbackWakeTime(for weekday: Int) -> ClockTime {
+        schedule.fallbackWakeTimes[weekday] ?? timing.latestWakeTime
+    }
+
     /// The single default rule (always present, matches any event).
     var defaultAlarmRule: AlarmRule {
         alarmRules.first(where: { $0.isDefault }) ?? AlarmRule.makeDefault(
@@ -232,7 +240,8 @@ extension AlarmPreferences {
 
         schedule = ScheduleRules(
             isEnabled: try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? ScheduleRules.default.isEnabled,
-            activeDays: try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays
+            activeDays: try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays,
+            fallbackWakeTimes: [:]
         )
         timing = TimingRules(
             prepTime: try container.decodeIfPresent(Minutes.self, forKey: .prepTime) ?? TimingRules.default.prepTime,

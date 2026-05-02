@@ -96,6 +96,7 @@ final class AlarmSyncService {
             commuteTime: Minutes(0),
             isFallback: false,
             reason: .manualOverride,
+            appliedRuleName: nil,
             matchedRuleNames: []
         )
     }

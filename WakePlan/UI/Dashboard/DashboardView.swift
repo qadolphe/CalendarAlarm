@@ -73,9 +73,15 @@ struct DashboardView: View {
     @ViewBuilder
     private func planCard(for plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Next Alarm")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(WPStyles.primaryText)
+            HStack {
+                Text("Next Alarm")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                Image(systemName: "sparkles")
+                    .font(.caption)
+                    .foregroundStyle(WPStyles.primaryOrange.opacity(0.6))
+            }
 
             if let timeUntilWake = viewModel.timeUntilWake {
                 Text(timeUntilWake)
@@ -90,9 +96,10 @@ struct DashboardView: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
 
-            HStack(spacing: 10) {
-                infoPill(icon: "calendar", text: viewModel.heroContext)
-                infoPill(icon: "sparkles", text: "Auto-Pilot")
+            if let ruleName = plan.appliedRuleName {
+                Text(ruleName)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WPStyles.tertiaryText)
             }
 
             VStack(alignment: .leading, spacing: 16) {
@@ -258,19 +265,6 @@ struct DashboardView: View {
                 .padding(.horizontal, 24)
                 .background(Capsule().fill(WPStyles.surfaceRaised))
         }
-    }
-
-    private func infoPill(icon: String, text: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-            Text(text)
-                .lineLimit(1)
-        }
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(WPStyles.secondaryText)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(Capsule().fill(WPStyles.surfaceRaised))
     }
 
     private func upcomingPlanRow(_ plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
