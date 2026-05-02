@@ -56,6 +56,36 @@ final class EventFilterTests: XCTestCase {
         XCTAssertFalse(filter.shouldInclude(event(title: "Gym"), preferences: preferences))
     }
 
+    func testDecodesLegacyFlatPreferencesPayloadIntoTypedRules() throws {
+        let data = """
+        {
+          "isEnabled": true,
+          "prepTime": { "rawValue": 35 },
+          "latestWakeTime": { "hour": 7, "minute": 45 },
+          "defaultCommuteTime": { "rawValue": 15 },
+          "activeDays": [1, 2, 3, 4, 5],
+          "locationRules": [],
+          "selectedCalendarIDs": ["work"],
+          "ignoreAllDayEvents": true,
+          "ignoreTentativeEvents": false,
+          "ignoreCanceledEvents": true,
+          "ignoreFreeEvents": true,
+          "titleBlocklist": ["vacation"],
+          "titleAllowlist": ["onsite"]
+        }
+        """.data(using: .utf8)!
+
+        let preferences = try JSONDecoder().decode(AlarmPreferences.self, from: data)
+
+        XCTAssertTrue(preferences.schedule.isEnabled)
+        XCTAssertEqual(preferences.schedule.activeDays, Set([1, 2, 3, 4, 5]))
+        XCTAssertEqual(preferences.timing.prepTime, Minutes(35))
+        XCTAssertEqual(preferences.timing.defaultCommuteTime, Minutes(15))
+        XCTAssertEqual(preferences.filters.selectedCalendarIDs, Set(["work"]))
+        XCTAssertEqual(preferences.filters.titleKeywords.blockedKeywords, ["vacation"])
+        XCTAssertEqual(preferences.filters.titleKeywords.allowedKeywords, ["onsite"])
+    }
+
     private func event(
         calendarID: String = "work",
         title: String = "Standup",

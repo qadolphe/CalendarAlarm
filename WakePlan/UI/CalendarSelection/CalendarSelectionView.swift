@@ -17,7 +17,7 @@ struct CalendarSelectionView: View {
                         .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
 
-                    Text(viewModel.helperText)
+                    Text("Choose which calendars can contribute events to WakePlan's alarm rules.")
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
 
@@ -106,10 +106,6 @@ struct CalendarSelectionView: View {
                                 .foregroundStyle(WPStyles.primaryText)
 
                             Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(WPStyles.tertiaryText)
                         }
                         .padding(.vertical, 14)
                     }

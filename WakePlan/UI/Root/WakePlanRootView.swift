@@ -33,33 +33,25 @@ struct WakePlanRootView: View {
                 DashboardView(appState: appState)
             }
             .tag(MainTab.home)
-            .tabItem {
-                Label("Home", systemImage: "house.fill")
-            }
-
-            NavigationStack {
-                SettingsView(appState: appState)
-            }
-            .tag(MainTab.schedule)
-            .tabItem {
-                Label("Schedule", systemImage: "calendar.badge.clock")
-            }
+            .tabItem { Label("Home", systemImage: "house.fill") }
 
             NavigationStack {
                 RulesView(appState: appState)
             }
             .tag(MainTab.rules)
-            .tabItem {
-                Label("Rules", systemImage: "slider.horizontal.3")
-            }
+            .tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
 
             NavigationStack {
-                ManualAlarmListView(appState: appState)
+                ScheduleView(appState: appState)
             }
-            .tag(MainTab.alarms)
-            .tabItem {
-                Label("Alarms", systemImage: "alarm.fill")
+            .tag(MainTab.schedule)
+            .tabItem { Label("Schedule", systemImage: "calendar.badge.clock") }
+
+            NavigationStack {
+                SettingsView(appState: appState)
             }
+            .tag(MainTab.settings)
+            .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
         .tint(WPStyles.primaryOrange)
         .toolbarBackground(WPStyles.background, for: .tabBar)
@@ -81,7 +73,7 @@ struct WakePlanRootView: View {
 
 private enum MainTab {
     case home
-    case schedule
     case rules
-    case alarms
+    case schedule
+    case settings
 }

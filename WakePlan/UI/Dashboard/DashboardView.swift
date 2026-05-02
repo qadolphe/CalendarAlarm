@@ -35,14 +35,6 @@ struct DashboardView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: SettingsView(appState: appState)) {
-                    Image(systemName: "gearshape.fill")
-                        .foregroundStyle(WPStyles.secondaryText)
-                }
-            }
-        }
         .task {
             await appState.loadIfNeeded()
         }
@@ -70,7 +62,10 @@ struct DashboardView: View {
         case .ready(let viewState), .emptyFallback(let viewState):
             VStack(alignment: .leading, spacing: 24) {
                 planCard(for: viewState.plan, viewModel: viewModel)
-                tomorrowFlowCard(for: viewState.plan)
+
+                if !viewModel.upcomingPlans.isEmpty {
+                    upcomingPlansCard(viewModel: viewModel)
+                }
             }
         }
     }
@@ -96,8 +91,8 @@ struct DashboardView: View {
                 .lineLimit(1)
 
             HStack(spacing: 10) {
-                infoPill(icon: "calendar_month", text: viewModel.heroContext)
-                infoPill(icon: "auto_awesome", text: "Auto-Pilot")
+                infoPill(icon: "calendar", text: viewModel.heroContext)
+                infoPill(icon: "sparkles", text: "Auto-Pilot")
             }
 
             VStack(alignment: .leading, spacing: 16) {
@@ -141,38 +136,21 @@ struct DashboardView: View {
         .cardStyle()
     }
 
-    private func tomorrowFlowCard(for plan: WakeUpPlan) -> some View {
+    private func upcomingPlansCard(viewModel: DashboardViewModel) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Tomorrow's Flow")
+                Text("Upcoming Alarms")
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(WPStyles.primaryText)
-                Spacer()
-                NavigationLink(destination: TimingSettingsView(appState: appState)) {
-                    Text("Edit")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(WPStyles.secondaryBlue)
-                }
             }
 
-            timelineEntry(
-                title: "Morning Routine",
-                subtitle: "\(plan.prepTime.rawValue) mins",
-                icon: "cup.and.saucer.fill"
-            )
+            ForEach(Array(viewModel.upcomingPlans.enumerated()), id: \.element.id) { index, plan in
+                upcomingPlanRow(plan, viewModel: viewModel)
 
-            if let event = plan.targetEvent {
-                timelineEntry(
-                    title: event.title,
-                    subtitle: viewModelCalendarLabel(for: event),
-                    icon: "calendar"
-                )
-            } else {
-                timelineEntry(
-                    title: "Baseline Wake Limit",
-                    subtitle: "No calendar event matched",
-                    icon: "moon.zzz.fill"
-                )
+                if index < viewModel.upcomingPlans.count - 1 {
+                    Divider()
+                        .overlay(WPStyles.cardBorder)
+                }
             }
         }
         .cardStyle()
@@ -283,36 +261,50 @@ struct DashboardView: View {
         .background(Capsule().fill(WPStyles.surfaceRaised))
     }
 
-    private func timelineEntry(title: String, subtitle: String, icon: String) -> some View {
+    private func upcomingPlanRow(_ plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
                     .fill(WPStyles.surfaceRaised)
                     .frame(width: 36, height: 36)
-                Image(systemName: icon)
+                Image(systemName: icon(for: plan))
                     .foregroundStyle(WPStyles.primaryOrange)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(viewModel.dayLabel(for: plan))
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(WPStyles.secondaryText)
+
+                Text(viewModel.upcomingTitle(for: plan))
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
-                Text(subtitle)
+
+                Text(viewModel.upcomingSubtitle(for: plan))
                     .font(.subheadline)
                     .foregroundStyle(WPStyles.secondaryText)
             }
 
             Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(WPStyles.tertiaryText)
+            Text(plan.calculatedWakeTime, style: .time)
+                .font(.headline.monospacedDigit())
+                .foregroundStyle(WPStyles.primaryText)
         }
-        .padding(16)
-        .insetSurfaceStyle(cornerRadius: 20)
     }
 
-    private func viewModelCalendarLabel(for event: ParsedEvent) -> String {
-        appState.calendars.first(where: { $0.id == event.calendarID })?.title ?? "Scheduled event"
+    private func icon(for plan: WakeUpPlan) -> String {
+        if plan.targetEvent != nil {
+            return "calendar"
+        }
+
+        switch plan.reason {
+        case .inactiveDay:
+            return "pause.circle"
+        case .disabled:
+            return "bed.double.fill"
+        case .fallback, .authorizationMissing, .manualOverride, .event:
+            return "moon.zzz.fill"
+        }
     }
 }

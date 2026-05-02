@@ -23,6 +23,10 @@ struct DashboardViewModel {
         viewState?.plan
     }
 
+    var upcomingPlans: [WakeUpPlan] {
+        appState.upcomingPlans
+    }
+
     var eventSummary: String? {
         guard let plan else { return nil }
 
@@ -134,6 +138,40 @@ struct DashboardViewModel {
             return AppConfiguration.alarmPermissionExplanation
         case .loading, .ready, .emptyFallback, .error:
             return nil
+        }
+    }
+
+    func dayLabel(for plan: WakeUpPlan) -> String {
+        plan.targetDay.date.formatted(.dateTime.weekday(.wide))
+    }
+
+    func upcomingTitle(for plan: WakeUpPlan) -> String {
+        if let event = plan.targetEvent {
+            return event.title
+        }
+
+        switch plan.reason {
+        case .inactiveDay:
+            return "Inactive day"
+        case .disabled:
+            return "Auto-Pilot paused"
+        case .fallback, .authorizationMissing, .manualOverride, .event:
+            return "Fallback wake time"
+        }
+    }
+
+    func upcomingSubtitle(for plan: WakeUpPlan) -> String {
+        if let event = plan.targetEvent {
+            return event.startDate.formatted(date: .omitted, time: .shortened)
+        }
+
+        switch plan.reason {
+        case .inactiveDay:
+            return "Not scheduled on this weekday"
+        case .disabled:
+            return "Turn Auto-Pilot back on in Schedule"
+        case .fallback, .authorizationMissing, .manualOverride, .event:
+            return "No matching event found"
         }
     }
 }

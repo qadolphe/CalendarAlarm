@@ -22,6 +22,7 @@ final class AppState {
     var calendars: [CalendarSource] = []
     var permissions: PermissionSnapshot = .initial
     var dashboardState: DashboardState = .loading
+    var upcomingPlans: [WakeUpPlan] = []
     var noticeMessage: String?
 
     private let preferencesStore: PreferencesStoring
@@ -184,12 +185,14 @@ final class AppState {
 
         guard permissions.calendar == .authorized else {
             calendars = []
+            upcomingPlans = []
             dashboardState = .needsCalendarPermission
             return
         }
 
         calendars = try await wakePlanService.calendars()
         let plan = try await wakePlanService.makePlan(targetDay: targetDay)
+        upcomingPlans = try await wakePlanService.makeUpcomingPlans(after: targetDay, count: 3)
         let alarmStatus = try await alarmSyncService.sync(plan: plan)
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 

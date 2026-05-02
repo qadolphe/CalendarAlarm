@@ -13,8 +13,7 @@
 		AA0000000000000000000202 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000102 /* PermissionService.swift */; };
 		AA0000000000000000000203 /* WakePlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000103 /* WakePlanService.swift */; };
 		AA0000000000000000000204 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104 /* AppConfiguration.swift */; };
-		AA0000000000000000000205 /* AlarmPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* AlarmPreferences.swift */; };
-		AA0000000000000000000206 /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000106 /* CalendarSource.swift */; };
+		AA0000000000000000000205 /* AlarmPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* AlarmPreferences.swift */; };			AA0000000000000000000230 /* AlarmRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000130 /* AlarmRule.swift */; };		AA0000000000000000000206 /* CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000106 /* CalendarSource.swift */; };
 		AA0000000000000000000207 /* ParsedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000107 /* ParsedEvent.swift */; };
 		AA0000000000000000000208 /* ScheduledAlarmRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000108 /* ScheduledAlarmRecord.swift */; };
 		AA0000000000000000000209 /* WakeUpPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000109 /* WakeUpPlan.swift */; };
@@ -75,8 +74,7 @@
 		AA0000000000000000000102 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/PermissionService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000103 /* WakePlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/WakePlanService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000104 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration/AppConfiguration.swift; sourceTree = "<group>"; };
-		AA0000000000000000000105 /* AlarmPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmPreferences.swift; sourceTree = "<group>"; };
-		AA0000000000000000000106 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/CalendarSource.swift; sourceTree = "<group>"; };
+		AA0000000000000000000105 /* AlarmPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmPreferences.swift; sourceTree = "<group>"; };			AA0000000000000000000130 /* AlarmRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmRule.swift; sourceTree = "<group>"; };		AA0000000000000000000106 /* CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/CalendarSource.swift; sourceTree = "<group>"; };
 		AA0000000000000000000107 /* ParsedEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/ParsedEvent.swift; sourceTree = "<group>"; };
 		AA0000000000000000000108 /* ScheduledAlarmRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/ScheduledAlarmRecord.swift; sourceTree = "<group>"; };
 		AA0000000000000000000109 /* WakeUpPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/WakeUpPlan.swift; sourceTree = "<group>"; };
@@ -262,8 +260,7 @@
 		AA0000000000000000000510 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				AA0000000000000000000105 /* AlarmPreferences.swift */,
-				AA0000000000000000000106 /* CalendarSource.swift */,
+				AA0000000000000000000105 /* AlarmPreferences.swift */,						AA0000000000000000000130 /* AlarmRule.swift */,				AA0000000000000000000106 /* CalendarSource.swift */,
 				AA0000000000000000000107 /* ParsedEvent.swift */,
 				AA0000000000000000000108 /* ScheduledAlarmRecord.swift */,
 				AA0000000000000000000109 /* WakeUpPlan.swift */,
@@ -494,8 +491,7 @@
 				AA0000000000000000000202 /* PermissionService.swift in Sources */,
 				AA0000000000000000000203 /* WakePlanService.swift in Sources */,
 				AA0000000000000000000204 /* AppConfiguration.swift in Sources */,
-				AA0000000000000000000205 /* AlarmPreferences.swift in Sources */,
-				AA0000000000000000000206 /* CalendarSource.swift in Sources */,
+				AA0000000000000000000205 /* AlarmPreferences.swift in Sources */,					AA0000000000000000000230 /* AlarmRule.swift in Sources */,				AA0000000000000000000206 /* CalendarSource.swift in Sources */,
 				AA0000000000000000000207 /* ParsedEvent.swift in Sources */,
 				AA0000000000000000000208 /* ScheduledAlarmRecord.swift in Sources */,
 				AA0000000000000000000209 /* WakeUpPlan.swift in Sources */,

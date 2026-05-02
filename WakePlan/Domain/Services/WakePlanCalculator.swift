@@ -21,50 +21,52 @@ struct WakePlanCalculator {
     ) -> WakeUpPlan {
         _ = now
 
+        let scheduleRules = preferences.schedule
+        let timingRules = preferences.timing
         let weekday = calendar.component(.weekday, from: targetDay.date)
 
-        if !preferences.activeDays.contains(weekday) {
+        if !scheduleRules.activeDays.contains(weekday) {
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "inactive-day",
                     components: [
                         timestamp(targetDay.date),
                         "\(weekday)",
-                        "\(preferences.prepTime.rawValue)",
-                        "\(preferences.defaultCommuteTime.rawValue)",
-                        "\(preferences.latestWakeTime.hour)",
-                        "\(preferences.latestWakeTime.minute)"
+                        "\(timingRules.prepTime.rawValue)",
+                        "\(timingRules.defaultCommuteTime.rawValue)",
+                        "\(timingRules.latestWakeTime.hour)",
+                        "\(timingRules.latestWakeTime.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: preferences.latestWakeTime.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: timingRules.latestWakeTime.date(on: targetDay, calendar: calendar),
                 eventStartTime: nil,
-                prepTime: preferences.prepTime,
-                commuteTime: preferences.defaultCommuteTime,
+                prepTime: timingRules.prepTime,
+                commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .inactiveDay
             )
         }
 
-        if !preferences.isEnabled {
+        if !scheduleRules.isEnabled {
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "disabled",
                     components: [
                         timestamp(targetDay.date),
-                        "\(preferences.prepTime.rawValue)",
-                        "\(preferences.defaultCommuteTime.rawValue)",
-                        "\(preferences.latestWakeTime.hour)",
-                        "\(preferences.latestWakeTime.minute)"
+                        "\(timingRules.prepTime.rawValue)",
+                        "\(timingRules.defaultCommuteTime.rawValue)",
+                        "\(timingRules.latestWakeTime.hour)",
+                        "\(timingRules.latestWakeTime.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: preferences.latestWakeTime.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: timingRules.latestWakeTime.date(on: targetDay, calendar: calendar),
                 eventStartTime: nil,
-                prepTime: preferences.prepTime,
-                commuteTime: preferences.defaultCommuteTime,
+                prepTime: timingRules.prepTime,
+                commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .disabled
             )
@@ -76,7 +78,7 @@ struct WakePlanCalculator {
             .sorted { $0.startDate < $1.startDate }
 
         guard let firstEvent = validEvents.first else {
-            let fallbackWakeTime = preferences.latestWakeTime.date(on: targetDay, calendar: calendar)
+            let fallbackWakeTime = timingRules.latestWakeTime.date(on: targetDay, calendar: calendar)
 
             return WakeUpPlan(
                 id: hasher.makeID(
@@ -84,22 +86,28 @@ struct WakePlanCalculator {
                     components: [
                         timestamp(targetDay.date),
                         timestamp(fallbackWakeTime),
-                        "\(preferences.prepTime.rawValue)",
-                        "\(preferences.defaultCommuteTime.rawValue)"
+                        "\(timingRules.prepTime.rawValue)",
+                        "\(timingRules.defaultCommuteTime.rawValue)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
                 calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
-                prepTime: preferences.prepTime,
-                commuteTime: preferences.defaultCommuteTime,
+                prepTime: timingRules.prepTime,
+                commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
                 reason: .fallback
             )
         }
 
-        let totalOffset = preferences.prepTime.rawValue + preferences.defaultCommuteTime.rawValue
+        // Find the first custom rule that matches this event; fall back to the default rule.
+        let matchingRule = preferences.customAlarmRules.first { $0.matches(event: firstEvent) }
+            ?? preferences.defaultAlarmRule
+        let effectivePrepTime = matchingRule.prepTime
+        let effectiveCommuteTime = matchingRule.commuteTime
+
+        let totalOffset = effectivePrepTime.rawValue + effectiveCommuteTime.rawValue
         let wakeTime = calendar.date(
             byAdding: .minute,
             value: -totalOffset,
@@ -114,16 +122,16 @@ struct WakePlanCalculator {
                     timestamp(targetDay.date),
                     timestamp(firstEvent.startDate),
                     timestamp(wakeTime),
-                    "\(preferences.prepTime.rawValue)",
-                    "\(preferences.defaultCommuteTime.rawValue)"
+                    "\(effectivePrepTime.rawValue)",
+                    "\(effectiveCommuteTime.rawValue)"
                 ]
             ),
             targetDay: targetDay,
             targetEvent: firstEvent,
             calculatedWakeTime: wakeTime,
             eventStartTime: firstEvent.startDate,
-            prepTime: preferences.prepTime,
-            commuteTime: preferences.defaultCommuteTime,
+            prepTime: effectivePrepTime,
+            commuteTime: effectiveCommuteTime,
             isFallback: false,
             reason: .event
         )
