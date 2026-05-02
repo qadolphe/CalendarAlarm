@@ -21,22 +21,10 @@ struct DashboardView: View {
                         banner(errorMessage, tint: .red)
                     }
 
-                    Group {
-                        if let plan = appState.currentPlan {
-                            planCard(for: plan)
-                        } else if appState.isLoading {
-                            ProgressView("Calculating wake-up plan...")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        } else {
-                            ContentUnavailableView(
-                                "No wake-up plan yet",
-                                systemImage: "alarm",
-                                description: Text("Grant permissions and refresh to create your first automated alarm.")
-                            )
-                        }
-                    }
+                    content(viewModel: viewModel)
 
                     VStack(alignment: .leading, spacing: 12) {
+#if DEBUG
                         Button(AppConfiguration.testAlarmButtonTitle) {
                             Task {
                                 await appState.scheduleTestAlarm()
@@ -47,6 +35,7 @@ struct DashboardView: View {
                         Text(AppConfiguration.testAlarmDescription)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+#endif
 
                         Button("Refresh") {
                             Task {
@@ -66,17 +55,39 @@ struct DashboardView: View {
                 }
             }
             .task {
-                if appState.currentPlan == nil && !appState.isLoading {
-                    await appState.load()
-                }
+                await appState.loadIfNeeded()
+            }
+        }
+    }
+
+    private func content(viewModel: DashboardViewModel) -> some View {
+        Group {
+            switch appState.dashboardState {
+            case .loading:
+                ProgressView("Calculating wake-up plan...")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            case .needsCalendarPermission:
+                ContentUnavailableView(
+                    "Calendar access needed",
+                    systemImage: "calendar.badge.exclamationmark",
+                    description: Text("Grant calendar access to calculate your first automated wake-up plan.")
+                )
+            case .error:
+                ContentUnavailableView(
+                    "Wake-up plan unavailable",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("Refresh to try again.")
+                )
+            case .needsAlarmPermission(let viewState),
+                 .ready(let viewState),
+                 .emptyFallback(let viewState):
+                planCard(for: viewState.plan, statusMessage: viewModel.statusMessage)
             }
         }
     }
 
     @ViewBuilder
-    private func planCard(for plan: WakeUpPlan) -> some View {
-        let viewModel = DashboardViewModel(appState: appState)
-
+    private func planCard(for plan: WakeUpPlan, statusMessage: String?) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(plan.calculatedWakeTime, style: .time)
                 .font(.system(size: 56, weight: .bold, design: .rounded))
@@ -94,11 +105,11 @@ struct DashboardView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text("Prep \(plan.prepTime.rawValue) min • Commute \(plan.commuteTime.rawValue) min")
+                Text("Prep \(plan.prepTime.rawValue) min • Commute \(plan.commuteTime.rawValue) min")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            if let statusMessage = viewModel.statusMessage {
+            if let statusMessage {
                 Text(statusMessage)
                     .font(.footnote)
                     .foregroundStyle(.secondary)

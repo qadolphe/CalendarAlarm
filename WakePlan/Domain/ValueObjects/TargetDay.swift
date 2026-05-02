@@ -12,11 +12,7 @@ struct TargetDay: Codable, Equatable, Hashable, Sendable {
         return TargetDay(date: tomorrow, calendar: calendar)
     }
 
-    var interval: DateInterval {
-        interval(calendar: .current)
-    }
-
-    func interval(calendar: Calendar = .current) -> DateInterval {
+    func interval(calendar: Calendar) -> DateInterval {
         let start = calendar.startOfDay(for: date)
         let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start
         return DateInterval(start: start, end: end)

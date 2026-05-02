@@ -18,9 +18,7 @@ struct WakePlanApp: App {
             alarmScheduler: alarmScheduler
         )
         let alarmSyncService = AlarmSyncService(
-            calendarReader: calendarReader,
             alarmScheduler: alarmScheduler,
-            preferencesStore: preferencesStore,
             alarmStore: alarmStore
         )
 

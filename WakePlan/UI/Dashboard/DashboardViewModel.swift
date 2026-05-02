@@ -4,32 +4,46 @@ import Foundation
 struct DashboardViewModel {
     let appState: AppState
 
-    var statusMessage: String? {
-        guard let plan = appState.currentPlan else { return nil }
+    var viewState: WakePlanViewState? {
+        switch appState.dashboardState {
+        case .needsAlarmPermission(let viewState),
+             .ready(let viewState),
+             .emptyFallback(let viewState):
+            return viewState
+        case .loading, .needsCalendarPermission, .error:
+            return nil
+        }
+    }
 
-        switch plan.reason {
-        case .event:
-            return "First valid event tomorrow."
-        case .fallback:
-            return "No valid event matched your filters, so the fallback wake time is active."
+    var statusMessage: String? {
+        guard let viewState else { return nil }
+        let plan = viewState.plan
+
+        switch viewState.alarmStatus {
+        case .scheduled:
+            if plan.reason == .fallback {
+                return "Fallback wake time is scheduled because no event matched your filters."
+            }
+            return "Alarm scheduled for the first valid event tomorrow."
+        case .needsPermission:
+            return "WakePlan needs alarm access before it can schedule a real alarm."
         case .disabled:
             return "Automatic alarms are turned off."
-        case .authorizationMissing:
-            return "WakePlan needs alarm access before it can schedule a real alarm."
-        case .manualOverride:
-            return "A manual override is active."
+        case .failed(let message):
+            return "Couldn't schedule alarm: \(message)"
+        case .notScheduled:
+            return "No alarm is currently scheduled."
         }
     }
 
     var permissionBanner: String? {
-        if appState.permissions.calendar != .authorized {
+        switch appState.dashboardState {
+        case .needsCalendarPermission:
             return AppConfiguration.calendarPermissionExplanation
-        }
-
-        if appState.permissions.alarm != .authorized {
+        case .needsAlarmPermission:
             return AppConfiguration.alarmPermissionExplanation
+        case .loading, .ready, .emptyFallback, .error:
+            return nil
         }
-
-        return nil
     }
 }

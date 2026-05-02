@@ -61,10 +61,11 @@ final class EventKitCalendarReader: CalendarReading {
         let calendars = eventStore.calendars(for: .event).filter { calendar in
             selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.calendarIdentifier)
         }
+        let interval = targetDay.interval(calendar: .current)
 
         let predicate = eventStore.predicateForEvents(
-            withStart: targetDay.interval.start,
-            end: targetDay.interval.end,
+            withStart: interval.start,
+            end: interval.end,
             calendars: calendars
         )
 

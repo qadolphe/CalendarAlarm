@@ -1,22 +1,39 @@
 import Foundation
 import Observation
 
+struct WakePlanViewState: Equatable {
+    let plan: WakeUpPlan
+    let alarmStatus: AlarmScheduleStatus
+}
+
+enum DashboardState: Equatable {
+    case loading
+    case needsCalendarPermission
+    case needsAlarmPermission(WakePlanViewState)
+    case ready(WakePlanViewState)
+    case emptyFallback(WakePlanViewState)
+    case error(String)
+}
+
 @MainActor
 @Observable
 final class AppState {
-    var currentPlan: WakeUpPlan?
     var preferences: AlarmPreferences = .default
     var calendars: [CalendarSource] = []
     var permissions: PermissionSnapshot = .initial
-
-    var isLoading = false
+    var dashboardState: DashboardState = .loading
     var noticeMessage: String?
-    var errorMessage: String?
 
     private let preferencesStore: PreferencesStoring
     private let wakePlanService: WakePlanService
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
+    private var hasLoaded = false
+
+    var errorMessage: String? {
+        guard case let .error(message) = dashboardState else { return nil }
+        return message
+    }
 
     init(
         preferencesStore: PreferencesStoring,
@@ -30,112 +47,99 @@ final class AppState {
         self.alarmSyncService = alarmSyncService
     }
 
+    func loadIfNeeded() async {
+        guard !hasLoaded else { return }
+        await load()
+    }
+
     func load() async {
-        isLoading = true
+        hasLoaded = true
+        dashboardState = .loading
         noticeMessage = nil
-        errorMessage = nil
-        defer { isLoading = false }
 
         do {
             preferences = try preferencesStore.load()
-            permissions = await permissionService.currentStatus()
-
-            if permissions.calendar == .authorized {
-                calendars = try await wakePlanService.calendars()
-                currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
-            } else {
-                calendars = []
-                currentPlan = nil
-            }
+            try await refreshDashboard()
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
 
     func updatePreferences(_ newPreferences: AlarmPreferences) async {
         noticeMessage = nil
-        errorMessage = nil
 
         do {
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
-
-            if permissions.calendar == .authorized {
-                calendars = try await wakePlanService.calendars()
-                currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
-            }
+            dashboardState = .loading
+            try await refreshDashboard()
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
 
     func refreshPlan() async {
         noticeMessage = nil
-        errorMessage = nil
 
         do {
-            permissions = await permissionService.currentStatus()
-
-            guard permissions.calendar == .authorized else {
-                currentPlan = nil
-                return
-            }
-
-            currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
+            dashboardState = .loading
+            try await refreshDashboard()
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
 
     func requestCalendarAccess() async {
         noticeMessage = nil
-        errorMessage = nil
 
         do {
             _ = try await permissionService.requestCalendarAccess()
             await load()
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
 
     func requestAlarmAccess() async {
         noticeMessage = nil
-        errorMessage = nil
 
         do {
             let requestedState = try await permissionService.requestAlarmAccess()
-            permissions = await permissionService.currentStatus()
-            currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
+            dashboardState = .loading
+            try await refreshDashboard()
 
             if requestedState == .notDetermined, permissions.alarm == .notDetermined {
-                noticeMessage = "Alarm access is still pending. WakePlan will ask again the next time it needs to create an alarm."
+                noticeMessage = "Alarm access is still pending."
             }
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
 
+#if DEBUG
     func scheduleTestAlarm() async {
         noticeMessage = nil
-        errorMessage = nil
 
         do {
-            let plan = try await alarmSyncService.scheduleTestAlarm()
-            permissions = await permissionService.currentStatus()
+            let status = try await alarmSyncService.scheduleTestAlarm()
 
-            if plan.reason == .authorizationMissing {
+            switch status {
+            case .needsPermission:
                 noticeMessage = AppConfiguration.alarmPermissionExplanation
-                return
+            case .scheduled(let record):
+                noticeMessage = AppConfiguration.testAlarmScheduledMessage(
+                    for: record.scheduledWakeTime
+                )
+            case .failed(let message):
+                dashboardState = .error(message)
+            case .disabled, .notScheduled:
+                noticeMessage = "Test alarm was not scheduled."
             }
-
-            noticeMessage = AppConfiguration.testAlarmScheduledMessage(
-                for: plan.calculatedWakeTime
-            )
         } catch {
-            errorMessage = format(error)
+            dashboardState = .error(format(error))
         }
     }
+#endif
 
     func toggleCalendarSelection(id: String) async {
         let allIDs = Set(calendars.map(\.id))
@@ -169,5 +173,32 @@ final class AppState {
 
     private func format(_ error: Error) -> String {
         error.localizedDescription
+    }
+
+    private func refreshDashboard(targetDay: TargetDay = .tomorrow()) async throws {
+        permissions = await permissionService.currentStatus()
+
+        guard permissions.calendar == .authorized else {
+            calendars = []
+            dashboardState = .needsCalendarPermission
+            return
+        }
+
+        calendars = try await wakePlanService.calendars()
+        let plan = try await wakePlanService.makePlan(targetDay: targetDay)
+        let alarmStatus = try await alarmSyncService.sync(plan: plan)
+        let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
+
+        if alarmStatus == .needsPermission {
+            dashboardState = .needsAlarmPermission(viewState)
+            return
+        }
+
+        if plan.isFallback {
+            dashboardState = .emptyFallback(viewState)
+            return
+        }
+
+        dashboardState = .ready(viewState)
     }
 }

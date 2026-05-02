@@ -1,110 +1,83 @@
 import Foundation
 
+enum AlarmScheduleStatus: Equatable {
+    case notScheduled
+    case scheduled(ScheduledAlarmRecord)
+    case needsPermission
+    case disabled
+    case failed(String)
+}
+
 final class AlarmSyncService {
-    private let calendarReader: CalendarReading
     private let alarmScheduler: AlarmScheduling
-    private let preferencesStore: PreferencesStoring
     private let alarmStore: ScheduledAlarmStoring
-    private let calculator: WakePlanCalculator
 
     init(
-        calendarReader: CalendarReading,
         alarmScheduler: AlarmScheduling,
-        preferencesStore: PreferencesStoring,
-        alarmStore: ScheduledAlarmStoring,
-        calculator: WakePlanCalculator = WakePlanCalculator()
+        alarmStore: ScheduledAlarmStoring
     ) {
-        self.calendarReader = calendarReader
         self.alarmScheduler = alarmScheduler
-        self.preferencesStore = preferencesStore
         self.alarmStore = alarmStore
-        self.calculator = calculator
     }
 
-    func recalculateAndSyncAlarm(targetDay: TargetDay = .tomorrow()) async throws -> WakeUpPlan {
-        let preferences = try preferencesStore.load()
-
-        let events = try await calendarReader.events(
-            for: targetDay,
-            selectedCalendarIDs: preferences.selectedCalendarIDs
-        )
-
-        let plan = calculator.calculate(
-            events: events,
-            preferences: preferences,
-            targetDay: targetDay
-        )
-
+    func sync(plan: WakeUpPlan) async throws -> AlarmScheduleStatus {
         let existingRecord = try alarmStore.load()
 
+        if plan.reason == .disabled {
+            if let existingRecord {
+                do {
+                    try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+                    try alarmStore.clear()
+                } catch {
+                    return .failed(error.localizedDescription)
+                }
+            }
+
+            return .disabled
+        }
+
         if let existingRecord, existingRecord.planID == plan.id {
-            return plan
+            return .scheduled(existingRecord)
         }
 
         if let existingRecord {
-            try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
-            try alarmStore.clear()
+            do {
+                try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+                try alarmStore.clear()
+            } catch {
+                return .failed(error.localizedDescription)
+            }
         }
 
-        guard preferences.isEnabled, plan.reason != .disabled else {
-            return plan
+        guard await alarmScheduler.authorizationState() == .authorized else {
+            return .needsPermission
         }
 
-        let alarmAuthorization = try await resolvedAlarmAuthorization()
-
-        guard alarmAuthorization == .authorized else {
-            return WakeUpPlan(
-                id: plan.id,
-                targetDay: plan.targetDay,
-                targetEvent: plan.targetEvent,
-                calculatedWakeTime: plan.calculatedWakeTime,
-                eventStartTime: plan.eventStartTime,
-                prepTime: plan.prepTime,
-                commuteTime: plan.commuteTime,
-                isFallback: plan.isFallback,
-                reason: .authorizationMissing
-            )
+        do {
+            let record = try await alarmScheduler.schedule(plan: plan)
+            try alarmStore.save(record)
+            return .scheduled(record)
+        } catch {
+            return .failed(error.localizedDescription)
         }
-
-        let record = try await alarmScheduler.schedule(plan: plan)
-        try alarmStore.save(record)
-
-        return plan
     }
 
+#if DEBUG
     func scheduleTestAlarm(
         now: Date = Date(),
         calendar: Calendar = .current
-    ) async throws -> WakeUpPlan {
-        let plan = makeTestAlarmPlan(now: now, calendar: calendar)
-        let alarmAuthorization = try await resolvedAlarmAuthorization()
-
-        guard alarmAuthorization == .authorized else {
-            return WakeUpPlan(
-                id: plan.id,
-                targetDay: plan.targetDay,
-                targetEvent: plan.targetEvent,
-                calculatedWakeTime: plan.calculatedWakeTime,
-                eventStartTime: plan.eventStartTime,
-                prepTime: plan.prepTime,
-                commuteTime: plan.commuteTime,
-                isFallback: plan.isFallback,
-                reason: .authorizationMissing
-            )
+    ) async throws -> AlarmScheduleStatus {
+        guard await alarmScheduler.authorizationState() == .authorized else {
+            return .needsPermission
         }
 
-        _ = try await alarmScheduler.schedule(plan: plan)
-        return plan
-    }
-
-    private func resolvedAlarmAuthorization() async throws -> AlarmAuthorizationState {
-        let currentState = await alarmScheduler.authorizationState()
-
-        guard currentState == .notDetermined else {
-            return currentState
+        do {
+            let plan = makeTestAlarmPlan(now: now, calendar: calendar)
+            let record = try await alarmScheduler.schedule(plan: plan)
+            return .scheduled(record)
+        } catch {
+            return .failed(error.localizedDescription)
         }
-
-        return try await alarmScheduler.requestAuthorization()
     }
 
     private func makeTestAlarmPlan(
@@ -139,4 +112,5 @@ final class AlarmSyncService {
         return calendar.date(byAdding: .minute, value: 1, to: startOfMinute)
             ?? date.addingTimeInterval(60)
     }
+#endif
 }
