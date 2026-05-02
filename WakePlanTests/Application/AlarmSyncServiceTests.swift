@@ -129,6 +129,46 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
     }
 
+    func testRequestsAuthorizationWhenAlarmPermissionIsNotDetermined() async throws {
+        let targetDay = TargetDay(date: Date(timeIntervalSince1970: 1_000_000))
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.state = .notDetermined
+        alarmScheduler.requestAuthorizationResult = .authorized
+
+        let service = AlarmSyncService(
+            calendarReader: FakeCalendarReader(events: [makeEvent(startOffset: 3_600)]),
+            alarmScheduler: alarmScheduler,
+            preferencesStore: FakePreferencesStore(),
+            alarmStore: FakeScheduledAlarmStore()
+        )
+
+        let plan = try await service.recalculateAndSyncAlarm(targetDay: targetDay)
+
+        XCTAssertEqual(plan.reason, .event)
+        XCTAssertEqual(alarmScheduler.requestAuthorizationCallCount, 1)
+        XCTAssertEqual(alarmScheduler.scheduledPlans.count, 1)
+    }
+
+    func testReturnsAuthorizationMissingWhenAuthorizationRequestDoesNotAuthorize() async throws {
+        let targetDay = TargetDay(date: Date(timeIntervalSince1970: 1_000_000))
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.state = .notDetermined
+        alarmScheduler.requestAuthorizationResult = .denied
+
+        let service = AlarmSyncService(
+            calendarReader: FakeCalendarReader(events: [makeEvent(startOffset: 3_600)]),
+            alarmScheduler: alarmScheduler,
+            preferencesStore: FakePreferencesStore(),
+            alarmStore: FakeScheduledAlarmStore()
+        )
+
+        let plan = try await service.recalculateAndSyncAlarm(targetDay: targetDay)
+
+        XCTAssertEqual(plan.reason, .authorizationMissing)
+        XCTAssertEqual(alarmScheduler.requestAuthorizationCallCount, 1)
+        XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
+    }
+
     private func makeEvent(startOffset: TimeInterval) -> ParsedEvent {
         ParsedEvent(
             id: "event-\(startOffset)",
@@ -176,6 +216,8 @@ private final class FakeCalendarReader: CalendarReading {
 
 private final class FakeAlarmScheduler: AlarmScheduling {
     var state: AlarmAuthorizationState = .authorized
+    var requestAuthorizationResult: AlarmAuthorizationState?
+    var requestAuthorizationCallCount = 0
     var scheduledPlans: [WakeUpPlan] = []
     var canceledIDs: [String] = []
 
@@ -184,7 +226,13 @@ private final class FakeAlarmScheduler: AlarmScheduling {
     }
 
     func requestAuthorization() async throws -> AlarmAuthorizationState {
-        state
+        requestAuthorizationCallCount += 1
+
+        if let requestAuthorizationResult {
+            state = requestAuthorizationResult
+        }
+
+        return state
     }
 
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord {

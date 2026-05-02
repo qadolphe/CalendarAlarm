@@ -14,49 +14,26 @@ struct WakePlanAlarmMetadata: AlarmMetadata {
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<WakePlanAlarmMetadata> {
         let title = AppConfiguration.alarmTitle(for: plan.targetEvent?.title)
-        let stopButton = AlarmButton(
-            text: localized("Stop"),
-            textColor: .white,
-            systemImageName: "stop.fill"
-        )
-        let snoozeButton = AlarmButton(
-            text: localized("Snooze"),
-            textColor: .white,
-            systemImageName: "zzz"
-        )
-        let resumeButton = AlarmButton(
-            text: localized("Resume"),
-            textColor: .white,
-            systemImageName: "play.fill"
-        )
-
         let alert: AlarmPresentation.Alert
 
         if #available(iOS 26.1, *) {
             alert = AlarmPresentation.Alert(
-                title: localized(title),
-                secondaryButton: snoozeButton,
-                secondaryButtonBehavior: .countdown
+                title: localized(title)
             )
         } else {
+            let stopButton = AlarmButton(
+                text: localized("Stop"),
+                textColor: .white,
+                systemImageName: "stop.fill"
+            )
+
             alert = AlarmPresentation.Alert(
                 title: localized(title),
-                stopButton: stopButton,
-                secondaryButton: snoozeButton,
-                secondaryButtonBehavior: .countdown
+                stopButton: stopButton
             )
         }
 
-        let presentation = AlarmPresentation(
-            alert: alert,
-            countdown: AlarmPresentation.Countdown(
-                title: localized("Snoozing")
-            ),
-            paused: AlarmPresentation.Paused(
-                title: localized("Snoozed"),
-                resumeButton: resumeButton
-            )
-        )
+        let presentation = AlarmPresentation(alert: alert)
 
         let attributes = AlarmAttributes(
             presentation: presentation,
@@ -69,8 +46,7 @@ enum AlarmKitMappers {
 
         return .alarm(
             schedule: .fixed(plan.calculatedWakeTime),
-            attributes: attributes,
-            sound: .default
+            attributes: attributes
         )
     }
 

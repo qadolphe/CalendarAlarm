@@ -63,6 +63,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		77BF3AF82FA662C0004F4896 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000012 /* WakePlan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WakePlan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000013 /* WakePlanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WakePlanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000100 /* Application/AlarmSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AlarmSyncService.swift; sourceTree = "<group>"; };
@@ -149,6 +150,7 @@
 		AA0000000000000000000004 /* WakePlan */ = {
 			isa = PBXGroup;
 			children = (
+				77BF3AF82FA662C0004F4896 /* Info.plist */,
 				AA0000000000000000000500 /* Application */,
 				AA0000000000000000000501 /* Configuration */,
 				AA0000000000000000000502 /* Domain */,
@@ -534,7 +536,8 @@
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_FILE = WakePlan/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WakePlan;
 				INFOPLIST_KEY_NSAlarmKitUsageDescription = "WakePlan schedules wake-up alarms based on your calendar events.";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "WakePlan reads your calendar to calculate the right wake-up time for your first event.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -565,7 +568,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_FILE = WakePlan/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WakePlan;
 				INFOPLIST_KEY_NSAlarmKitUsageDescription = "WakePlan schedules wake-up alarms based on your calendar events.";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "WakePlan reads your calendar to calculate the right wake-up time for your first event.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

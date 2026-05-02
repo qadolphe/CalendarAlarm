@@ -50,7 +50,7 @@ final class AlarmSyncService {
             return plan
         }
 
-        let alarmAuthorization = await alarmScheduler.authorizationState()
+        let alarmAuthorization = try await resolvedAlarmAuthorization()
 
         guard alarmAuthorization == .authorized else {
             return WakeUpPlan(
@@ -70,5 +70,15 @@ final class AlarmSyncService {
         try alarmStore.save(record)
 
         return plan
+    }
+
+    private func resolvedAlarmAuthorization() async throws -> AlarmAuthorizationState {
+        let currentState = await alarmScheduler.authorizationState()
+
+        guard currentState == .notDetermined else {
+            return currentState
+        }
+
+        return try await alarmScheduler.requestAuthorization()
     }
 }

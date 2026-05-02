@@ -49,7 +49,7 @@ final class AppState {
                 currentPlan = nil
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = format(error)
         }
     }
 
@@ -65,7 +65,7 @@ final class AppState {
                 currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = format(error)
         }
     }
 
@@ -82,7 +82,7 @@ final class AppState {
 
             currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = format(error)
         }
     }
 
@@ -93,7 +93,7 @@ final class AppState {
             _ = try await permissionService.requestCalendarAccess()
             await load()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = format(error)
         }
     }
 
@@ -101,11 +101,15 @@ final class AppState {
         errorMessage = nil
 
         do {
-            _ = try await permissionService.requestAlarmAccess()
+            let requestedState = try await permissionService.requestAlarmAccess()
             permissions = await permissionService.currentStatus()
             currentPlan = try await alarmSyncService.recalculateAndSyncAlarm()
+
+            if requestedState == .notDetermined, permissions.alarm == .notDetermined {
+                errorMessage = "Alarm access is still waiting for AlarmKit to present authorization. WakePlan will try again when it schedules the next alarm."
+            }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = format(error)
         }
     }
 
@@ -137,5 +141,10 @@ final class AppState {
         var nextPreferences = preferences
         nextPreferences.selectedCalendarIDs = []
         await updatePreferences(nextPreferences)
+    }
+
+    private func format(_ error: Error) -> String {
+        let nsError = error as NSError
+        return "\(nsError.localizedDescription) [\(nsError.domain) \(nsError.code)]"
     }
 }
