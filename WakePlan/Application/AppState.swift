@@ -8,6 +8,7 @@ final class AppState {
     var preferences: AlarmPreferences = .default
     var calendars: [CalendarSource] = []
     var permissions: PermissionSnapshot = .initial
+    let usesFakeCalendarData: Bool
 
     var isLoading = false
     var errorMessage: String?
@@ -21,12 +22,14 @@ final class AppState {
         preferencesStore: PreferencesStoring,
         wakePlanService: WakePlanService,
         permissionService: PermissionService,
-        alarmSyncService: AlarmSyncService
+        alarmSyncService: AlarmSyncService,
+        usesFakeCalendarData: Bool = false
     ) {
         self.preferencesStore = preferencesStore
         self.wakePlanService = wakePlanService
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
+        self.usesFakeCalendarData = usesFakeCalendarData
     }
 
     func load() async {

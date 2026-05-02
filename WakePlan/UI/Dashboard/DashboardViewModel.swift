@@ -22,6 +22,10 @@ struct DashboardViewModel {
     }
 
     var permissionBanner: String? {
+        if appState.usesFakeCalendarData {
+            return "Fake calendar mode is enabled. Launch without `-useFakeCalendar` to switch back to real calendars."
+        }
+
         if appState.permissions.calendar != .authorized {
             return AppConfiguration.calendarPermissionExplanation
         }

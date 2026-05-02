@@ -7,7 +7,14 @@ struct WakePlanApp: App {
     init() {
         let preferencesStore = UserDefaultsPreferencesStore()
         let alarmStore = UserDefaultsScheduledAlarmStore()
-        let calendarReader = EventKitCalendarReader()
+        let calendarReader: CalendarReading
+
+        if AppRuntime.usesFakeCalendar {
+            calendarReader = FakeCalendarReader()
+        } else {
+            calendarReader = EventKitCalendarReader()
+        }
+
         let alarmScheduler = AlarmKitScheduler()
         let wakePlanService = WakePlanService(
             calendarReader: calendarReader,
@@ -29,7 +36,8 @@ struct WakePlanApp: App {
                 preferencesStore: preferencesStore,
                 wakePlanService: wakePlanService,
                 permissionService: permissionService,
-                alarmSyncService: alarmSyncService
+                alarmSyncService: alarmSyncService,
+                usesFakeCalendarData: AppRuntime.usesFakeCalendar
             )
         )
     }
