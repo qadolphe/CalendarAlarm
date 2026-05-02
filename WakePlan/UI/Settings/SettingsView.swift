@@ -6,57 +6,154 @@ struct SettingsView: View {
     var body: some View {
         let viewModel = SettingsViewModel(appState: appState)
 
-        Form {
-            Section("Automatic Alarm") {
-                Toggle("Enabled", isOn: binding(\.isEnabled))
-            }
+        ZStack {
+            Color.clear
+                .withAppBackground()
 
-            Section("Timing") {
-                Stepper(
-                    "Prep time: \(appState.preferences.prepTime.rawValue) min",
-                    value: minutesBinding(\.prepTime),
-                    in: 0...180,
-                    step: 5
-                )
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("Settings")
+                        .font(.largeTitle.weight(.bold))
+                        .padding(.top, 20)
 
-                Stepper(
-                    "Commute buffer: \(appState.preferences.defaultCommuteTime.rawValue) min",
-                    value: minutesBinding(\.defaultCommuteTime),
-                    in: 0...180,
-                    step: 5
-                )
+                    alarmCard
+                    timingCard(viewModel: viewModel)
+                    filtersCard
 
-                DatePicker(
-                    "Latest wake time",
-                    selection: latestWakeTimeBinding,
-                    displayedComponents: .hourAndMinute
-                )
-            }
+                    VStack(spacing: 0) {
+                        NavigationLink {
+                            CalendarSelectionView(appState: appState)
+                        } label: {
+                            settingsRow(
+                                title: "Calendars",
+                                subtitle: viewModel.selectedCalendarsSummary,
+                                icon: "calendar.badge.clock"
+                            )
+                        }
+                        .buttonStyle(.plain)
 
-            Section("Calendars") {
-                NavigationLink {
-                    CalendarSelectionView(appState: appState)
-                } label: {
-                    LabeledContent("Selected calendars", value: viewModel.selectedCalendarsSummary)
+                        Divider().padding(.vertical, 14)
+
+                        NavigationLink {
+                            PermissionsView(appState: appState)
+                        } label: {
+                            settingsRow(
+                                title: "Permissions",
+                                subtitle: viewModel.permissionsSummary,
+                                icon: "lock.shield",
+                                showWarning: viewModel.needsPermissions
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.vertical, 8)
+                    .cardStyle()
                 }
-            }
-
-            Section("Ignore") {
-                Toggle("All-day events", isOn: binding(\.ignoreAllDayEvents))
-                Toggle("Tentative events", isOn: binding(\.ignoreTentativeEvents))
-                Toggle("Canceled events", isOn: binding(\.ignoreCanceledEvents))
-                Toggle("Free events", isOn: binding(\.ignoreFreeEvents))
-            }
-
-            Section("Permissions") {
-                NavigationLink {
-                    PermissionsView(appState: appState)
-                } label: {
-                    Text("Manage permissions")
-                }
+                .padding(24)
             }
         }
         .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var alarmCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Automatic Alarm",
+                subtitle: "Keep tomorrow's wake-up time synced with your calendar."
+            )
+
+            Toggle("Enabled", isOn: binding(\.isEnabled))
+                .tint(WPStyles.primaryOrange)
+                .font(.headline)
+        }
+        .cardStyle()
+    }
+
+    private func timingCard(viewModel: SettingsViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Timing",
+                subtitle: viewModel.timingSummary
+            )
+
+            NavigationLink {
+                TimingSettingsView(appState: appState)
+            } label: {
+                settingsRow(
+                    title: "Edit Timing",
+                    subtitle: "Prep time, commute buffer, and latest wake time",
+                    icon: "clock.badge.checkmark"
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .cardStyle()
+    }
+
+    private var filtersCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Ignore Rules",
+                subtitle: "Choose which events WakePlan should skip when calculating tomorrow's alarm."
+            )
+
+            toggleRow("All-day events", binding: binding(\.ignoreAllDayEvents))
+            Divider()
+            toggleRow("Tentative events", binding: binding(\.ignoreTentativeEvents))
+            Divider()
+            toggleRow("Canceled events", binding: binding(\.ignoreCanceledEvents))
+            Divider()
+            toggleRow("Free events", binding: binding(\.ignoreFreeEvents))
+        }
+        .cardStyle()
+    }
+
+    private func sectionHeader(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.primary)
+            Text(subtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func toggleRow(_ title: String, binding: Binding<Bool>) -> some View {
+        Toggle(title, isOn: binding)
+            .tint(WPStyles.primaryOrange)
+            .font(.headline)
+    }
+
+    private func settingsRow(title: String, subtitle: String, icon: String, showWarning: Bool = false) -> some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(WPStyles.primaryOrange)
+                .frame(width: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(showWarning ? WPStyles.warningBanner : .secondary)
+            }
+            
+            Spacer()
+            
+            if showWarning {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(WPStyles.warningBanner)
+            }
+            
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.tertiary)
+                .font(.subheadline.weight(.semibold))
+        }
+        .contentShape(Rectangle())
     }
 
     private func binding(_ keyPath: WritableKeyPath<AlarmPreferences, Bool>) -> Binding<Bool> {
@@ -65,34 +162,6 @@ struct SettingsView: View {
             set: { newValue in
                 var copy = appState.preferences
                 copy[keyPath: keyPath] = newValue
-                Task { await appState.updatePreferences(copy) }
-            }
-        )
-    }
-
-    private func minutesBinding(_ keyPath: WritableKeyPath<AlarmPreferences, Minutes>) -> Binding<Int> {
-        Binding(
-            get: { appState.preferences[keyPath: keyPath].rawValue },
-            set: { newValue in
-                var copy = appState.preferences
-                copy[keyPath: keyPath] = Minutes(newValue)
-                Task { await appState.updatePreferences(copy) }
-            }
-        )
-    }
-
-    private var latestWakeTimeBinding: Binding<Date> {
-        Binding(
-            get: {
-                let targetDay = TargetDay(date: Date())
-                return appState.preferences.latestWakeTime.date(on: targetDay)
-            },
-            set: { newValue in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                guard let hour = components.hour, let minute = components.minute else { return }
-
-                var copy = appState.preferences
-                copy.latestWakeTime = ClockTime(hour: hour, minute: minute)
                 Task { await appState.updatePreferences(copy) }
             }
         )

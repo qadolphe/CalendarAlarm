@@ -34,7 +34,7 @@ struct WakePlanApp: App {
 
     var body: some Scene {
         WindowGroup {
-            DashboardView(appState: appState)
+            WakePlanRootView(appState: appState)
         }
     }
 }

@@ -30,6 +30,10 @@ final class AppState {
     private let alarmSyncService: AlarmSyncService
     private var hasLoaded = false
 
+    var hasLoadedInitialState: Bool {
+        hasLoaded
+    }
+
     var errorMessage: String? {
         guard case let .error(message) = dashboardState else { return nil }
         return message

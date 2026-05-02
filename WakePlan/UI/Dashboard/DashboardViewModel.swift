@@ -4,6 +4,10 @@ import Foundation
 struct DashboardViewModel {
     let appState: AppState
 
+    var title: String {
+        "Tomorrow's Alarm"
+    }
+
     var viewState: WakePlanViewState? {
         switch appState.dashboardState {
         case .needsAlarmPermission(let viewState),
@@ -12,6 +16,63 @@ struct DashboardViewModel {
             return viewState
         case .loading, .needsCalendarPermission, .error:
             return nil
+        }
+    }
+
+    var plan: WakeUpPlan? {
+        viewState?.plan
+    }
+
+    var eventSummary: String? {
+        guard let plan else { return nil }
+
+        if let event = plan.targetEvent {
+            return "For \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))"
+        }
+
+        return "Fallback wake time for tomorrow"
+    }
+
+    var timingSummary: String? {
+        guard let plan else { return nil }
+        return "\(plan.prepTime.rawValue) min prep · \(plan.commuteTime.rawValue) min commute"
+    }
+
+    var calendarSummary: String? {
+        guard let plan else { return nil }
+
+        if let event = plan.targetEvent,
+           let title = appState.calendars.first(where: { $0.id == event.calendarID })?.title {
+            return title
+        }
+
+        let selectedCalendars = appState.calendars.filter(\.isSelected)
+
+        if selectedCalendars.count == 1 {
+            return selectedCalendars[0].title
+        }
+
+        if selectedCalendars.isEmpty {
+            return nil
+        }
+
+        return "\(selectedCalendars.count) calendars"
+    }
+
+    var statusTitle: String {
+        guard let viewState else { return "Loading" }
+
+        switch viewState.alarmStatus {
+        case .scheduled:
+            return "Scheduled"
+        case .needsPermission:
+            return "Needs Permission"
+        case .disabled:
+            return "Disabled"
+        case .failed:
+            return "Schedule Failed"
+        case .notScheduled:
+            return "Not Scheduled"
         }
     }
 
