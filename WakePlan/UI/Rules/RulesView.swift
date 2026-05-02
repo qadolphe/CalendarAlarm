@@ -222,6 +222,8 @@ struct RuleEditorView: View {
     @State private var newTitleKeyword = ""
     @State private var newLocationKeyword = ""
 
+    @State private var showDuplicateAlert = false
+
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
         return false
@@ -267,7 +269,7 @@ struct RuleEditorView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") { save() }
+                Button("Save") { trySave() }
                     .fontWeight(.semibold)
                     .foregroundStyle(WPStyles.primaryOrange)
             }
@@ -277,6 +279,11 @@ struct RuleEditorView: View {
                         .foregroundStyle(WPStyles.secondaryText)
                 }
             }
+        }
+        .alert("Duplicate Rule", isPresented: $showDuplicateAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1.")
         }
     }
 
@@ -499,6 +506,26 @@ struct RuleEditorView: View {
             .tracking(1.4)
             .foregroundStyle(WPStyles.secondaryText)
             .textCase(.uppercase)
+    }
+
+    private func trySave() {
+        // Check for 1:1 duplicate (same calendars + same conditions) against other rules
+        if case .add = mode {
+            let sortedConditions = conditions.sorted {
+                $0.displayLabel < $1.displayLabel
+            }
+            let isDuplicate = appState.preferences.alarmRules.contains { existing in
+                guard !existing.isDefault else { return false }
+                let existingSorted = existing.conditions.sorted { $0.displayLabel < $1.displayLabel }
+                return existing.selectedCalendarIDs == selectedCalendarIDs
+                    && existingSorted == sortedConditions
+            }
+            if isDuplicate {
+                showDuplicateAlert = true
+                return
+            }
+        }
+        save()
     }
 
     private func save() {

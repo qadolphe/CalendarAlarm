@@ -42,12 +42,6 @@ struct WakePlanRootView: View {
             .tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
 
             NavigationStack {
-                ScheduleView(appState: appState)
-            }
-            .tag(MainTab.schedule)
-            .tabItem { Label("Schedule", systemImage: "calendar.badge.clock") }
-
-            NavigationStack {
                 SettingsView(appState: appState)
             }
             .tag(MainTab.settings)
@@ -74,6 +68,5 @@ struct WakePlanRootView: View {
 private enum MainTab {
     case home
     case rules
-    case schedule
     case settings
 }

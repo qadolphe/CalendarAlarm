@@ -114,6 +114,18 @@ struct DashboardView: View {
 
                     timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
                     timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
+
+                    if !plan.matchedRuleNames.isEmpty {
+                        Divider()
+                        HStack(spacing: 6) {
+                            Image(systemName: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(WPStyles.secondaryBlue)
+                            Text("Matched \(plan.matchedRuleNames.joined(separator: " and ")). Using the earlier alarm.")
+                                .font(.caption)
+                                .foregroundStyle(WPStyles.secondaryText)
+                        }
+                    }
                 } else {
                     HStack {
                         Image(systemName: "moon.zzz.fill")

@@ -185,6 +185,117 @@ final class WakePlanCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.targetEvent?.id, "work")
     }
 
+    // MARK: - Earliest wake time policy
+
+    /// An event that starts later but needs heavy prep wins over an earlier event with minimal prep.
+    func testEarliestWakeTimeWinsOverEarliestEventStart() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+
+        // Remote meeting at 8:30 — matched by "Remote" rule: 15 min prep → wake 8:15
+        let remoteEvent = event(
+            id: "remote",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 8, minute: 30, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 30, calendar: calendar),
+            title: "Remote standup"
+        )
+        // Office meeting at 9:00 — matched by "Office" rule: 45 min prep + 30 min commute → wake 7:45
+        let officeEvent = event(
+            id: "office",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar),
+            title: "Office planning"
+        )
+
+        let remoteRule = AlarmRule(
+            id: UUID(), name: "Remote", isDefault: false,
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("remote")],
+            prepTime: Minutes(15), commuteTime: Minutes(0)
+        )
+        let officeRule = AlarmRule(
+            id: UUID(), name: "Office", isDefault: false,
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("office")],
+            prepTime: Minutes(45), commuteTime: Minutes(30)
+        )
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [remoteRule, officeRule, AlarmRule.makeDefault(prepTime: Minutes(0), commuteTime: Minutes(0))]
+
+        let plan = calculator.calculate(
+            events: [remoteEvent, officeEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        // Office event starts later but requires more prep → earlier wake time wins
+        XCTAssertEqual(plan.targetEvent?.id, "office")
+        let expected = makeDate(year: 2026, month: 5, day: 2, hour: 7, minute: 45, calendar: calendar)
+        XCTAssertEqual(plan.calculatedWakeTime, expected)
+    }
+
+    /// When multiple rules match the same event, matchedRuleNames is populated.
+    func testMatchedRuleNamesPopulatedForMultiRuleEvent() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+
+        let evt = event(
+            id: "planning",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar),
+            title: "Work and school planning"
+        )
+
+        let workRule = AlarmRule(
+            id: UUID(), name: "Work", isDefault: false,
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("work")],
+            prepTime: Minutes(30), commuteTime: Minutes(0)   // wake at 8:30
+        )
+        let schoolRule = AlarmRule(
+            id: UUID(), name: "School", isDefault: false,
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("school")],
+            prepTime: Minutes(15), commuteTime: Minutes(0)   // wake at 8:45
+        )
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [workRule, schoolRule, AlarmRule.makeDefault(prepTime: Minutes(0), commuteTime: Minutes(0))]
+
+        let plan = calculator.calculate(
+            events: [evt],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        // Work rule gives earlier wake time
+        let expected = makeDate(year: 2026, month: 5, day: 2, hour: 8, minute: 30, calendar: calendar)
+        XCTAssertEqual(plan.calculatedWakeTime, expected)
+        // Both rules matched → names surfaced
+        XCTAssertTrue(plan.matchedRuleNames.contains("Work"))
+        XCTAssertTrue(plan.matchedRuleNames.contains("School"))
+    }
+
+    /// When only one rule matches an event, matchedRuleNames is empty (no explanation needed).
+    func testMatchedRuleNamesEmptyForSingleRuleMatch() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        let start = makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar)
+
+        let plan = calculator.calculate(
+            events: [event(startDate: start, endDate: start.addingTimeInterval(3_600))],
+            preferences: .default,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertTrue(plan.matchedRuleNames.isEmpty)
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -195,12 +306,13 @@ final class WakePlanCalculatorTests: XCTestCase {
         id: String = UUID().uuidString,
         calendarID: String = "work",
         startDate: Date = Date(timeIntervalSince1970: 1_000),
-        endDate: Date = Date(timeIntervalSince1970: 2_000)
+        endDate: Date = Date(timeIntervalSince1970: 2_000),
+        title: String = "Standup"
     ) -> ParsedEvent {
         ParsedEvent(
             id: id,
             calendarID: calendarID,
-            title: "Standup",
+            title: title,
             startDate: startDate,
             endDate: endDate,
             timeZoneIdentifier: nil,

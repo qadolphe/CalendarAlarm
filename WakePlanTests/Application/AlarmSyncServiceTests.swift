@@ -93,7 +93,8 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: plan.prepTime,
             commuteTime: plan.commuteTime,
             isFallback: plan.isFallback,
-            reason: .disabled
+            reason: .disabled,
+            matchedRuleNames: []
         )
         let alarmStore = FakeScheduledAlarmStore()
         alarmStore.record = ScheduledAlarmRecord(

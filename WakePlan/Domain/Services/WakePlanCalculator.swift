@@ -45,7 +45,8 @@ struct WakePlanCalculator {
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
-                reason: .inactiveDay
+                reason: .inactiveDay,
+                matchedRuleNames: []
             )
         }
 
@@ -68,29 +69,47 @@ struct WakePlanCalculator {
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
-                reason: .disabled
+                reason: .disabled,
+                matchedRuleNames: []
             )
         }
 
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-            .sorted { $0.startDate < $1.startDate }
 
-        let defaultRule = preferences.defaultAlarmRule
-        let matchedEventAndRule = validEvents.compactMap { event in
-            if let customRule = preferences.customAlarmRules.first(where: { $0.matches(event: event) }) {
-                return (event, customRule)
+        let allRules = preferences.alarmRules
+
+        // Build every candidate: (event, matchingRule, calculatedWakeTime)
+        // A rule matches an event if AlarmRule.matches returns true.
+        // The default rule is the fallback when no custom rule matches.
+        struct Candidate {
+            let event: ParsedEvent
+            let rule: AlarmRule
+            let wakeTime: Date
+        }
+
+        var candidates: [Candidate] = []
+
+        for event in validEvents {
+            // Collect every rule that matches this event
+            let matchingRules: [AlarmRule] = allRules.filter { $0.matches(event: event) }
+            // If no rule matches at all (e.g. calendar restriction on all rules), skip event
+            guard !matchingRules.isEmpty else { continue }
+
+            for rule in matchingRules {
+                let offset = rule.prepTime.rawValue + rule.commuteTime.rawValue
+                let wakeTime = calendar.date(
+                    byAdding: .minute,
+                    value: -offset,
+                    to: event.startDate
+                ) ?? event.startDate
+                candidates.append(Candidate(event: event, rule: rule, wakeTime: wakeTime))
             }
+        }
 
-            if defaultRule.matches(event: event) {
-                return (event, defaultRule)
-            }
-
-            return nil
-        }.first
-
-        guard let (firstEvent, matchingRule) = matchedEventAndRule else {
+        // Choose the candidate with the earliest wake time (not earliest event start)
+        guard let winner = candidates.min(by: { $0.wakeTime < $1.wakeTime }) else {
             let fallbackWakeTime = timingRules.latestWakeTime.date(on: targetDay, calendar: calendar)
 
             return WakeUpPlan(
@@ -110,44 +129,60 @@ struct WakePlanCalculator {
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
                 isFallback: true,
-                reason: .fallback
+                reason: .fallback,
+                matchedRuleNames: []
             )
         }
 
-        let effectivePrepTime = matchingRule.prepTime
-        let effectiveCommuteTime = matchingRule.commuteTime
+        // Collect all rule names that matched the winning event (for UI transparency)
+        let winningEvent = winner.event
+        let winnerWakeTime = winner.wakeTime
+        let winningRule = winner.rule
+        let allMatchedRulesForWinningEvent = candidates
+            .filter { $0.event.id == winningEvent.id }
+            .map { $0.rule.name }
 
-        let totalOffset = effectivePrepTime.rawValue + effectiveCommuteTime.rawValue
-        let wakeTime = calendar.date(
-            byAdding: .minute,
-            value: -totalOffset,
-            to: firstEvent.startDate
-        ) ?? firstEvent.startDate
+        // Only surface multi-match when more than one distinct rule matched the chosen event
+        let matchedRuleNames: [String] = allMatchedRulesForWinningEvent.count > 1
+            ? Array(LinkedDedupe(allMatchedRulesForWinningEvent))
+            : []
 
         return WakeUpPlan(
             id: hasher.makeID(
                 kind: "event",
                 components: [
-                    firstEvent.id,
+                    winningEvent.id,
                     timestamp(targetDay.date),
-                    timestamp(firstEvent.startDate),
-                    timestamp(wakeTime),
-                    "\(effectivePrepTime.rawValue)",
-                    "\(effectiveCommuteTime.rawValue)"
+                    timestamp(winningEvent.startDate),
+                    timestamp(winnerWakeTime),
+                    "\(winningRule.prepTime.rawValue)",
+                    "\(winningRule.commuteTime.rawValue)"
                 ]
             ),
             targetDay: targetDay,
-            targetEvent: firstEvent,
-            calculatedWakeTime: wakeTime,
-            eventStartTime: firstEvent.startDate,
-            prepTime: effectivePrepTime,
-            commuteTime: effectiveCommuteTime,
+            targetEvent: winningEvent,
+            calculatedWakeTime: winnerWakeTime,
+            eventStartTime: winningEvent.startDate,
+            prepTime: winningRule.prepTime,
+            commuteTime: winningRule.commuteTime,
             isFallback: false,
-            reason: .event
+            reason: .event,
+            matchedRuleNames: matchedRuleNames
         )
     }
 
     private func timestamp(_ date: Date) -> String {
         String(format: "%.0f", date.timeIntervalSince1970)
+    }
+}
+
+// Simple order-preserving deduplication without requiring Hashable protocol extras
+private struct LinkedDedupe<T: Equatable>: Sequence {
+    private let items: [T]
+    init(_ items: [T]) { self.items = items }
+    func makeIterator() -> IndexingIterator<[T]> {
+        var seen: [T] = []
+        for item in items where !seen.contains(item) { seen.append(item) }
+        return seen.makeIterator()
     }
 }

@@ -95,7 +95,8 @@ final class AlarmSyncService {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             isFallback: false,
-            reason: .manualOverride
+            reason: .manualOverride,
+            matchedRuleNames: []
         )
     }
 
