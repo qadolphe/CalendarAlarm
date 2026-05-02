@@ -116,29 +116,28 @@ struct RulesView: View {
     }
 
     private var fallbackTimesCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Fallback Wake Times")
                 .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)
 
-            ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
-                fallbackRow(for: option)
-                if option.weekday != 7 {
-                    Divider().overlay(WPStyles.cardBorder)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+                        fallbackGridCell(for: option)
+                    }
                 }
             }
         }
         .cardStyle()
     }
 
-    private func fallbackRow(for option: WeekdayOption) -> some View {
-        HStack {
+    private func fallbackGridCell(for option: WeekdayOption) -> some View {
+        VStack(spacing: 8) {
             Text(option.shortLabel)
-                .font(.caption.weight(.bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(WPStyles.secondaryText)
-                .frame(width: 32, alignment: .leading)
-
-            Spacer()
+                .textCase(.uppercase)
 
             DatePicker(
                 "",
@@ -147,8 +146,12 @@ struct RulesView: View {
             )
             .labelsHidden()
             .colorScheme(.dark)
+            .scaleEffect(0.9)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 8)
+        .background(WPStyles.surfaceRaised)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: Rule cards
@@ -217,9 +220,9 @@ struct RulesView: View {
                 .font(.caption.weight(.bold))
                 .foregroundStyle(WPStyles.tertiaryText)
         }
-        .padding(18)
-        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
     }
 
     private func conditionChip(_ condition: AlarmRuleCondition) -> some View {

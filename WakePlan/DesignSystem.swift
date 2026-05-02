@@ -60,7 +60,7 @@ public extension View {
     func cardStyle() -> some View {
         self
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(24)
+            .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous)
                     .fill(WPStyles.surface)
