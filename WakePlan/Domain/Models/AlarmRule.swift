@@ -7,8 +7,15 @@ enum AlarmRuleCondition: Codable, Equatable, Sendable {
 
     var displayLabel: String {
         switch self {
-        case .titleContains(let keyword):   return "Title contains \"\(keyword)\""
-        case .locationContains(let place):  return "Location contains \"\(place)\""
+        case .titleContains(let keyword):   return "\"\(keyword)\""
+        case .locationContains(let place):  return "\"\(place)\""
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .titleContains: return "text.quote"
+        case .locationContains: return "mappin.and.ellipse"
         }
     }
 

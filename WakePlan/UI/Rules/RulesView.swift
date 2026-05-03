@@ -141,22 +141,14 @@ struct RulesView: View {
                     Text(rule.name)
                         .font(.headline)
                         .foregroundStyle(WPStyles.primaryText)
-
-                    if rule.isDefault {
-                        Text("DEFAULT")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(WPStyles.primaryOrange)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(WPStyles.primaryOrange.opacity(0.12))
-                            .clipShape(Capsule())
-                    }
                 }
 
                 if rule.conditions.isEmpty {
-                    Text(rule.isDefault ? "Applies to all other events" : "Matches all events")
-                        .font(.subheadline)
-                        .foregroundStyle(WPStyles.secondaryText)
+                    if !rule.isDefault {
+                        Text("All events")
+                            .font(.subheadline)
+                            .foregroundStyle(WPStyles.secondaryText)
+                    }
                 } else {
                     FlowLayout(spacing: 6) {
                         ForEach(Array(rule.conditions.enumerated()), id: \.offset) { _, condition in
@@ -164,10 +156,6 @@ struct RulesView: View {
                         }
                     }
                 }
-
-                Label(calendarSummary(for: rule), systemImage: "calendar")
-                    .font(.caption)
-                    .foregroundStyle(WPStyles.tertiaryText)
 
                 HStack(spacing: 12) {
                     timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
@@ -187,29 +175,28 @@ struct RulesView: View {
     }
 
     private func conditionChip(_ condition: AlarmRuleCondition) -> some View {
-        Text(condition.displayLabel)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(WPStyles.secondaryBlue)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(WPStyles.secondaryBlue.opacity(0.12))
-            .clipShape(Capsule())
+        HStack(alignment: .center, spacing: 4) {
+            Image(systemName: condition.iconName)
+                .font(.caption2)
+            Text(condition.displayLabel)
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(WPStyles.secondaryBlue)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(WPStyles.secondaryBlue.opacity(0.12))
+        .clipShape(Capsule())
     }
 
     private func timingBadge(icon: String, value: Int, unit: String) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon).font(.caption).foregroundStyle(WPStyles.tertiaryText)
-            Text("\(value) min \(unit)").font(.caption.weight(.medium)).foregroundStyle(WPStyles.secondaryText)
+        HStack(alignment: .center, spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2)
+                .foregroundStyle(WPStyles.tertiaryText)
+            Text("\(value)m \(unit)")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(WPStyles.secondaryText)
         }
-    }
-
-    private func calendarSummary(for rule: AlarmRule) -> String {
-        if rule.selectedCalendarIDs.isEmpty { return "All calendars" }
-        let selected = appState.calendars.filter { rule.selectedCalendarIDs.contains($0.id) }
-        if selected.count == 1 { return selected[0].title }
-        if selected.count == 2 { return selected.map(\.title).joined(separator: ", ") }
-        if !selected.isEmpty { return "\(selected.count) calendars" }
-        return "\(rule.selectedCalendarIDs.count) calendars"
     }
 
     // MARK: Helpers
@@ -298,6 +285,11 @@ enum RuleEditorMode {
 }
 
 struct RuleEditorView: View {
+    private enum ConditionField: Hashable {
+        case title
+        case location
+    }
+
     @Bindable var appState: AppState
     let mode: RuleEditorMode
     @Environment(\.dismiss) private var dismiss
@@ -312,6 +304,7 @@ struct RuleEditorView: View {
 
     @State private var showDuplicateAlert = false
     @State private var expandedAccountIDs: Set<CalendarAccountID> = []
+    @FocusState private var focusedConditionField: ConditionField?
 
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
@@ -354,6 +347,11 @@ struct RuleEditorView: View {
                 .padding(24)
             }
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                focusedConditionField = nil
+            }
+        )
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -373,6 +371,15 @@ struct RuleEditorView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1.")
+        }
+        .onChange(of: focusedConditionField) { previousField, currentField in
+            if previousField == .title, currentField != .title {
+                commitPendingTitleKeyword()
+            }
+
+            if previousField == .location, currentField != .location {
+                commitPendingLocationKeyword()
+            }
         }
     }
 
@@ -594,13 +601,10 @@ struct RuleEditorView: View {
                     if case .titleContains(let v) = $0 { return v } else { return nil }
                 },
                 newValue: $newTitleKeyword,
+                focus: $focusedConditionField,
+                focusField: .title,
                 placeholder: "keyword",
-                onAdd: {
-                    let v = newTitleKeyword.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                    guard !v.isEmpty else { return }
-                    conditions.append(.titleContains(v))
-                    newTitleKeyword = ""
-                },
+                onAdd: commitPendingTitleKeyword,
                 onRemove: { keyword in conditions.removeAll { $0 == .titleContains(keyword) } }
             )
 
@@ -611,13 +615,10 @@ struct RuleEditorView: View {
                     if case .locationContains(let v) = $0 { return v } else { return nil }
                 },
                 newValue: $newLocationKeyword,
+                focus: $focusedConditionField,
+                focusField: .location,
                 placeholder: "place or address",
-                onAdd: {
-                    let v = newLocationKeyword.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                    guard !v.isEmpty else { return }
-                    conditions.append(.locationContains(v))
-                    newLocationKeyword = ""
-                },
+                onAdd: commitPendingLocationKeyword,
                 onRemove: { location in conditions.removeAll { $0 == .locationContains(location) } }
             )
         }
@@ -628,6 +629,8 @@ struct RuleEditorView: View {
         label: String,
         values: [String],
         newValue: Binding<String>,
+        focus: FocusState<ConditionField?>.Binding,
+        focusField: ConditionField,
         placeholder: String,
         onAdd: @escaping () -> Void,
         onRemove: @escaping (String) -> Void
@@ -662,6 +665,7 @@ struct RuleEditorView: View {
                     .foregroundStyle(WPStyles.primaryText)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .focused(focus, equals: focusField)
                     .onSubmit { onAdd() }
                 Button(action: onAdd) {
                     Image(systemName: "plus.circle.fill").foregroundStyle(WPStyles.primaryOrange)
@@ -723,6 +727,8 @@ struct RuleEditorView: View {
     }
 
     private func trySave() {
+        commitPendingConditions()
+
         // Check for 1:1 duplicate (same calendars + same conditions) against other rules
         if case .add = mode {
             let sortedConditions = conditions.sorted {
@@ -739,6 +745,45 @@ struct RuleEditorView: View {
             }
         }
         save()
+    }
+
+    private func commitPendingConditions() {
+        commitPendingTitleKeyword()
+        commitPendingLocationKeyword()
+    }
+
+    private func commitPendingTitleKeyword() {
+        commitPendingCondition(
+            text: &newTitleKeyword,
+            makeCondition: AlarmRuleCondition.titleContains
+        )
+    }
+
+    private func commitPendingLocationKeyword() {
+        commitPendingCondition(
+            text: &newLocationKeyword,
+            makeCondition: AlarmRuleCondition.locationContains
+        )
+    }
+
+    private func commitPendingCondition(
+        text: inout String,
+        makeCondition: (String) -> AlarmRuleCondition
+    ) {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !value.isEmpty else {
+            text = ""
+            return
+        }
+
+        let condition = makeCondition(value)
+        guard !conditions.contains(condition) else {
+            text = ""
+            return
+        }
+
+        conditions.append(condition)
+        text = ""
     }
 
     private func save() {
