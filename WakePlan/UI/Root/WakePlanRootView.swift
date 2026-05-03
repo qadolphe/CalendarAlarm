@@ -72,7 +72,7 @@ struct WakePlanRootView: View {
                 .withAppBackground()
                 .ignoresSafeArea()
 
-            ProgressView("Preparing WakePlan...")
+            ProgressView("Preparing EarlyOtter...")
                 .tint(WPStyles.primaryOrange)
                 .foregroundStyle(WPStyles.primaryText)
         }

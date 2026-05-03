@@ -101,7 +101,7 @@ struct WakePlanDetailsView: View {
                                     Text("Multiple Rules Matched")
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(WPStyles.primaryText)
-                                    Text("Matched \(plan.matchedRuleNames.joined(separator: " and ")). WakePlan automatically used the earliest required alarm.")
+                                    Text("Matched \(plan.matchedRuleNames.joined(separator: " and ")). EarlyOtter automatically used the earliest required alarm.")
                                         .font(.subheadline)
                                         .foregroundStyle(WPStyles.secondaryText)
                                 }

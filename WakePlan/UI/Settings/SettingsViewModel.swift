@@ -177,10 +177,10 @@ struct ScheduleViewModel {
             .formatted(date: .omitted, time: .shortened)
 
         if !appState.preferences.isEnabled {
-            return "WakePlan will not calculate or schedule alarms until Auto-Pilot is re-enabled."
+            return "EarlyOtter will not calculate or schedule alarms until Auto-Pilot is re-enabled."
         }
 
-        return "WakePlan can schedule alarms on \(days) and fall back to \(fallback) when no event matches."
+        return "EarlyOtter can schedule alarms on \(days) and fall back to \(fallback) when no event matches."
     }
 
     var activeDaysSummary: String {

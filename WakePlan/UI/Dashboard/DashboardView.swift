@@ -278,7 +278,7 @@ struct DashboardView: View {
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
             }
-            Text("WakePlan is completely disabled. No alarms will run.")
+            Text("EarlyOtter is completely disabled. No alarms will run.")
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
             
@@ -367,7 +367,7 @@ struct DashboardView: View {
         case .disabled:
             return "Automatic alarms are turned off."
         case .systemDisabled:
-            return "WakePlan is disabled."
+            return "EarlyOtter is disabled."
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return "No alarm is currently scheduled."
         }

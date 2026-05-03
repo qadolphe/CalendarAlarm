@@ -104,7 +104,7 @@ struct SettingsView: View {
                     .labelsHidden()
                     .tint(WPStyles.primaryOrange)
             }
-            Text(appState.preferences.isSystemEnabled ? "WakePlan will schedule alarms based on your rules." : "WakePlan is completely disabled. No alarms will run.")
+            Text(appState.preferences.isSystemEnabled ? "EarlyOtter will schedule alarms based on your rules." : "EarlyOtter is completely disabled. No alarms will run.")
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
         }
@@ -131,7 +131,7 @@ struct AccountsView: View {
             Color.clear.withAppBackground()
 
             List {
-                Section(header: sectionHeader("Connected Accounts"), footer: Text("WakePlan keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
+                Section(header: sectionHeader("Connected Accounts"), footer: Text("EarlyOtter keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
                     
                     if let appleAccount = appState.accounts.first(where: { $0.provider == .apple }) {
                         accountToggleRow(appleAccount, icon: "apple.logo")

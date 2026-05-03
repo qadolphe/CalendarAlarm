@@ -120,7 +120,7 @@ struct DashboardViewModel {
             }
             return "Alarm scheduled for the next valid event."
         case .needsPermission:
-            return "WakePlan needs alarm access before it can schedule a real alarm."
+            return "EarlyOtter needs alarm access before it can schedule a real alarm."
         case .disabled:
             return "Automatic alarms are turned off."
         case .failed(let message):

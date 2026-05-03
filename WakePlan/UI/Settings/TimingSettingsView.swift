@@ -22,7 +22,7 @@ struct TimingSettingsView: View {
                         .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
                     
-                    Text("Adjust the rule values WakePlan uses when it turns the first matching event into a wake-up time.")
+                    Text("Adjust the rule values EarlyOtter uses when it turns the first matching event into a wake-up time.")
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
                     

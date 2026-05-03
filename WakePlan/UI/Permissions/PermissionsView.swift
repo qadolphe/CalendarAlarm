@@ -17,7 +17,7 @@ struct PermissionsView: View {
                         .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
 
-                    Text("WakePlan keeps your alarm plan on-device and only requests the access it needs.")
+                    Text("EarlyOtter keeps your alarm plan on-device and only requests the access it needs.")
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
 

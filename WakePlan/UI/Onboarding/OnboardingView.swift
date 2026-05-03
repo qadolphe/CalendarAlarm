@@ -70,7 +70,7 @@ struct OnboardingView: View {
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
                 
-                Text("WakePlan needs access to your calendars to scan your schedule, and notifications to wake you up.")
+                Text("EarlyOtter needs access to your calendars to scan your schedule, and notifications to wake you up.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
@@ -241,7 +241,7 @@ struct OnboardingView: View {
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
                 
-                Text("WakePlan is now analyzing your calendar and scheduling your first smart alarm.")
+                Text("EarlyOtter is now analyzing your calendar and scheduling your first smart alarm.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)

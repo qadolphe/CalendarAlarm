@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppConfiguration {
-    static let appName = "WakePlan"
+    static let appName = "EarlyOtter"
     static let genericAlarmTitle = "Wake up"
     static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
     static let testAlarmDescription =

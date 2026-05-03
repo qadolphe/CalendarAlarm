@@ -634,9 +634,9 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WakePlan/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WakePlan;
-				INFOPLIST_KEY_NSAlarmKitUsageDescription = "WakePlan schedules wake-up alarms based on your calendar events.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "WakePlan reads your calendar to calculate the right wake-up time for your first event.";
+				INFOPLIST_KEY_CFBundleDisplayName = EarlyOtter;
+				INFOPLIST_KEY_NSAlarmKitUsageDescription = "EarlyOtter schedules wake-up alarms based on your calendar events.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "EarlyOtter reads your calendar to calculate the right wake-up time for your first event.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -668,9 +668,9 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WakePlan/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WakePlan;
-				INFOPLIST_KEY_NSAlarmKitUsageDescription = "WakePlan schedules wake-up alarms based on your calendar events.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "WakePlan reads your calendar to calculate the right wake-up time for your first event.";
+				INFOPLIST_KEY_CFBundleDisplayName = EarlyOtter;
+				INFOPLIST_KEY_NSAlarmKitUsageDescription = "EarlyOtter schedules wake-up alarms based on your calendar events.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "EarlyOtter reads your calendar to calculate the right wake-up time for your first event.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

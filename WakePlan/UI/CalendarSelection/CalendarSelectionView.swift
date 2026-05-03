@@ -17,7 +17,7 @@ struct CalendarSelectionView: View {
                         .foregroundStyle(WPStyles.primaryText)
                         .padding(.top, 20)
 
-                    Text("Choose which calendars can contribute events to WakePlan's alarm rules.")
+                    Text("Choose which calendars can contribute events to EarlyOtter's alarm rules.")
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
 
@@ -64,7 +64,7 @@ struct CalendarSelectionView: View {
                 .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)
             
-            Text("Make sure WakePlan has permission to read your calendars.")
+            Text("Make sure EarlyOtter has permission to read your calendars.")
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
                 .multilineTextAlignment(.center)
@@ -77,7 +77,7 @@ struct CalendarSelectionView: View {
     private func calendarList(helperText: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Choose which calendars WakePlan should scan.")
+                Text("Choose which calendars EarlyOtter should scan.")
                     .font(.subheadline)
                     .foregroundStyle(WPStyles.secondaryText)
 

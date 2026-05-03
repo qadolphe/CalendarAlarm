@@ -16,7 +16,7 @@ struct DaySettingsView: View {
                             .tint(WPStyles.primaryOrange)
                             .foregroundStyle(WPStyles.primaryText)
                         
-                        Text("When enabled, WakePlan will scan your calendars to dynamically schedule your wake up time based on your events and rules.")
+                        Text("When enabled, EarlyOtter will scan your calendars to dynamically schedule your wake up time based on your events and rules.")
                             .font(.caption)
                             .foregroundStyle(WPStyles.secondaryText)
                     }
