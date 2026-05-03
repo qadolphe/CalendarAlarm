@@ -340,6 +340,7 @@ struct RuleEditorView: View {
     @State private var newLocationKeyword = ""
 
     @State private var showDuplicateAlert = false
+    @State private var expandedAccountIDs: Set<CalendarAccountID> = []
 
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
@@ -428,8 +429,127 @@ struct RuleEditorView: View {
                     .font(.subheadline)
                     .foregroundStyle(WPStyles.secondaryText)
             } else {
-                VStack(spacing: 0) {
-                    ForEach(appState.calendars) { calendar in
+                let enabledAccounts = appState.accounts.filter(\.isEnabled)
+                
+                if enabledAccounts.count > 1 {
+                    VStack(spacing: 16) {
+                        ForEach(enabledAccounts) { account in
+                            accountCalendarGroup(for: account)
+                        }
+                    }
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(appState.calendars) { calendar in
+                            let isSelected = selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.id)
+
+                            Button {
+                                toggleCalendar(calendar.id)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+
+                                    if let account = enabledAccounts.first {
+                                        providerIcon(for: account.provider)
+                                    }
+
+                                    Text(calendar.title)
+                                        .foregroundStyle(WPStyles.primaryText)
+
+                                    Spacer()
+                                }
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 16)
+                            }
+                            .buttonStyle(.plain)
+
+                            if calendar.id != appState.calendars.last?.id {
+                                Divider().overlay(WPStyles.cardBorder).padding(.leading, 40)
+                            }
+                        }
+                    }
+                    .background(WPStyles.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func providerIcon(for provider: CalendarProvider) -> some View {
+        if provider == .apple {
+            Image(systemName: "apple.logo")
+                .foregroundStyle(WPStyles.primaryOrange)
+                .frame(width: 16)
+        } else {
+            Text("G")
+                .font(.headline.weight(.black))
+                .foregroundStyle(WPStyles.primaryOrange)
+                .frame(width: 16)
+        }
+    }
+
+    @ViewBuilder
+    private func accountCalendarGroup(for account: ConnectedCalendarAccount) -> some View {
+        let accountCalendars = appState.calendars.filter { $0.accountID == account.id }
+        if !accountCalendars.isEmpty {
+            let isExpanded = expandedAccountIDs.contains(account.id)
+            let allSelected = accountCalendars.allSatisfy { selectedCalendarIDs.contains($0.id) } || selectedCalendarIDs.isEmpty
+            let someSelected = accountCalendars.contains { selectedCalendarIDs.contains($0.id) } && !allSelected
+
+            VStack(spacing: 0) {
+                // Header
+                HStack(spacing: 12) {
+                    Button {
+                        if allSelected {
+                            if selectedCalendarIDs.isEmpty {
+                                let otherCalendars = appState.calendars.filter { $0.accountID != account.id }
+                                selectedCalendarIDs = Set(otherCalendars.map(\.id))
+                            } else {
+                                accountCalendars.forEach { selectedCalendarIDs.remove($0.id) }
+                            }
+                        } else {
+                            accountCalendars.forEach { selectedCalendarIDs.insert($0.id) }
+                            if selectedCalendarIDs.count == appState.calendars.count {
+                                selectedCalendarIDs = []
+                            }
+                        }
+                    } label: {
+                        Image(systemName: allSelected ? "checkmark.circle.fill" : (someSelected ? "minus.circle.fill" : "circle"))
+                            .foregroundStyle((allSelected || someSelected) ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if isExpanded {
+                                expandedAccountIDs.remove(account.id)
+                            } else {
+                                expandedAccountIDs.insert(account.id)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            providerIcon(for: account.provider)
+                            Text(account.displayName)
+                                .foregroundStyle(WPStyles.primaryText)
+                                .font(.headline)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                                .foregroundStyle(WPStyles.tertiaryText)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+
+                if isExpanded {
+                    Divider().overlay(WPStyles.cardBorder)
+                    
+                    ForEach(accountCalendars) { calendar in
                         let isSelected = selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.id)
 
                         Button {
@@ -441,26 +561,25 @@ struct RuleEditorView: View {
 
                                 Text(calendar.title)
                                     .foregroundStyle(WPStyles.primaryText)
+                                    .font(.subheadline)
 
                                 Spacer()
                             }
-                            .padding(.vertical, 14)
+                            .padding(.vertical, 10)
                             .padding(.horizontal, 16)
+                            .padding(.leading, 24)
                         }
                         .buttonStyle(.plain)
 
-                        if calendar.id != appState.calendars.last?.id {
-                            Divider().overlay(WPStyles.cardBorder)
+                        if calendar.id != accountCalendars.last?.id {
+                            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
                         }
                     }
                 }
-                .background(WPStyles.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(WPStyles.cardBorder, lineWidth: 1)
-                )
             }
+            .background(WPStyles.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         }
     }
 

@@ -140,7 +140,7 @@ struct AccountsView: View {
                     }
 
                     ForEach(appState.accounts.filter { $0.provider == .google }) { account in
-                        accountToggleRow(account, icon: "globe")
+                        accountToggleRow(account, icon: "G")
                             .listRowBackground(WPStyles.surface)
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
@@ -202,9 +202,16 @@ struct AccountsView: View {
 
     private func accountToggleRow(_ account: ConnectedCalendarAccount, icon: String) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .foregroundStyle(WPStyles.primaryOrange)
-                .frame(width: 24)
+            if account.provider == .apple {
+                Image(systemName: "apple.logo")
+                    .foregroundStyle(WPStyles.primaryOrange)
+                    .frame(width: 24)
+            } else {
+                Text("G")
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(WPStyles.primaryOrange)
+                    .frame(width: 24)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(account.displayName)
