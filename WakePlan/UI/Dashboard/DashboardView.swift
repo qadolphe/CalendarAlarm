@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @Bindable var appState: AppState
+    @State private var selectedPlanDetails: WakeUpPlan? = nil
 
     var body: some View {
         let viewModel = DashboardViewModel(appState: appState)
@@ -46,6 +47,9 @@ struct DashboardView: View {
         .task {
             await appState.loadIfNeeded()
         }
+        .sheet(item: $selectedPlanDetails) { plan in
+            WakePlanDetailsView(plan: plan)
+        }
     }
 
     @ViewBuilder
@@ -80,39 +84,35 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func planCard(for plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Text("Next Alarm")
-                    .font(.title3.weight(.semibold))
+        Button {
+            selectedPlanDetails = plan
+        } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Next Alarm")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(WPStyles.primaryText)
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.caption)
+                        .foregroundStyle(WPStyles.primaryOrange.opacity(0.6))
+                }
+
+                if let timeUntilWake = viewModel.timeUntilWake {
+                    Text(timeUntilWake)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(WPStyles.secondaryText)
+                }
+
+                Text(plan.calculatedWakeTime, style: .time)
+                    .font(WPStyles.timeDisplayFont)
+                    .monospacedDigit()
                     .foregroundStyle(WPStyles.primaryText)
-                Spacer()
-                Image(systemName: "sparkles")
-                    .font(.caption)
-                    .foregroundStyle(WPStyles.primaryOrange.opacity(0.6))
-            }
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
 
-            if let timeUntilWake = viewModel.timeUntilWake {
-                Text(timeUntilWake)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(WPStyles.secondaryText)
-            }
-
-            Text(plan.calculatedWakeTime, style: .time)
-                .font(WPStyles.timeDisplayFont)
-                .monospacedDigit()
-                .foregroundStyle(WPStyles.primaryText)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-
-            if let ruleName = plan.appliedRuleName {
-                Text(ruleName)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WPStyles.tertiaryText)
-            }
-
-            VStack(alignment: .leading, spacing: 16) {
                 if let event = plan.targetEvent {
-                    HStack {
+                    HStack(spacing: 8) {
                         Image(systemName: "calendar")
                             .foregroundStyle(WPStyles.primaryOrange)
                         Text(event.title)
@@ -124,42 +124,22 @@ struct DashboardView: View {
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(WPStyles.secondaryText)
                     }
-
-                    Divider()
-
-                    timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
-                    timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
-
-                    if !plan.matchedRuleNames.isEmpty {
-                        Divider()
-                        HStack(spacing: 6) {
-                            Image(systemName: "info.circle")
-                                .font(.caption)
-                                .foregroundStyle(WPStyles.secondaryBlue)
-                            Text("Matched \(plan.matchedRuleNames.joined(separator: " and ")). Using the earlier alarm.")
-                                .font(.caption)
-                                .foregroundStyle(WPStyles.secondaryText)
-                        }
-                    }
+                    .padding(.top, 4)
                 } else {
-                    HStack {
+                    HStack(spacing: 8) {
                         Image(systemName: "moon.zzz.fill")
                             .foregroundStyle(.indigo)
-                        Text("No early events")
+                        Text(viewModel.statusMessage ?? "Sleeping in")
                             .font(.headline)
+                            .lineLimit(1)
                             .foregroundStyle(WPStyles.primaryText)
                         Spacer()
                     }
-                    Divider()
-                    Text(viewModel.statusMessage ?? "Sleeping in until your baseline limit.")
-                        .font(.subheadline)
-                        .foregroundStyle(WPStyles.secondaryText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
                 }
             }
-            .padding(20)
-            .insetSurfaceStyle(cornerRadius: 24)
         }
+        .buttonStyle(.plain)
         .cardStyle()
     }
 

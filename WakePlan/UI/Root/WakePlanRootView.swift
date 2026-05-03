@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct WakePlanRootView: View {
+    private static let forceOnboardingLaunchArgument = "-WakePlanForceOnboarding"
+
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Bindable var appState: AppState
     @State private var selectedTab: MainTab = .home
@@ -24,7 +26,11 @@ struct WakePlanRootView: View {
     }
 
     private var shouldShowOnboarding: Bool {
-        !hasCompletedOnboarding
+        if ProcessInfo.processInfo.arguments.contains(Self.forceOnboardingLaunchArgument) {
+            return true
+        }
+
+        return !hasCompletedOnboarding
     }
 
     private var mainTabView: some View {
