@@ -74,18 +74,22 @@ struct AppleCalendarProvider: CalendarEventProviding {
     static let appleAccountID: CalendarAccountID = "apple.calendar"
 
     private let calendarReader: EventKitCalendarReader
+    private let accountStore: AccountStoring
 
-    init(calendarReader: EventKitCalendarReader) {
+    init(calendarReader: EventKitCalendarReader, accountStore: AccountStoring) {
         self.calendarReader = calendarReader
+        self.accountStore = accountStore
     }
 
     func accounts() async throws -> [ConnectedCalendarAccount] {
-        [
+        let stored = try? accountStore.load()
+        let isEnabled = stored?.first(where: { $0.id == Self.appleAccountID })?.isEnabled ?? true
+        return [
             ConnectedCalendarAccount(
                 id: Self.appleAccountID,
                 provider: .apple,
                 displayName: "Apple Calendar",
-                isEnabled: true
+                isEnabled: isEnabled
             )
         ]
     }

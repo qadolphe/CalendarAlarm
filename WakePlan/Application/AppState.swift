@@ -200,8 +200,31 @@ final class AppState {
 
         do {
             var stored = try accountStore.load()
-            guard let index = stored.firstIndex(where: { $0.id == id }) else { return }
-            stored[index].isEnabled = isEnabled
+            if let index = stored.firstIndex(where: { $0.id == id }) {
+                stored[index].isEnabled = isEnabled
+            } else if id == AppleCalendarProvider.appleAccountID {
+                stored.append(ConnectedCalendarAccount(
+                    id: id,
+                    provider: .apple,
+                    displayName: "Apple Calendar",
+                    isEnabled: isEnabled
+                ))
+            } else {
+                return
+            }
+            try accountStore.save(stored)
+            try await refreshDashboard()
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
+    func removeAccount(id: CalendarAccountID) async {
+        noticeMessage = nil
+
+        do {
+            var stored = try accountStore.load()
+            stored.removeAll(where: { $0.id == id })
             try accountStore.save(stored)
             try await refreshDashboard()
         } catch {

@@ -17,7 +17,7 @@ struct WakePlanApp: App {
         let calendarReader = EventKitCalendarReader()
         let calendarProvider = CompositeCalendarProvider(
             providers: [
-                AppleCalendarProvider(calendarReader: calendarReader),
+                AppleCalendarProvider(calendarReader: calendarReader, accountStore: accountStore),
                 GoogleCalendarProvider(accountStore: accountStore)
             ]
         )

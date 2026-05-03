@@ -131,105 +131,78 @@ struct AccountsView: View {
         ZStack {
             Color.clear.withAppBackground()
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text("Accounts")
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(WPStyles.primaryText)
-                        .padding(.top, 20)
+            List {
+                Section(header: sectionHeader("Connected Accounts"), footer: Text("WakePlan keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
+                    
+                    if let appleAccount = appState.accounts.first(where: { $0.provider == .apple }) {
+                        accountToggleRow(appleAccount, icon: "apple.logo")
+                            .listRowBackground(WPStyles.surface)
+                    }
 
-                    Text("WakePlan keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.")
-                        .font(.body)
-                        .foregroundStyle(WPStyles.secondaryText)
-
-                    accountsCard
-
-                    if let notice = appState.noticeMessage {
-                        noticeBanner(notice)
+                    ForEach(appState.accounts.filter { $0.provider == .google }) { account in
+                        accountToggleRow(account, icon: "globe")
+                            .listRowBackground(WPStyles.surface)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    Task { await appState.removeAccount(id: account.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 28)
+
+                Section {
+                    Button {
+                        Task { await appState.addGoogleAccount() }
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(WPStyles.primaryOrange)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Google")
+                                    .foregroundStyle(WPStyles.primaryText)
+                                Text("Add Google Account")
+                                    .font(.subheadline)
+                                    .foregroundStyle(WPStyles.secondaryText)
+                            }
+                        }
+                    }
+                    .listRowBackground(WPStyles.surface)
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            
+            if let notice = appState.noticeMessage {
+                VStack {
+                    Spacer()
+                    Text(notice)
+                        .font(.subheadline)
+                        .padding()
+                        .background(Color.green.opacity(0.1))
+                        .foregroundStyle(.green)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.bottom, 20)
+                }
             }
         }
         .navigationTitle("Accounts")
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var accountsCard: some View {
-        VStack(spacing: 0) {
-            accountInfoRow(
-                title: "Apple Calendar",
-                subtitle: appState.permissions.calendar == .authorized ? "Connected by iOS" : "Calendar access needed",
-                icon: "apple.logo"
-            )
-
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-
-            Button {
-                Task { await appState.addGoogleAccount() }
-            } label: {
-                HStack(spacing: 14) {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(WPStyles.primaryOrange)
-                        .frame(width: 24)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Google")
-                            .foregroundStyle(WPStyles.primaryText)
-                        Text("Add Google Account")
-                            .font(.subheadline)
-                            .foregroundStyle(WPStyles.secondaryText)
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
-            }
-            .buttonStyle(.plain)
-
-            let googleAccounts = appState.accounts.filter { $0.provider == .google }
-
-            if !googleAccounts.isEmpty {
-                Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-
-                ForEach(Array(googleAccounts.enumerated()), id: \.element.id) { index, account in
-                    accountToggleRow(account)
-
-                    if index < googleAccounts.count - 1 {
-                        Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-                    }
-                }
-            }
-        }
-        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+    private func sectionHeader(_ text: String) -> some View {
+        Text(text)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(WPStyles.secondaryText)
+            .textCase(nil)
     }
 
-    private func accountInfoRow(title: String, subtitle: String, icon: String) -> some View {
+    private func accountToggleRow(_ account: ConnectedCalendarAccount, icon: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .foregroundStyle(WPStyles.primaryOrange)
-                .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .foregroundStyle(WPStyles.primaryText)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(WPStyles.secondaryText)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-    }
-
-    private func accountToggleRow(_ account: ConnectedCalendarAccount) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: "globe")
                 .foregroundStyle(WPStyles.primaryOrange)
                 .frame(width: 24)
 
