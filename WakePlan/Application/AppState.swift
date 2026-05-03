@@ -91,13 +91,15 @@ final class AppState {
     }
 
     func refreshPlan() async {
+        let previousDashboardState = dashboardState
         noticeMessage = nil
 
         do {
-            dashboardState = .loading
             try await refreshDashboard()
+        } catch is CancellationError {
+            dashboardState = previousDashboardState
         } catch {
-            dashboardState = .error(format(error))
+            dashboardState = previousDashboardState
         }
     }
 
@@ -105,12 +107,15 @@ final class AppState {
         guard hasLoaded else { return }
         guard dashboardState != .loading else { return }
 
+        let previousDashboardState = dashboardState
         noticeMessage = nil
 
         do {
             try await refreshDashboard()
+        } catch is CancellationError {
+            dashboardState = previousDashboardState
         } catch {
-            dashboardState = .error(format(error))
+            dashboardState = previousDashboardState
         }
     }
 
