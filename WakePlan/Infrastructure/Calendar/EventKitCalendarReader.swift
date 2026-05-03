@@ -280,7 +280,10 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         ]
 
         let request = authorizedRequest(url: components.url!, accessToken: accessToken)
+        print("[WakePlan Debug] Google API Request: GET \(components.url?.absoluteString ?? "")")
+        
         let response = try await decode(request, as: GoogleCalendarEventsResponse.self)
+        print("[WakePlan Debug] Google API returned \(response.items.count) raw items for calendar '\(calendar.summary)'.")
 
         return response.items.compactMap { item in
             mapEvent(
@@ -315,6 +318,7 @@ struct GoogleCalendarProvider: CalendarEventProviding {
     ) -> ParsedEvent? {
         guard let start = Self.parse(dateInfo: item.start),
               let end = Self.parse(dateInfo: item.end) else {
+            print("[WakePlan Debug] Google API parser rejected event '\(item.summary ?? "Untitled")' because the date failed to parse.")
             return nil
         }
 

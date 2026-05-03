@@ -9,12 +9,14 @@ struct LocationRule: Codable, Equatable, Sendable {
 struct ScheduleRules: Codable, Equatable, Sendable {
     var isEnabled: Bool
     var activeDays: Set<Int>
+    var fallbackEnabledDays: Set<Int>
     /// Per-weekday fallback wake times. Missing key = use `TimingRules.latestWakeTime`.
     var fallbackWakeTimes: [Int: ClockTime]
 
     static let `default` = ScheduleRules(
         isEnabled: true,
         activeDays: Set(1...7),
+        fallbackEnabledDays: Set(1...7),
         fallbackWakeTimes: [:]
     )
 }
@@ -120,6 +122,11 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         set { schedule.activeDays = newValue }
     }
 
+    var fallbackEnabledDays: Set<Int> {
+        get { schedule.fallbackEnabledDays }
+        set { schedule.fallbackEnabledDays = newValue }
+    }
+
     var selectedCalendarIDs: Set<String> {
         get { filters.selectedCalendarIDs }
         set { filters.selectedCalendarIDs = newValue }
@@ -214,6 +221,7 @@ extension AlarmPreferences {
         case latestWakeTime
         case defaultCommuteTime
         case activeDays
+        case fallbackEnabledDays
         case selectedCalendarIDs
         case ignoreAllDayEvents
         case ignoreTentativeEvents
@@ -245,9 +253,11 @@ extension AlarmPreferences {
 
         isSystemEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSystemEnabled) ?? true
 
+        let decodedActiveDays = try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays
         schedule = ScheduleRules(
             isEnabled: try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? ScheduleRules.default.isEnabled,
-            activeDays: try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays,
+            activeDays: decodedActiveDays,
+            fallbackEnabledDays: try container.decodeIfPresent(Set<Int>.self, forKey: .fallbackEnabledDays) ?? decodedActiveDays,
             fallbackWakeTimes: [:]
         )
         timing = TimingRules(

@@ -5,17 +5,13 @@ import SwiftUI
 struct RulesView: View {
     @Bindable var appState: AppState
     @State private var isAddingRule = false
+    @State private var selectedWeekday: WeekdayOption?
 
     var body: some View {
         List {
             // MARK: Schedule config (global, lives above rules)
             Section {
-                autoPilotCard
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
-
-                fallbackTimesCard
+                scheduleCard
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
@@ -77,30 +73,29 @@ struct RulesView: View {
                 RuleEditorView(appState: appState, mode: .add)
             }
         }
+        .sheet(item: $selectedWeekday) { option in
+            DaySettingsView(appState: appState, weekdayOption: option)
+        }
     }
 
     // MARK: Schedule cards
 
-    private var autoPilotCard: some View {
+    private var scheduleCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
                 ZStack {
                     Circle()
                         .fill(WPStyles.primaryOrange.opacity(0.12))
                         .frame(width: 40, height: 40)
-                    Image(systemName: "sparkles")
+                    Image(systemName: "calendar.day.timeline.left")
                         .foregroundStyle(WPStyles.primaryOrange)
                 }
 
-                Text("Auto-Pilot")
+                Text("Daily Schedule")
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
 
                 Spacer()
-
-                Toggle("", isOn: enabledBinding)
-                    .labelsHidden()
-                    .tint(WPStyles.primaryOrange)
             }
 
             if appState.preferences.isEnabled {
@@ -118,52 +113,6 @@ struct RulesView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: appState.preferences.isEnabled)
         .cardStyle()
-    }
-
-    @ViewBuilder
-    private var fallbackTimesCard: some View {
-        let activeDays = WakePlanUIConfiguration.sundayFirstWeekdays.filter { option in
-            appState.preferences.activeDays.contains(option.weekday)
-        }
-
-        if appState.preferences.isEnabled && !activeDays.isEmpty {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Fallback Wake Times")
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(activeDays) { option in
-                            fallbackGridCell(for: option)
-                        }
-                    }
-                }
-            }
-            .cardStyle()
-        }
-    }
-
-    private func fallbackGridCell(for option: WeekdayOption) -> some View {
-        VStack(spacing: 8) {
-            Text(option.shortLabel)
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(WPStyles.secondaryText)
-                .textCase(.uppercase)
-
-            DatePicker(
-                "",
-                selection: fallbackTimeBinding(for: option.weekday),
-                displayedComponents: .hourAndMinute
-            )
-            .labelsHidden()
-            .colorScheme(.dark)
-            .scaleEffect(0.9)
-        }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 8)
-        .background(WPStyles.surfaceRaised)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: Rule cards
@@ -266,25 +215,27 @@ struct RulesView: View {
     // MARK: Helpers
 
     private func weekdayCell(_ option: WeekdayOption) -> some View {
-        let isSelected = appState.preferences.activeDays.contains(option.weekday)
-        return Button { toggleActiveDay(option.weekday) } label: {
+        let isAutoPilot = appState.preferences.activeDays.contains(option.weekday)
+        let isFallback = appState.preferences.fallbackEnabledDays.contains(option.weekday)
+
+        return Button { selectedWeekday = option } label: {
             VStack(spacing: 8) {
                 Text(option.shortLabel).font(.system(size: 9, weight: .bold))
                 Circle()
-                    .fill(isSelected ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
+                    .fill(isAutoPilot ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
                     .frame(width: 6, height: 6)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? WPStyles.surfaceRaised : WPStyles.surface)
+                    .fill(isAutoPilot || isFallback ? WPStyles.surfaceRaised : WPStyles.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.55) : Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(isFallback ? WPStyles.primaryOrange.opacity(0.8) : (isAutoPilot ? WPStyles.primaryOrange.opacity(0.55) : Color.white.opacity(0.06)), lineWidth: 1)
             )
-            .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
+            .foregroundStyle(isAutoPilot || isFallback ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
         }
         .buttonStyle(.plain)
     }

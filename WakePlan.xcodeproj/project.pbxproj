@@ -52,6 +52,7 @@
 		AA0000000000000000000226 /* UI/Root/WakePlanRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000126 /* UI/Root/WakePlanRootView.swift */; };
 		AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000127 /* UI/Rules/RulesView.swift */; };
 		AA0000000000000000000228 /* UI/Settings/TimingSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000128 /* UI/Settings/TimingSettingsView.swift */; };
+		AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */; };
 		AA0000000000000000000230 /* Domain/Models/AlarmRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */; };
 		AA0000000000000000000231 /* Application/AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000131 /* Application/AccountService.swift */; };
 		AA0000000000000000000232 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000132 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift */; };
@@ -119,6 +120,7 @@
 		AA0000000000000000000126 /* UI/Root/WakePlanRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Root/WakePlanRootView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000127 /* UI/Rules/RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/RulesView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000128 /* UI/Settings/TimingSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/TimingSettingsView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/DaySettingsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmRule.swift; sourceTree = "<group>"; };
 		AA0000000000000000000131 /* Application/AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AccountService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000132 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Auth/GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
@@ -401,6 +403,7 @@
 		AA0000000000000000000536 /* Rules */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */,
 				AA0000000000000000000127 /* UI/Rules/RulesView.swift */,
 			);
 			name = Rules;
@@ -566,6 +569,7 @@
 				AA0000000000000000000225 /* UI/Onboarding/OnboardingView.swift in Sources */,
 				AA0000000000000000000226 /* UI/Root/WakePlanRootView.swift in Sources */,
 				AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */,
+				AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */,
 				AA0000000000000000000228 /* UI/Settings/TimingSettingsView.swift in Sources */,
 				9363927702F16CFA0B76D76F /* DesignSystem.swift in Sources */,
 			);
