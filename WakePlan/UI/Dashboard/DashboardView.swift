@@ -209,11 +209,14 @@ struct DashboardView: View {
     private var topBar: some View {
         HStack {
             Text(AppConfiguration.appName)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(WPStyles.secondaryText)
+                .font(.custom("Noteworthy-Bold", size: 26))
+                .foregroundStyle(WPStyles.primaryOrange)
+                .padding(.leading, 10)
+                .offset(y: 15)
 
             Spacer()
         }
+        .padding(.bottom, -12)
     }
 
     private func timelineRow(icon: String, label: String, value: String) -> some View {
