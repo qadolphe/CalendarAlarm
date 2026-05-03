@@ -98,12 +98,18 @@ struct WakePlanCalculator {
             )
         }
         print("[WakePlan Debug] WakePlanCalculator received \(events.count) raw events from providers.")
+        for event in events {
+            print("  - [RAW] '\(event.title)' (Calendar: \(event.calendarID), Start: \(event.startDate), AllDay: \(event.isAllDay))")
+        }
 
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
 
-        print("[WakePlan Debug] WakePlanCalculator retained \(validEvents.count) events after basic filters (All-Day, Time Window, etc).")
+        print("[WakePlan Debug] WakePlanCalculator retained \(validEvents.count) events after basic filters.")
+        for event in validEvents {
+            print("  - [RETAINED] '\(event.title)' (Start: \(event.startDate))")
+        }
 
         let allRules = preferences.alarmRules
 

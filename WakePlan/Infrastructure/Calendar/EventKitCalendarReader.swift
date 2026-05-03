@@ -269,8 +269,11 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         interval: DateInterval,
         accountID: CalendarAccountID
     ) async throws -> [ParsedEvent] {
+        let safeCalendarId = calendar.id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)?
+            .replacingOccurrences(of: "@", with: "%40") ?? calendar.id
+
         var components = URLComponents(
-            string: "https://www.googleapis.com/calendar/v3/calendars/\(calendar.id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? calendar.id)/events"
+            string: "https://www.googleapis.com/calendar/v3/calendars/\(safeCalendarId)/events"
         )!
         components.queryItems = [
             URLQueryItem(name: "singleEvents", value: "true"),
