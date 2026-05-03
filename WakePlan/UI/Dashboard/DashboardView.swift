@@ -32,8 +32,6 @@ struct DashboardView: View {
                         }
 
                         content(viewModel: viewModel)
-
-                        quickActionRow
                     }
                     .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
                     .disabled(!appState.preferences.isSystemEnabled)
@@ -42,6 +40,9 @@ struct DashboardView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 28)
             }
+        }
+        .refreshable {
+            await appState.refreshPlan()
         }
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -203,14 +204,6 @@ struct DashboardView: View {
                 .foregroundStyle(WPStyles.secondaryText)
 
             Spacer()
-
-#if DEBUG
-            Button(AppConfiguration.testAlarmButtonTitle) {
-                Task { await appState.scheduleTestAlarm() }
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(WPStyles.secondaryBlue)
-#endif
         }
     }
 
@@ -307,18 +300,6 @@ struct DashboardView: View {
         .cardStyle()
     }
 
-    private var quickActionRow: some View {
-        Button(action: {
-            Task { await appState.refreshPlan() }
-        }) {
-            Label("Recalculate Plan", systemImage: "arrow.triangle.2.circlepath")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(WPStyles.secondaryText)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 24)
-                .background(Capsule().fill(WPStyles.surfaceRaised))
-        }
-    }
 
     private func upcomingPlanRow(_ plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
         let isDisabled = plan.reason == .disabled || plan.reason == .inactiveDay || plan.reason == .noSchedule
