@@ -27,6 +27,7 @@ final class AppState {
     var noticeMessage: String?
 
     private let accountStore: AccountStoring
+    private let accountService: AccountService
     private let preferencesStore: PreferencesStoring
     private let wakePlanService: WakePlanService
     private let permissionService: PermissionService
@@ -44,12 +45,14 @@ final class AppState {
 
     init(
         accountStore: AccountStoring,
+        accountService: AccountService,
         preferencesStore: PreferencesStoring,
         wakePlanService: WakePlanService,
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService
     ) {
         self.accountStore = accountStore
+        self.accountService = accountService
         self.preferencesStore = preferencesStore
         self.wakePlanService = wakePlanService
         self.permissionService = permissionService
@@ -184,25 +187,8 @@ final class AppState {
         noticeMessage = nil
 
         do {
-            var stored = try accountStore.load()
-            let existingNumbers = stored
-                .filter { $0.provider == .google }
-                .compactMap { account in
-                    Int(account.displayName.replacingOccurrences(of: "Google Account ", with: ""))
-                }
-            let nextNumber = (existingNumbers.max() ?? 0) + 1
-
-            stored.append(
-                ConnectedCalendarAccount(
-                    id: CalendarAccountID(rawValue: UUID().uuidString),
-                    provider: .google,
-                    displayName: "Google Account \(nextNumber)",
-                    isEnabled: true
-                )
-            )
-
-            try accountStore.save(stored)
-            noticeMessage = "Google account placeholder added. Direct Google sync is not connected yet."
+            accounts = try await accountService.connectGoogleAccount()
+            noticeMessage = "Google account connected."
             try await refreshDashboard()
         } catch {
             dashboardState = .error(format(error))

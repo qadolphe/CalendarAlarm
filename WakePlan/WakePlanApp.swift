@@ -1,3 +1,4 @@
+import GoogleSignIn
 import SwiftUI
 
 @main
@@ -6,6 +7,11 @@ struct WakePlanApp: App {
 
     init() {
         let accountStore = UserDefaultsAccountStore()
+        let googleAuthenticator = GoogleSignInAuthenticator()
+        let accountService = AccountService(
+            accountStore: accountStore,
+            googleAuthenticator: googleAuthenticator
+        )
         let preferencesStore = UserDefaultsPreferencesStore()
         let alarmStore = UserDefaultsScheduledAlarmStore()
         let calendarReader = EventKitCalendarReader()
@@ -32,6 +38,7 @@ struct WakePlanApp: App {
         _appState = State(
             initialValue: AppState(
                 accountStore: accountStore,
+                accountService: accountService,
                 preferencesStore: preferencesStore,
                 wakePlanService: wakePlanService,
                 permissionService: permissionService,
@@ -43,6 +50,9 @@ struct WakePlanApp: App {
     var body: some Scene {
         WindowGroup {
             WakePlanRootView(appState: appState)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

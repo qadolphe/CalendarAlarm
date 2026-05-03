@@ -23,3 +23,14 @@ protocol AccountStoring {
     func load() throws -> [ConnectedCalendarAccount]
     func save(_ accounts: [ConnectedCalendarAccount]) throws
 }
+
+struct GoogleAccountAuthResult: Equatable, Sendable {
+    let accountID: CalendarAccountID
+    let displayName: String
+    let email: String
+}
+
+protocol GoogleAccountAuthenticating {
+    @MainActor
+    func signIn() async throws -> GoogleAccountAuthResult
+}
