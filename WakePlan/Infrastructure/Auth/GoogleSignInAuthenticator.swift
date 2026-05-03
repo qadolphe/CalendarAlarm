@@ -37,9 +37,9 @@ final class GoogleSignInAuthenticator: GoogleAccountAuthenticating {
         let profile = user.profile
         let email = profile?.email ?? "Unknown Google Account"
         let name = profile?.name ?? email
-        let matchingAccountIDs = googleAccountIDs(for: user, fallbackEmail: profile?.email)
+        let matchingAccountIDs = GoogleAccountIdentity.matchingIDs(for: user)
 
-        guard let accountID = preferredGoogleAccountID(for: user, fallbackEmail: profile?.email) else {
+        guard let accountID = GoogleAccountIdentity.preferredID(for: user) else {
             throw GoogleAuthError.missingAccountIdentifier
         }
 
@@ -50,12 +50,11 @@ final class GoogleSignInAuthenticator: GoogleAccountAuthenticating {
             email: email
         )
     }
+}
 
-    private func preferredGoogleAccountID(
-        for user: GIDGoogleUser,
-        fallbackEmail: String?
-    ) -> CalendarAccountID? {
-        if let email = normalizedEmail(fallbackEmail) {
+enum GoogleAccountIdentity {
+    static func preferredID(for user: GIDGoogleUser) -> CalendarAccountID? {
+        if let email = normalizedEmail(user.profile?.email) {
             return CalendarAccountID(rawValue: email)
         }
 
@@ -66,13 +65,10 @@ final class GoogleSignInAuthenticator: GoogleAccountAuthenticating {
         return nil
     }
 
-    private func googleAccountIDs(
-        for user: GIDGoogleUser,
-        fallbackEmail: String?
-    ) -> Set<CalendarAccountID> {
+    static func matchingIDs(for user: GIDGoogleUser) -> Set<CalendarAccountID> {
         var ids: Set<CalendarAccountID> = []
 
-        if let email = normalizedEmail(fallbackEmail) {
+        if let email = normalizedEmail(user.profile?.email) {
             ids.insert(CalendarAccountID(rawValue: email))
         }
 
@@ -83,11 +79,11 @@ final class GoogleSignInAuthenticator: GoogleAccountAuthenticating {
         return ids
     }
 
-    private func normalizedEmail(_ value: String?) -> String? {
+    private static func normalizedEmail(_ value: String?) -> String? {
         normalizedValue(value)?.lowercased()
     }
 
-    private func normalizedValue(_ value: String?) -> String? {
+    private static func normalizedValue(_ value: String?) -> String? {
         guard let value else { return nil }
 
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -97,19 +97,9 @@ struct WakePlanCalculator {
                 matchedRuleNames: []
             )
         }
-        print("[WakePlan Debug] WakePlanCalculator received \(events.count) raw events from providers.")
-        for event in events {
-            print("  - [RAW] '\(event.title)' (Calendar: \(event.calendarID), Start: \(event.startDate), AllDay: \(event.isAllDay))")
-        }
-
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-
-        print("[WakePlan Debug] WakePlanCalculator retained \(validEvents.count) events after basic filters.")
-        for event in validEvents {
-            print("  - [RETAINED] '\(event.title)' (Start: \(event.startDate))")
-        }
 
         let allRules = preferences.alarmRules
 
@@ -144,10 +134,7 @@ struct WakePlanCalculator {
 
         // Choose the candidate with the earliest wake time (not earliest event start)
         guard let winner = candidates.min(by: { $0.wakeTime < $1.wakeTime }) else {
-            print("[WakePlan Debug] WakePlanCalculator found 0 matching rule candidates. Falling back.")
-
             guard scheduleRules.fallbackEnabledDays.contains(weekday) else {
-                print("[WakePlan Debug] Fallback disabled for weekday \(weekday). Canceling alarm.")
                 let dayFallback = preferences.fallbackWakeTime(for: weekday)
                 return WakeUpPlan(
                     id: hasher.makeID(

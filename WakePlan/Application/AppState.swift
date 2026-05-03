@@ -242,12 +242,6 @@ final class AppState {
         permissions = await permissionService.currentStatus()
         accounts = try await wakePlanService.accounts()
 
-        // Allow fallback/Google events even if Apple Calendar is denied
-        if permissions.calendar != .authorized && accounts.filter({ $0.provider == .google }).isEmpty {
-            // We can optionally show a permission prompt if literally nothing is connected,
-            // but the user prefers falling back to standard alarms.
-        }
-
         calendars = try await wakePlanService.calendars()
         let displayPlans = try await wakePlanService.makeDisplayPlans(startingAt: now, count: 4)
         let plan: WakeUpPlan
