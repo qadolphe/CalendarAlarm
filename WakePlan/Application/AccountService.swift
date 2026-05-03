@@ -24,7 +24,9 @@ final class AccountService {
             isEnabled: true
         )
 
-        if let existingIndex = accounts.firstIndex(where: { $0.id == newAccount.id }) {
+        if let existingIndex = accounts.firstIndex(where: {
+            $0.provider == .google && result.matchingAccountIDs.contains($0.id)
+        }) {
             accounts[existingIndex] = newAccount
         } else {
             accounts.append(newAccount)

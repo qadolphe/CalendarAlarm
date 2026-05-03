@@ -26,6 +26,7 @@ protocol AccountStoring {
 
 struct GoogleAccountAuthResult: Equatable, Sendable {
     let accountID: CalendarAccountID
+    let matchingAccountIDs: Set<CalendarAccountID>
     let displayName: String
     let email: String
 }

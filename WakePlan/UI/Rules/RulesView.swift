@@ -120,21 +120,28 @@ struct RulesView: View {
         .cardStyle()
     }
 
+    @ViewBuilder
     private var fallbackTimesCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Fallback Wake Times")
-                .font(.headline)
-                .foregroundStyle(WPStyles.primaryText)
+        let activeDays = WakePlanUIConfiguration.sundayFirstWeekdays.filter { option in
+            appState.preferences.activeDays.contains(option.weekday)
+        }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
-                        fallbackGridCell(for: option)
+        if appState.preferences.isEnabled && !activeDays.isEmpty {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Fallback Wake Times")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(activeDays) { option in
+                            fallbackGridCell(for: option)
+                        }
                     }
                 }
             }
+            .cardStyle()
         }
-        .cardStyle()
     }
 
     private func fallbackGridCell(for option: WeekdayOption) -> some View {
@@ -519,10 +526,17 @@ struct RuleEditorView: View {
                             if selectedCalendarIDs.isEmpty {
                                 let otherCalendars = appState.calendars.filter { $0.accountID != account.id }
                                 selectedCalendarIDs = Set(otherCalendars.map(\.id))
+                                if selectedCalendarIDs.isEmpty {
+                                    selectedCalendarIDs.insert("NONE")
+                                }
                             } else {
                                 accountCalendars.forEach { selectedCalendarIDs.remove($0.id) }
+                                if selectedCalendarIDs.isEmpty {
+                                    selectedCalendarIDs.insert("NONE")
+                                }
                             }
                         } else {
+                            selectedCalendarIDs.remove("NONE")
                             accountCalendars.forEach { selectedCalendarIDs.insert($0.id) }
                             if selectedCalendarIDs.count == appState.calendars.count {
                                 selectedCalendarIDs = []
@@ -813,9 +827,16 @@ struct RuleEditorView: View {
             var newSelection = allIDs
             newSelection.remove(id)
             selectedCalendarIDs = newSelection
+            if selectedCalendarIDs.isEmpty {
+                selectedCalendarIDs.insert("NONE")
+            }
         } else if selectedCalendarIDs.contains(id) {
             selectedCalendarIDs.remove(id)
+            if selectedCalendarIDs.isEmpty {
+                selectedCalendarIDs.insert("NONE")
+            }
         } else {
+            selectedCalendarIDs.remove("NONE")
             selectedCalendarIDs.insert(id)
             if selectedCalendarIDs.count == appState.calendars.count {
                 selectedCalendarIDs = []

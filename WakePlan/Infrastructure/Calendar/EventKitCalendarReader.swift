@@ -105,6 +105,8 @@ struct AppleCalendarProvider: CalendarEventProviding {
 }
 
 struct GoogleCalendarProvider: CalendarEventProviding {
+    private static let calendarReadonlyScope = "https://www.googleapis.com/auth/calendar.readonly"
+
     private let accountStore: AccountStoring
     private let session: URLSession
 
@@ -127,18 +129,23 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         guard !enabledAccounts.isEmpty else { return [] }
 
         let user = try await currentGoogleUser()
-        guard let user, enabledAccounts.contains(where: { $0.id == googleAccountID(for: user) }) else {
+        guard let user else {
             return []
         }
 
-        let calendarList = try await fetchCalendarList(accessToken: user.accessToken.tokenString)
+        let refreshedUser = try validatedCalendarAccess(for: user)
+        guard let account = matchingAccount(for: refreshedUser, in: enabledAccounts) else {
+            return []
+        }
+
+        let calendarList = try await fetchCalendarList(accessToken: refreshedUser.accessToken.tokenString)
 
         return calendarList.items.map { calendar in
             CalendarSource(
                 id: Self.calendarSourceID(for: calendar.id),
                 title: calendar.summary,
                 isSelected: true,
-                accountID: googleAccountID(for: user),
+                accountID: account.id,
                 provider: .google
             )
         }
@@ -151,10 +158,13 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         let user = try await currentGoogleUser()
         guard let user else { return [] }
 
-        let accountID = googleAccountID(for: user)
-        guard enabledAccounts.contains(where: { $0.id == accountID }) else { return [] }
+        let refreshedUser = try validatedCalendarAccess(for: user)
+        guard let account = matchingAccount(for: refreshedUser, in: enabledAccounts) else {
+            return []
+        }
 
-        let calendarList = try await fetchCalendarList(accessToken: user.accessToken.tokenString)
+        let accountID = account.id
+        let calendarList = try await fetchCalendarList(accessToken: refreshedUser.accessToken.tokenString)
         let interval = targetDay.interval(calendar: .current)
 
         var merged: [ParsedEvent] = []
@@ -163,7 +173,7 @@ struct GoogleCalendarProvider: CalendarEventProviding {
             for calendar in calendarList.items {
                 group.addTask {
                     let events = try await fetchEvents(
-                        accessToken: user.accessToken.tokenString,
+                        accessToken: refreshedUser.accessToken.tokenString,
                         calendar: calendar,
                         interval: interval,
                         accountID: accountID
@@ -232,6 +242,15 @@ struct GoogleCalendarProvider: CalendarEventProviding {
                 continuation.resume(returning: refreshedUser)
             }
         }
+    }
+
+    private func validatedCalendarAccess(for user: GIDGoogleUser) throws -> GIDGoogleUser {
+        let grantedScopes = Set(user.grantedScopes ?? [])
+        guard grantedScopes.contains(Self.calendarReadonlyScope) else {
+            throw GoogleCalendarProviderError.missingCalendarScope
+        }
+
+        return user
     }
 
     private func fetchCalendarList(accessToken: String) async throws -> GoogleCalendarListResponse {
@@ -315,8 +334,37 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         )
     }
 
-    private func googleAccountID(for user: GIDGoogleUser) -> CalendarAccountID {
-        CalendarAccountID(rawValue: user.userID ?? user.profile?.email ?? "google.currentUser")
+    private func matchingAccount(
+        for user: GIDGoogleUser,
+        in accounts: [ConnectedCalendarAccount]
+    ) -> ConnectedCalendarAccount? {
+        let candidateIDs = googleAccountIDs(for: user)
+        return accounts.first(where: { candidateIDs.contains($0.id) })
+    }
+
+    private func googleAccountIDs(for user: GIDGoogleUser) -> Set<CalendarAccountID> {
+        var ids: Set<CalendarAccountID> = []
+
+        if let email = normalizedEmail(user.profile?.email) {
+            ids.insert(CalendarAccountID(rawValue: email))
+        }
+
+        if let userID = normalizedValue(user.userID) {
+            ids.insert(CalendarAccountID(rawValue: userID))
+        }
+
+        return ids
+    }
+
+    private func normalizedEmail(_ value: String?) -> String? {
+        normalizedValue(value)?.lowercased()
+    }
+
+    private func normalizedValue(_ value: String?) -> String? {
+        guard let value else { return nil }
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     private static func calendarSourceID(for googleCalendarID: String) -> String {
@@ -367,12 +415,15 @@ private enum GoogleCalendarProviderError: LocalizedError {
     static let noAuthInKeychainCode = -4
 
     case missingSignedInUser
+    case missingCalendarScope
     case requestFailed(statusCode: Int)
 
     var errorDescription: String? {
         switch self {
         case .missingSignedInUser:
             return "Google Calendar could not find a signed-in user."
+        case .missingCalendarScope:
+            return "Google Calendar access expired or was never granted. Reconnect your Google account."
         case .requestFailed(let statusCode):
             return "Google Calendar request failed with status \(statusCode)."
         }
