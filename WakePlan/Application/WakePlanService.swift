@@ -41,6 +41,30 @@ final class WakePlanService {
         return plans
     }
 
+    func makeDisplayPlans(
+        startingAt now: Date = Date(),
+        count: Int,
+        calendar: Calendar = .current
+    ) async throws -> [WakeUpPlan] {
+        guard count > 0 else { return [] }
+
+        let preferences = try preferencesStore.load()
+        var plans: [WakeUpPlan] = []
+        plans.reserveCapacity(count)
+
+        for offset in 0..<count {
+            let date = calendar.date(byAdding: .day, value: offset, to: now) ?? now
+            let day = TargetDay(date: date, calendar: calendar)
+            let plan = try await makePlan(targetDay: day, preferences: preferences, calendar: calendar)
+
+            if plan.calculatedWakeTime > now {
+                plans.append(plan)
+            }
+        }
+
+        return plans
+    }
+
     private func makePlan(
         targetDay: TargetDay,
         preferences: AlarmPreferences,

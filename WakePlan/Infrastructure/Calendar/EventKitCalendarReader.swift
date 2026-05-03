@@ -96,11 +96,15 @@ struct AppleCalendarProvider: CalendarEventProviding {
     }
 
     func calendars() async throws -> [CalendarSource] {
-        try await calendarReader.availableCalendars()
+        let isEnabled = (try? accountStore.load())?.first(where: { $0.id == Self.appleAccountID })?.isEnabled ?? true
+        guard isEnabled else { return [] }
+        return try await calendarReader.availableCalendars()
     }
 
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
-        try await calendarReader.events(for: targetDay)
+        let isEnabled = (try? accountStore.load())?.first(where: { $0.id == Self.appleAccountID })?.isEnabled ?? true
+        guard isEnabled else { return [] }
+        return try await calendarReader.events(for: targetDay)
     }
 }
 
@@ -405,7 +409,7 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.timeZone = TimeZone.current
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()

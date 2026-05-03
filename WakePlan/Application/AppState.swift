@@ -237,19 +237,26 @@ final class AppState {
     }
 
     private func refreshDashboard(targetDay: TargetDay = .tomorrow()) async throws {
+        let now = Date()
+
         permissions = await permissionService.currentStatus()
         accounts = try await wakePlanService.accounts()
 
-        guard permissions.calendar == .authorized else {
-            calendars = []
-            upcomingPlans = []
-            dashboardState = .needsCalendarPermission
-            return
+        // Allow fallback/Google events even if Apple Calendar is denied
+        if permissions.calendar != .authorized && accounts.filter({ $0.provider == .google }).isEmpty {
+            // We can optionally show a permission prompt if literally nothing is connected,
+            // but the user prefers falling back to standard alarms.
         }
 
         calendars = try await wakePlanService.calendars()
-        let plan = try await wakePlanService.makePlan(targetDay: targetDay)
-        upcomingPlans = try await wakePlanService.makeUpcomingPlans(after: targetDay, count: 3)
+        let displayPlans = try await wakePlanService.makeDisplayPlans(startingAt: now, count: 4)
+        let plan: WakeUpPlan
+        if let firstDisplayPlan = displayPlans.first {
+            plan = firstDisplayPlan
+        } else {
+            plan = try await wakePlanService.makePlan(targetDay: TargetDay(date: now))
+        }
+        upcomingPlans = Array(displayPlans.dropFirst())
         let alarmStatus = try await alarmSyncService.sync(plan: plan)
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 

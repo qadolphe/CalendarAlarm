@@ -114,10 +114,11 @@ struct WakePlanCalculator {
         }
 
         var candidates: [Candidate] = []
+        let activeCalendarIDs = Set(events.map(\.calendarID))
 
         for event in validEvents {
             // Collect every rule that matches this event
-            let matchingRules: [AlarmRule] = allRules.filter { $0.matches(event: event) }
+            let matchingRules: [AlarmRule] = allRules.filter { $0.matches(event: event, activeCalendarIDs: activeCalendarIDs) }
             // If no rule matches at all (e.g. calendar restriction on all rules), skip event
             guard !matchingRules.isEmpty else { continue }
 

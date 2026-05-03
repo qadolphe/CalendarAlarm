@@ -5,7 +5,7 @@ struct DashboardViewModel {
     let appState: AppState
 
     var title: String {
-        "Tomorrow's Alarm"
+        "Next Alarm"
     }
 
     var viewState: WakePlanViewState? {
@@ -34,7 +34,7 @@ struct DashboardViewModel {
             return "For \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))"
         }
 
-        return "Fallback wake time for tomorrow"
+        return "Fallback wake time"
     }
 
     var heroContext: String {
@@ -118,7 +118,7 @@ struct DashboardViewModel {
             if plan.reason == .fallback {
                 return "Fallback wake time is scheduled because no event matched your filters."
             }
-            return "Alarm scheduled for the first valid event tomorrow."
+            return "Alarm scheduled for the next valid event."
         case .needsPermission:
             return "WakePlan needs alarm access before it can schedule a real alarm."
         case .disabled:

@@ -68,10 +68,16 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     }
 
     /// Returns true when this rule should apply to a given event.
-    func matches(event: ParsedEvent) -> Bool {
-        if !selectedCalendarIDs.isEmpty,
-           !selectedCalendarIDs.contains(event.calendarID) {
-            return false
+    func matches(event: ParsedEvent, activeCalendarIDs: Set<String>) -> Bool {
+        if !selectedCalendarIDs.isEmpty {
+            let intersection = selectedCalendarIDs.intersection(activeCalendarIDs)
+            // If the explicitly selected calendars are completely disabled,
+            // the Default Rule gracefully falls back to matching all active calendars.
+            if isDefault && intersection.isEmpty {
+                // Fallback to all active calendars
+            } else if !selectedCalendarIDs.contains(event.calendarID) {
+                return false
+            }
         }
 
         if isDefault { return true }
