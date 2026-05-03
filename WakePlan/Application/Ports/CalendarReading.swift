@@ -11,11 +11,15 @@ enum CalendarAuthorizationState: Equatable, Sendable {
 protocol CalendarReading {
     func authorizationState() -> CalendarAuthorizationState
     func requestAuthorization() async throws -> CalendarAuthorizationState
+}
 
+protocol CalendarEventProviding {
+    func accounts() async throws -> [ConnectedCalendarAccount]
     func calendars() async throws -> [CalendarSource]
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent]
+}
 
-    func events(
-        for targetDay: TargetDay,
-        selectedCalendarIDs: Set<String>
-    ) async throws -> [ParsedEvent]
+protocol AccountStoring {
+    func load() throws -> [ConnectedCalendarAccount]
+    func save(_ accounts: [ConnectedCalendarAccount]) throws
 }

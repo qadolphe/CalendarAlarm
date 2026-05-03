@@ -5,12 +5,19 @@ struct WakePlanApp: App {
     @State private var appState: AppState
 
     init() {
+        let accountStore = UserDefaultsAccountStore()
         let preferencesStore = UserDefaultsPreferencesStore()
         let alarmStore = UserDefaultsScheduledAlarmStore()
         let calendarReader = EventKitCalendarReader()
+        let calendarProvider = CompositeCalendarProvider(
+            providers: [
+                AppleCalendarProvider(calendarReader: calendarReader),
+                GoogleCalendarProvider(accountStore: accountStore)
+            ]
+        )
         let alarmScheduler = AlarmKitScheduler()
         let wakePlanService = WakePlanService(
-            calendarReader: calendarReader,
+            calendarProvider: calendarProvider,
             preferencesStore: preferencesStore
         )
         let permissionService = PermissionService(
@@ -24,6 +31,7 @@ struct WakePlanApp: App {
 
         _appState = State(
             initialValue: AppState(
+                accountStore: accountStore,
                 preferencesStore: preferencesStore,
                 wakePlanService: wakePlanService,
                 permissionService: permissionService,

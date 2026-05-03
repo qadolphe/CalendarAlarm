@@ -20,11 +20,13 @@ enum DashboardState: Equatable {
 final class AppState {
     var preferences: AlarmPreferences = .default
     var calendars: [CalendarSource] = []
+    var accounts: [ConnectedCalendarAccount] = []
     var permissions: PermissionSnapshot = .initial
     var dashboardState: DashboardState = .loading
     var upcomingPlans: [WakeUpPlan] = []
     var noticeMessage: String?
 
+    private let accountStore: AccountStoring
     private let preferencesStore: PreferencesStoring
     private let wakePlanService: WakePlanService
     private let permissionService: PermissionService
@@ -41,11 +43,13 @@ final class AppState {
     }
 
     init(
+        accountStore: AccountStoring,
         preferencesStore: PreferencesStoring,
         wakePlanService: WakePlanService,
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService
     ) {
+        self.accountStore = accountStore
         self.preferencesStore = preferencesStore
         self.wakePlanService = wakePlanService
         self.permissionService = permissionService
@@ -176,12 +180,56 @@ final class AppState {
         await updatePreferences(nextPreferences)
     }
 
+    func addGoogleAccount() async {
+        noticeMessage = nil
+
+        do {
+            var stored = try accountStore.load()
+            let existingNumbers = stored
+                .filter { $0.provider == .google }
+                .compactMap { account in
+                    Int(account.displayName.replacingOccurrences(of: "Google Account ", with: ""))
+                }
+            let nextNumber = (existingNumbers.max() ?? 0) + 1
+
+            stored.append(
+                ConnectedCalendarAccount(
+                    id: CalendarAccountID(rawValue: UUID().uuidString),
+                    provider: .google,
+                    displayName: "Google Account \(nextNumber)",
+                    isEnabled: true
+                )
+            )
+
+            try accountStore.save(stored)
+            noticeMessage = "Google account placeholder added. Direct Google sync is not connected yet."
+            try await refreshDashboard()
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
+    func setAccountEnabled(id: CalendarAccountID, isEnabled: Bool) async {
+        noticeMessage = nil
+
+        do {
+            var stored = try accountStore.load()
+            guard let index = stored.firstIndex(where: { $0.id == id }) else { return }
+            stored[index].isEnabled = isEnabled
+            try accountStore.save(stored)
+            try await refreshDashboard()
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
     private func format(_ error: Error) -> String {
         error.localizedDescription
     }
 
     private func refreshDashboard(targetDay: TargetDay = .tomorrow()) async throws {
         permissions = await permissionService.currentStatus()
+        accounts = try await wakePlanService.accounts()
 
         guard permissions.calendar == .authorized else {
             calendars = []

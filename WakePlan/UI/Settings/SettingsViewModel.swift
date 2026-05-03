@@ -198,6 +198,17 @@ struct ScheduleViewModel {
 struct SettingsViewModel {
     let appState: AppState
 
+    var accountsSummary: String {
+        let googleAccounts = appState.accounts.filter { $0.provider == .google }
+
+        if googleAccounts.isEmpty {
+            return "Apple Calendar plus Google connect option"
+        }
+
+        let enabledCount = googleAccounts.filter(\.isEnabled).count
+        return "Apple Calendar + \(googleAccounts.count) Google account\(googleAccounts.count == 1 ? "" : "s") (\(enabledCount) enabled)"
+    }
+
     var needsPermissions: Bool {
         appState.permissions.calendar != .authorized || appState.permissions.alarm != .authorized
     }

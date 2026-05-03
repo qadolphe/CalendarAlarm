@@ -1,16 +1,16 @@
 import Foundation
 
 final class WakePlanService {
-    private let calendarReader: CalendarReading
+    private let calendarProvider: CalendarEventProviding
     private let preferencesStore: PreferencesStoring
     private let calculator: WakePlanCalculator
 
     init(
-        calendarReader: CalendarReading,
+        calendarProvider: CalendarEventProviding,
         preferencesStore: PreferencesStoring,
         calculator: WakePlanCalculator = WakePlanCalculator()
     ) {
-        self.calendarReader = calendarReader
+        self.calendarProvider = calendarProvider
         self.preferencesStore = preferencesStore
         self.calculator = calculator
     }
@@ -46,10 +46,7 @@ final class WakePlanService {
         preferences: AlarmPreferences,
         calendar: Calendar = .current
     ) async throws -> WakeUpPlan {
-        let events = try await calendarReader.events(
-            for: targetDay,
-            selectedCalendarIDs: []
-        )
+        let events = try await calendarProvider.events(for: targetDay)
 
         return calculator.calculate(
             events: events,
@@ -62,14 +59,20 @@ final class WakePlanService {
     func calendars() async throws -> [CalendarSource] {
         let preferences = try preferencesStore.load()
         let selectedIDs = preferences.selectedCalendarIDs
-        let availableCalendars = try await calendarReader.calendars()
+        let availableCalendars = try await calendarProvider.calendars()
 
         return availableCalendars.map { source in
             CalendarSource(
                 id: source.id,
                 title: source.title,
-                isSelected: selectedIDs.isEmpty || selectedIDs.contains(source.id)
+                isSelected: selectedIDs.isEmpty || selectedIDs.contains(source.id),
+                accountID: source.accountID,
+                provider: source.provider
             )
         }
+    }
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        try await calendarProvider.accounts()
     }
 }

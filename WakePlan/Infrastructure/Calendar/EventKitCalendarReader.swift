@@ -44,23 +44,20 @@ final class EventKitCalendarReader: CalendarReading {
         }
     }
 
-    func calendars() async throws -> [CalendarSource] {
+    func availableCalendars() async throws -> [CalendarSource] {
         eventStore.calendars(for: .event).map {
             CalendarSource(
                 id: $0.calendarIdentifier,
                 title: $0.title,
-                isSelected: true
+                isSelected: true,
+                accountID: AppleCalendarProvider.appleAccountID,
+                provider: .apple
             )
         }
     }
 
-    func events(
-        for targetDay: TargetDay,
-        selectedCalendarIDs: Set<String>
-    ) async throws -> [ParsedEvent] {
-        let calendars = eventStore.calendars(for: .event).filter { calendar in
-            selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.calendarIdentifier)
-        }
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        let calendars = eventStore.calendars(for: .event)
         let interval = targetDay.interval(calendar: .current)
 
         let predicate = eventStore.predicateForEvents(
@@ -69,6 +66,96 @@ final class EventKitCalendarReader: CalendarReading {
             calendars: calendars
         )
 
-        return eventStore.events(matching: predicate).map(EventKitMappers.map)
+        return eventStore.events(matching: predicate).map { EventKitMappers.map($0) }
+    }
+}
+
+struct AppleCalendarProvider: CalendarEventProviding {
+    static let appleAccountID: CalendarAccountID = "apple.calendar"
+
+    private let calendarReader: EventKitCalendarReader
+
+    init(calendarReader: EventKitCalendarReader) {
+        self.calendarReader = calendarReader
+    }
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        [
+            ConnectedCalendarAccount(
+                id: Self.appleAccountID,
+                provider: .apple,
+                displayName: "Apple Calendar",
+                isEnabled: true
+            )
+        ]
+    }
+
+    func calendars() async throws -> [CalendarSource] {
+        try await calendarReader.availableCalendars()
+    }
+
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        try await calendarReader.events(for: targetDay)
+    }
+}
+
+struct GoogleCalendarProvider: CalendarEventProviding {
+    private let accountStore: AccountStoring
+
+    init(accountStore: AccountStoring) {
+        self.accountStore = accountStore
+    }
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        try accountStore.load()
+            .filter { $0.provider == .google }
+            .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+
+    func calendars() async throws -> [CalendarSource] {
+        []
+    }
+
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        _ = targetDay
+        return []
+    }
+}
+
+struct CompositeCalendarProvider: CalendarEventProviding {
+    private let providers: [CalendarEventProviding]
+
+    init(providers: [CalendarEventProviding]) {
+        self.providers = providers
+    }
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        var merged: [ConnectedCalendarAccount] = []
+
+        for provider in providers {
+            merged.append(contentsOf: try await provider.accounts())
+        }
+
+        return merged
+    }
+
+    func calendars() async throws -> [CalendarSource] {
+        var merged: [CalendarSource] = []
+
+        for provider in providers {
+            merged.append(contentsOf: try await provider.calendars())
+        }
+
+        return merged
+    }
+
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        var merged: [ParsedEvent] = []
+
+        for provider in providers {
+            merged.append(contentsOf: try await provider.events(for: targetDay))
+        }
+
+        return merged
     }
 }

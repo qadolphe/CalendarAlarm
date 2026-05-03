@@ -2,10 +2,15 @@ import EventKit
 import Foundation
 
 enum EventKitMappers {
-    static func map(_ event: EKEvent) -> ParsedEvent {
+    static func map(
+        _ event: EKEvent,
+        sourceAccountID: CalendarAccountID? = AppleCalendarProvider.appleAccountID
+    ) -> ParsedEvent {
         ParsedEvent(
             id: event.eventIdentifier ?? UUID().uuidString,
             calendarID: event.calendar.calendarIdentifier,
+            sourceAccountID: sourceAccountID,
+            provider: .apple,
             title: event.title ?? "Untitled Event",
             startDate: event.startDate,
             endDate: event.endDate,
