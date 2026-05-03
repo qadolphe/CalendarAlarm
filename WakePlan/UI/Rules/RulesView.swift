@@ -44,6 +44,27 @@ struct RulesView: View {
                         }
                     }
                 }
+
+                Button {
+                    isAddingRule = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(WPStyles.primaryOrange)
+                        Text("Add Rule")
+                            .font(.headline)
+                            .foregroundStyle(WPStyles.primaryText)
+                    }
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(WPStyles.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 20, trailing: 16))
             }
         }
         .listStyle(.plain)
@@ -51,14 +72,6 @@ struct RulesView: View {
         .background(Color.clear.withAppBackground())
         .navigationTitle("Rules")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { isAddingRule = true } label: {
-                    Image(systemName: "plus")
-                        .foregroundStyle(WPStyles.primaryOrange)
-                }
-            }
-        }
         .sheet(isPresented: $isAddingRule) {
             NavigationStack {
                 RuleEditorView(appState: appState, mode: .add)
@@ -796,19 +809,18 @@ struct RuleEditorView: View {
 
     private func toggleCalendar(_ id: String) {
         if selectedCalendarIDs.isEmpty {
-            selectedCalendarIDs = [id]
-            return
-        }
-
-        if selectedCalendarIDs.contains(id) {
+            let allIDs = Set(appState.calendars.map(\.id))
+            var newSelection = allIDs
+            newSelection.remove(id)
+            selectedCalendarIDs = newSelection
+        } else if selectedCalendarIDs.contains(id) {
             selectedCalendarIDs.remove(id)
-            if selectedCalendarIDs.isEmpty {
-                return
+        } else {
+            selectedCalendarIDs.insert(id)
+            if selectedCalendarIDs.count == appState.calendars.count {
+                selectedCalendarIDs = []
             }
-            return
         }
-
-        selectedCalendarIDs.insert(id)
     }
 }
 
