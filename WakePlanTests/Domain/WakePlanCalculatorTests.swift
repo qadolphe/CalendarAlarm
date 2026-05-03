@@ -75,7 +75,7 @@ final class WakePlanCalculatorTests: XCTestCase {
             calendar: calendar
         )
 
-        XCTAssertEqual(plan.reason, .disabled)
+        XCTAssertEqual(plan.reason, .fallback)
         XCTAssertTrue(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
     }
@@ -93,9 +93,47 @@ final class WakePlanCalculatorTests: XCTestCase {
             calendar: calendar
         )
 
-        XCTAssertEqual(plan.reason, .inactiveDay)
+        XCTAssertEqual(plan.reason, .fallback)
         XCTAssertTrue(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
+    }
+
+    func testNoScheduleWhenNoEventsAndFallbackDisabled() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.fallbackEnabledDays = []
+
+        let plan = calculator.calculate(
+            events: [],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .noSchedule)
+        XCTAssertFalse(plan.isFallback)
+        XCTAssertNil(plan.targetEvent)
+    }
+
+    func testFallbackWinsWhenEarlierThanEventAlarm() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.schedule.fallbackWakeTimes[calendar.component(.weekday, from: targetDay.date)] = ClockTime(hour: 8, minute: 0)
+
+        let eventStart = makeDate(year: 2026, month: 5, day: 2, hour: 15, minute: 0, calendar: calendar)
+        let plan = calculator.calculate(
+            events: [event(startDate: eventStart, endDate: eventStart.addingTimeInterval(1_800))],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .fallback)
+        XCTAssertTrue(plan.isFallback)
+        XCTAssertNil(plan.targetEvent)
+        XCTAssertEqual(plan.calculatedWakeTime, makeDate(year: 2026, month: 5, day: 2, hour: 8, minute: 0, calendar: calendar))
     }
 
     func testDoesNotMutateEvents() {

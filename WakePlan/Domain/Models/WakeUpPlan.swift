@@ -3,6 +3,7 @@ import Foundation
 enum WakePlanReason: String, Codable, Equatable, Sendable {
     case event
     case fallback
+    case noSchedule
     case disabled
     case inactiveDay
     case authorizationMissing

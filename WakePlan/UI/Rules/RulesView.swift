@@ -222,7 +222,7 @@ struct RulesView: View {
             VStack(spacing: 8) {
                 Text(option.shortLabel).font(.system(size: 9, weight: .bold))
                 Circle()
-                    .fill(isAutoPilot ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
+                    .fill(isFallback ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
                     .frame(width: 6, height: 6)
             }
             .frame(maxWidth: .infinity)
@@ -233,7 +233,7 @@ struct RulesView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isFallback ? WPStyles.primaryOrange.opacity(0.8) : (isAutoPilot ? WPStyles.primaryOrange.opacity(0.55) : Color.white.opacity(0.06)), lineWidth: 1)
+                    .stroke(isAutoPilot ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
             )
             .foregroundStyle(isAutoPilot || isFallback ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
         }

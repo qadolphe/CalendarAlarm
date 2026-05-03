@@ -116,7 +116,7 @@ struct DashboardViewModel {
                 return "Auto-Pilot is paused for that day based on your active schedule."
             }
             if plan.reason == .fallback {
-                return "Fallback wake time is scheduled because no event matched your filters."
+                return "Fallback wake time is scheduled."
             }
             return "Alarm scheduled for the next valid event."
         case .needsPermission:
@@ -126,7 +126,7 @@ struct DashboardViewModel {
         case .failed(let message):
             return "Couldn't schedule alarm: \(message)"
         case .notScheduled:
-            return "No alarm is currently scheduled."
+            return "No scheduled events or fallback."
         }
     }
 
@@ -153,6 +153,8 @@ struct DashboardViewModel {
         switch plan.reason {
         case .inactiveDay:
             return "Inactive day"
+        case .noSchedule:
+            return "No scheduled alarm"
         case .disabled:
             return "Auto-Pilot paused"
         case .systemDisabled:
@@ -170,6 +172,8 @@ struct DashboardViewModel {
         switch plan.reason {
         case .inactiveDay:
             return "Not scheduled on this weekday"
+        case .noSchedule:
+            return "No scheduled events or fallback"
         case .disabled:
             return "Turn Auto-Pilot back on in Schedule"
         case .systemDisabled:

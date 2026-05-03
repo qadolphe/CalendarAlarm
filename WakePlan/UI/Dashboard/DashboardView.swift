@@ -73,13 +73,46 @@ struct DashboardView: View {
             ContentUnavailableView("Unavailable", systemImage: "exclamationmark.triangle")
         case .ready(let viewState), .emptyFallback(let viewState):
             VStack(alignment: .leading, spacing: 24) {
-                planCard(for: viewState.plan, viewModel: viewModel)
+                if viewState.plan.reason == .disabled
+                    || viewState.plan.reason == .inactiveDay
+                    || viewState.plan.reason == .noSchedule {
+                    noAlarmCard(for: viewState.plan)
+                } else {
+                    planCard(for: viewState.plan, viewModel: viewModel)
+                }
 
                 if !viewModel.upcomingPlans.isEmpty {
                     upcomingPlansCard(viewModel: viewModel)
                 }
             }
         }
+    }
+
+    private func noAlarmCard(for plan: WakeUpPlan) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Next Alarm")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+            }
+
+            HStack(spacing: 10) {
+                Image(systemName: "moon.zzz.fill")
+                    .font(.title)
+                    .foregroundStyle(.indigo)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("No alarm scheduled")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(WPStyles.primaryText)
+                    Text(noAlarmMessage(for: plan))
+                        .font(.subheadline)
+                        .foregroundStyle(WPStyles.secondaryText)
+                }
+            }
+            .padding(.vertical, 8)
+        }
+        .cardStyle()
     }
 
     @ViewBuilder
@@ -288,13 +321,15 @@ struct DashboardView: View {
     }
 
     private func upcomingPlanRow(_ plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
-        HStack(spacing: 14) {
+        let isDisabled = plan.reason == .disabled || plan.reason == .inactiveDay || plan.reason == .noSchedule
+
+        return HStack(spacing: 14) {
             ZStack {
                 Circle()
                     .fill(WPStyles.surfaceRaised)
                     .frame(width: 36, height: 36)
                 Image(systemName: icon(for: plan))
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(isDisabled ? WPStyles.tertiaryText : WPStyles.primaryOrange)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -304,7 +339,7 @@ struct DashboardView: View {
 
                 Text(viewModel.upcomingTitle(for: plan))
                     .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
+                    .foregroundStyle(isDisabled ? WPStyles.secondaryText : WPStyles.primaryText)
 
                 Text(viewModel.upcomingSubtitle(for: plan))
                     .font(.subheadline)
@@ -313,9 +348,15 @@ struct DashboardView: View {
 
             Spacer()
 
-            Text(plan.calculatedWakeTime, style: .time)
-                .font(.headline.monospacedDigit())
-                .foregroundStyle(WPStyles.primaryText)
+            if isDisabled {
+                Text("Off")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.tertiaryText)
+            } else {
+                Text(plan.calculatedWakeTime, style: .time)
+                    .font(.headline.monospacedDigit())
+                    .foregroundStyle(WPStyles.primaryText)
+            }
         }
     }
 
@@ -327,10 +368,27 @@ struct DashboardView: View {
         switch plan.reason {
         case .inactiveDay:
             return "pause.circle"
+        case .noSchedule:
+            return "nosign"
         case .disabled:
             return "bed.double.fill"
         case .fallback, .authorizationMissing, .manualOverride, .event, .systemDisabled:
             return "moon.zzz.fill"
+        }
+    }
+
+    private func noAlarmMessage(for plan: WakeUpPlan) -> String {
+        switch plan.reason {
+        case .inactiveDay:
+            return "Auto-Pilot is paused for this day."
+        case .noSchedule:
+            return "No scheduled events or fallback."
+        case .disabled:
+            return "Automatic alarms are turned off."
+        case .systemDisabled:
+            return "WakePlan is disabled."
+        case .fallback, .authorizationMissing, .manualOverride, .event:
+            return "No alarm is currently scheduled."
         }
     }
 }

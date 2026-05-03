@@ -24,9 +24,11 @@ struct WakePlanCalculator {
         let scheduleRules = preferences.schedule
         let timingRules = preferences.timing
         let weekday = calendar.component(.weekday, from: targetDay.date)
+        let dayFallback = preferences.fallbackWakeTime(for: weekday)
+        let fallbackWakeTime = dayFallback.date(on: targetDay, calendar: calendar)
+        let isFallbackEnabled = scheduleRules.fallbackEnabledDays.contains(weekday)
 
         if !preferences.isSystemEnabled {
-            let dayFallback = preferences.fallbackWakeTime(for: weekday)
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "systemDisabled",
@@ -38,7 +40,7 @@ struct WakePlanCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
@@ -50,7 +52,14 @@ struct WakePlanCalculator {
         }
 
         if !scheduleRules.activeDays.contains(weekday) {
-            let dayFallback = preferences.fallbackWakeTime(for: weekday)
+            if isFallbackEnabled {
+                return makeFallbackPlan(
+                    targetDay: targetDay,
+                    wakeTime: fallbackWakeTime,
+                    timingRules: timingRules
+                )
+            }
+
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "inactive-day",
@@ -63,11 +72,11 @@ struct WakePlanCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                isFallback: true,
+                isFallback: false,
                 reason: .inactiveDay,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -75,7 +84,14 @@ struct WakePlanCalculator {
         }
 
         if !scheduleRules.isEnabled {
-            let dayFallback = preferences.fallbackWakeTime(for: weekday)
+            if isFallbackEnabled {
+                return makeFallbackPlan(
+                    targetDay: targetDay,
+                    wakeTime: fallbackWakeTime,
+                    timingRules: timingRules
+                )
+            }
+
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "disabled",
@@ -87,11 +103,11 @@ struct WakePlanCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
+                calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                isFallback: true,
+                isFallback: false,
                 reason: .disabled,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -100,8 +116,6 @@ struct WakePlanCalculator {
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-
-        let allRules = preferences.alarmRules
 
         // Build every candidate: (event, matchingRule, calculatedWakeTime)
         // A rule matches an event if AlarmRule.matches returns true.
@@ -116,8 +130,17 @@ struct WakePlanCalculator {
         let activeCalendarIDs = Set(events.map(\.calendarID))
 
         for event in validEvents {
-            // Collect every rule that matches this event
-            let matchingRules: [AlarmRule] = allRules.filter { $0.matches(event: event, activeCalendarIDs: activeCalendarIDs) }
+            // Collect every custom rule that matches this event
+            var matchingRules: [AlarmRule] = preferences.customAlarmRules.filter { $0.matches(event: event, activeCalendarIDs: activeCalendarIDs) }
+            
+            // If no custom rule matches, try the default rule
+            if matchingRules.isEmpty {
+                let defaultRule = preferences.defaultAlarmRule
+                if defaultRule.matches(event: event, activeCalendarIDs: activeCalendarIDs) {
+                    matchingRules.append(defaultRule)
+                }
+            }
+            
             // If no rule matches at all (e.g. calendar restriction on all rules), skip event
             guard !matchingRules.isEmpty else { continue }
 
@@ -132,42 +155,21 @@ struct WakePlanCalculator {
             }
         }
 
-        // Choose the candidate with the earliest wake time (not earliest event start)
         guard let winner = candidates.min(by: { $0.wakeTime < $1.wakeTime }) else {
-            guard scheduleRules.fallbackEnabledDays.contains(weekday) else {
-                let dayFallback = preferences.fallbackWakeTime(for: weekday)
-                return WakeUpPlan(
-                    id: hasher.makeID(
-                        kind: "disabled-fallback-day",
-                        components: [
-                            timestamp(targetDay.date),
-                            "\(weekday)",
-                            "\(dayFallback.hour)",
-                            "\(dayFallback.minute)"
-                        ]
-                    ),
+            if isFallbackEnabled {
+                return makeFallbackPlan(
                     targetDay: targetDay,
-                    targetEvent: nil,
-                    calculatedWakeTime: dayFallback.date(on: targetDay, calendar: calendar),
-                    eventStartTime: nil,
-                    prepTime: timingRules.prepTime,
-                    commuteTime: timingRules.defaultCommuteTime,
-                    isFallback: false,
-                    reason: .disabled,
-                    appliedRuleName: nil,
-                    matchedRuleNames: []
+                    wakeTime: fallbackWakeTime,
+                    timingRules: timingRules
                 )
             }
 
-            let dayFallback = preferences.fallbackWakeTime(for: weekday)
-            let fallbackWakeTime = dayFallback.date(on: targetDay, calendar: calendar)
-
             return WakeUpPlan(
                 id: hasher.makeID(
-                    kind: "fallback",
+                    kind: "no-schedule",
                     components: [
                         timestamp(targetDay.date),
-                        timestamp(fallbackWakeTime)
+                        "\(weekday)"
                     ]
                 ),
                 targetDay: targetDay,
@@ -176,8 +178,8 @@ struct WakePlanCalculator {
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                isFallback: true,
-                reason: .fallback,
+                isFallback: false,
+                reason: .noSchedule,
                 appliedRuleName: nil,
                 matchedRuleNames: []
             )
@@ -195,6 +197,14 @@ struct WakePlanCalculator {
         let matchedRuleNames: [String] = allMatchedRulesForWinningEvent.count > 1
             ? Array(LinkedDedupe(allMatchedRulesForWinningEvent))
             : []
+
+        if isFallbackEnabled, fallbackWakeTime <= winnerWakeTime {
+            return makeFallbackPlan(
+                targetDay: targetDay,
+                wakeTime: fallbackWakeTime,
+                timingRules: timingRules
+            )
+        }
 
         return WakeUpPlan(
             id: hasher.makeID(
@@ -223,6 +233,32 @@ struct WakePlanCalculator {
 
     private func timestamp(_ date: Date) -> String {
         String(format: "%.0f", date.timeIntervalSince1970)
+    }
+
+    private func makeFallbackPlan(
+        targetDay: TargetDay,
+        wakeTime: Date,
+        timingRules: TimingRules
+    ) -> WakeUpPlan {
+        WakeUpPlan(
+            id: hasher.makeID(
+                kind: "fallback",
+                components: [
+                    timestamp(targetDay.date),
+                    timestamp(wakeTime)
+                ]
+            ),
+            targetDay: targetDay,
+            targetEvent: nil,
+            calculatedWakeTime: wakeTime,
+            eventStartTime: nil,
+            prepTime: timingRules.prepTime,
+            commuteTime: timingRules.defaultCommuteTime,
+            isFallback: true,
+            reason: .fallback,
+            appliedRuleName: nil,
+            matchedRuleNames: []
+        )
     }
 }
 

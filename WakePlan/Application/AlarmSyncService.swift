@@ -23,7 +23,7 @@ final class AlarmSyncService {
     func sync(plan: WakeUpPlan) async throws -> AlarmScheduleStatus {
         let existingRecord = try alarmStore.load()
 
-        if plan.reason == .disabled || plan.reason == .systemDisabled {
+        if plan.reason == .noSchedule {
             if let existingRecord {
                 do {
                     try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
@@ -33,7 +33,20 @@ final class AlarmSyncService {
                 }
             }
 
-            return plan.reason == .systemDisabled ? .disabled : .disabled
+            return .notScheduled
+        }
+
+        if plan.reason == .disabled || plan.reason == .systemDisabled || plan.reason == .inactiveDay {
+            if let existingRecord {
+                do {
+                    try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+                    try alarmStore.clear()
+                } catch {
+                    return .failed(error.localizedDescription)
+                }
+            }
+
+            return .disabled
         }
 
         if let existingRecord, existingRecord.planID == plan.id {

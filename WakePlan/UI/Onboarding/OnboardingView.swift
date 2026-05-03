@@ -136,10 +136,7 @@ struct OnboardingView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    Task {
-                        await appState.authenticateGoogle()
-                        withAnimation { currentStep += 1 }
-                    }
+                    withAnimation { currentStep += 1 }
                 }) {
                     Text("Connect Google Account")
                         .font(.headline)
@@ -252,12 +249,13 @@ struct OnboardingView: View {
             }
             
             Spacer()
-            
-            nextButton(title: "Show My First Alarm") {
+        }
+        .padding(20)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 finish()
             }
         }
-        .padding(20)
     }
     
     // MARK: - Components & Bindings

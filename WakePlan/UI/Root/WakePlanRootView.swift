@@ -3,6 +3,7 @@ import SwiftUI
 struct WakePlanRootView: View {
     private static let forceOnboardingLaunchArgument = "-WakePlanForceOnboarding"
 
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Bindable var appState: AppState
     @State private var selectedTab: MainTab = .home
@@ -22,6 +23,13 @@ struct WakePlanRootView: View {
         }
         .task {
             await appState.loadIfNeeded()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+
+            Task {
+                await appState.refreshOnAppOpen()
+            }
         }
     }
 

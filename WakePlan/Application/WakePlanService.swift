@@ -57,7 +57,11 @@ final class WakePlanService {
             let day = TargetDay(date: date, calendar: calendar)
             let plan = try await makePlan(targetDay: day, preferences: preferences, calendar: calendar)
 
-            if plan.calculatedWakeTime > now {
+            if plan.reason != .disabled,
+               plan.reason != .inactiveDay,
+               plan.reason != .systemDisabled,
+               plan.reason != .noSchedule,
+               plan.calculatedWakeTime > now {
                 plans.append(plan)
             }
         }

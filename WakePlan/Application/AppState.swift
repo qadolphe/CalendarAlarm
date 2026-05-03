@@ -101,6 +101,19 @@ final class AppState {
         }
     }
 
+    func refreshOnAppOpen() async {
+        guard hasLoaded else { return }
+        guard dashboardState != .loading else { return }
+
+        noticeMessage = nil
+
+        do {
+            try await refreshDashboard()
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
     func requestCalendarAccess() async {
         noticeMessage = nil
 
@@ -259,7 +272,11 @@ final class AppState {
             return
         }
 
-        if plan.isFallback {
+        if plan.isFallback
+            || plan.reason == .disabled
+            || plan.reason == .systemDisabled
+            || plan.reason == .inactiveDay
+            || plan.reason == .noSchedule {
             dashboardState = .emptyFallback(viewState)
             return
         }

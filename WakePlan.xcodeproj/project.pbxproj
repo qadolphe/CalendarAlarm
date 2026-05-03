@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		7751800D2FA6E38600B73F60 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7751800C2FA6E38600B73F60 /* GoogleSignIn */; };
 		7751800F2FA6E38600B73F60 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 7751800E2FA6E38600B73F60 /* GoogleSignInSwift */; };
-		775180112FA6F5EB00B73F60 /* WakePlanDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 775180102FA6F5EA00B73F60 /* WakePlanDetailsView.swift */; };
+		775180112FA6F5EB00B73F60 /* UI/Dashboard/WakePlanDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 775180102FA6F5EA00B73F60 /* UI/Dashboard/WakePlanDetailsView.swift */; };
 		9363927702F16CFA0B76D76F /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD00B900BE3339748DDD940 /* DesignSystem.swift */; };
 		AA0000000000000000000200 /* Application/AlarmSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000100 /* Application/AlarmSyncService.swift */; };
 		AA0000000000000000000201 /* Application/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000101 /* Application/AppState.swift */; };
@@ -75,7 +75,7 @@
 
 /* Begin PBXFileReference section */
 		6FD00B900BE3339748DDD940 /* DesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
-		775180102FA6F5EA00B73F60 /* WakePlanDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/WakePlanDetailsView.swift; sourceTree = "<group>"; };
+		775180102FA6F5EA00B73F60 /* UI/Dashboard/WakePlanDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/WakePlanDetailsView.swift; sourceTree = "<group>"; };
 		77BF3AF82FA662C0004F4896 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000012 /* WakePlan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WakePlan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000013 /* WakePlanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WakePlanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -360,7 +360,7 @@
 			children = (
 				AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */,
 				AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */,
-				775180102FA6F5EA00B73F60 /* WakePlanDetailsView.swift */,
+				775180102FA6F5EA00B73F60 /* UI/Dashboard/WakePlanDetailsView.swift */,
 			);
 			name = Dashboard;
 			sourceTree = "<group>";
@@ -563,7 +563,7 @@
 				AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */,
 				AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */,
 				AA0000000000000000000221 /* UI/Settings/SettingsView.swift in Sources */,
-				775180112FA6F5EB00B73F60 /* WakePlanDetailsView.swift in Sources */,
+				775180112FA6F5EB00B73F60 /* UI/Dashboard/WakePlanDetailsView.swift in Sources */,
 				AA0000000000000000000222 /* UI/Settings/SettingsViewModel.swift in Sources */,
 				AA0000000000000000000223 /* WakePlanApp.swift in Sources */,
 				AA0000000000000000000225 /* UI/Onboarding/OnboardingView.swift in Sources */,
@@ -626,6 +626,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
@@ -660,6 +661,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;

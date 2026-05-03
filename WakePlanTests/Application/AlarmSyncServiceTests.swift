@@ -136,6 +136,45 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
     }
 
+    func testClearsExistingAlarmWhenPlanHasNoSchedule() async throws {
+        var plan = makePlan(startOffset: 3_600)
+        plan = WakeUpPlan(
+            id: plan.id,
+            targetDay: plan.targetDay,
+            targetEvent: nil,
+            calculatedWakeTime: plan.calculatedWakeTime,
+            eventStartTime: nil,
+            prepTime: plan.prepTime,
+            commuteTime: plan.commuteTime,
+            isFallback: false,
+            reason: .noSchedule,
+            appliedRuleName: nil,
+            matchedRuleNames: []
+        )
+
+        let alarmStore = FakeScheduledAlarmStore()
+        alarmStore.record = ScheduledAlarmRecord(
+            planID: "managed-plan",
+            nativeAlarmID: "managed-alarm",
+            scheduledWakeTime: Date(),
+            targetEventID: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        let alarmScheduler = FakeAlarmScheduler()
+
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        let status = try await service.sync(plan: plan)
+
+        XCTAssertEqual(status, .notScheduled)
+        XCTAssertEqual(alarmScheduler.canceledIDs, ["managed-alarm"])
+        XCTAssertNil(alarmStore.record)
+    }
+
     func testDoesNotRequestAuthorizationWhenAlarmPermissionIsNotDetermined() async throws {
         let plan = makePlan(startOffset: 3_600)
         let alarmScheduler = FakeAlarmScheduler()

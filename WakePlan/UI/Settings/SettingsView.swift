@@ -35,8 +35,6 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             navRow(title: "Accounts", icon: "person.crop.circle.badge.plus") {
                 AccountsView(appState: appState)
-            } subtitle: {
-                Text(SettingsViewModel(appState: appState).accountsSummary)
             }
             Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
             navRow(title: "Event Filters", icon: "line.3.horizontal.decrease.circle") {
