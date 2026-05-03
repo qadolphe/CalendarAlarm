@@ -74,13 +74,22 @@ struct DashboardView: View {
             ContentUnavailableView("Unavailable", systemImage: "exclamationmark.triangle")
         case .ready(let viewState), .emptyFallback(let viewState):
             VStack(alignment: .leading, spacing: 24) {
-                if viewState.plan.reason == .disabled
-                    || viewState.plan.reason == .inactiveDay
-                    || viewState.plan.reason == .noSchedule {
-                    noAlarmCard(for: viewState.plan)
-                } else {
-                    planCard(for: viewState.plan, viewModel: viewModel)
+                ZStack(alignment: .topTrailing) {
+                    if viewState.plan.reason == .disabled
+                        || viewState.plan.reason == .inactiveDay
+                        || viewState.plan.reason == .noSchedule {
+                        noAlarmCard(for: viewState.plan)
+                    } else {
+                        planCard(for: viewState.plan, viewModel: viewModel)
+                    }
+
+                    Image("OtterOverlook")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 88)
+                        .offset(x: -20, y: -70)
                 }
+                .padding(.top, 16)
 
                 if !viewModel.upcomingPlans.isEmpty {
                     upcomingPlansCard(viewModel: viewModel)
