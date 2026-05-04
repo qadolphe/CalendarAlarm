@@ -91,8 +91,8 @@ struct DashboardView: View {
                 }
                 .padding(.top, 16)
 
-                if !viewModel.upcomingPlans.isEmpty {
-                    upcomingPlansCard(viewModel: viewModel)
+                if viewState.plan.reason != .noSchedule {
+                    upcomingSection(viewModel: viewModel)
                 }
             }
         }
@@ -186,6 +186,15 @@ struct DashboardView: View {
         .cardStyle()
     }
 
+    @ViewBuilder
+    private func upcomingSection(viewModel: DashboardViewModel) -> some View {
+        if !viewModel.upcomingPlans.isEmpty {
+            upcomingPlansCard(viewModel: viewModel)
+        } else {
+            noUpcomingPlansCard(viewModel: viewModel)
+        }
+    }
+
     private func upcomingPlansCard(viewModel: DashboardViewModel) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -202,6 +211,25 @@ struct DashboardView: View {
                         .overlay(WPStyles.cardBorder)
                 }
             }
+        }
+        .cardStyle()
+    }
+
+    private func noUpcomingPlansCard(viewModel: DashboardViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Upcoming Alarms")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(WPStyles.primaryText)
+
+            HStack(spacing: 10) {
+                Image(systemName: "calendar.badge.exclamationmark")
+                    .font(.title2)
+                    .foregroundStyle(WPStyles.primaryOrange)
+                Text(viewModel.noUpcomingMessage)
+                    .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
+            }
+            .padding(.vertical, 4)
         }
         .cardStyle()
     }
@@ -375,7 +403,7 @@ struct DashboardView: View {
         case .inactiveDay:
             return "Auto-Pilot is paused for this day."
         case .noSchedule:
-            return "No scheduled events or fallback."
+            return "No alarms are scheduled for the next \(DashboardViewModel.displayPlanWindowDays) days."
         case .disabled:
             return "Automatic alarms are turned off."
         case .systemDisabled:

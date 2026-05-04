@@ -17,7 +17,7 @@ struct OnboardingView: View {
             TabView(selection: $currentStep) {
                 welcomeStep.tag(0)
                 permissionsStep.tag(1)
-                googleStep.tag(2)
+                calendarStep.tag(2)
                 routineStep.tag(3)
                 finishStep.tag(4)
             }
@@ -87,7 +87,7 @@ struct OnboardingView: View {
                     .foregroundStyle(WPStyles.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text("EarlyOtter needs access to your calendars to scan your schedule, and notifications to wake you up.")
+                Text("EarlyOtter needs alarm and notification access so it can schedule a real wake-up for you.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
@@ -95,13 +95,6 @@ struct OnboardingView: View {
             }
             
             VStack(spacing: 16) {
-                permissionRow(
-                    title: "Apple Calendar",
-                    icon: "calendar",
-                    isGranted: appState.permissions.calendar == .authorized,
-                    action: { Task { await appState.requestCalendarAccess() } }
-                )
-                
                 permissionRow(
                     title: "Alarms & Notifications",
                     icon: "bell.fill",
@@ -111,60 +104,57 @@ struct OnboardingView: View {
             }
             .cardStyle()
         } footer: {
-            let bothGranted = appState.permissions.calendar == .authorized && appState.permissions.alarm == .authorized
+            let alarmGranted = appState.permissions.alarm == .authorized
             
-            nextButton(title: bothGranted ? "Next" : "Grant Access to Continue") {
+            nextButton(title: alarmGranted ? "Next" : "Grant Access to Continue") {
                 withAnimation { currentStep += 1 }
             }
-            .disabled(!bothGranted)
-            .opacity(bothGranted ? 1.0 : 0.5)
+            .disabled(!alarmGranted)
+            .opacity(alarmGranted ? 1.0 : 0.5)
         }
     }
     
-    private var googleStep: some View {
+    private var calendarStep: some View {
         onboardingPage {
-            ZStack {
-                Circle()
-                    .fill(WPStyles.surfaceRaised)
-                    .frame(width: 100, height: 100)
-                Image(systemName: "g.circle.fill")
-                    .font(.system(size: 50))
-                    .foregroundStyle(WPStyles.primaryOrange)
-            }
-            
             VStack(spacing: 12) {
-                Text("Google Calendar")
+                Text("Add Your Calendar")
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text("Do you use Google Calendar? You can connect it now to perfectly sync your schedule.")
+                Text("Connect Apple Calendar, Google Calendar, or both. You only need one calendar source before continuing.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        } footer: {
-            VStack(spacing: 12) {
-                Button(action: {
-                    withAnimation { currentStep += 1 }
-                }) {
-                    Text("Connect Google Account")
-                        .font(.headline)
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(WPStyles.primaryOrange)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
+            
+            VStack(spacing: 16) {
+                calendarSourceRow(
+                    title: "Apple Calendar",
+                    subtitle: hasAppleCalendarSource ? nil : "Use your on-device calendars and subscriptions",
+                    icon: "apple.logo",
+                    isConnected: hasAppleCalendarSource,
+                    actionTitle: "Add",
+                    action: { Task { await appState.connectAppleCalendar() } }
+                )
                 
-                Button("Skip for now") {
-                    withAnimation { currentStep += 1 }
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(WPStyles.secondaryText)
-                .padding()
+                calendarSourceRow(
+                    title: "Google Calendar",
+                    subtitle: googleCalendarSubtitle,
+                    icon: "g.circle.fill",
+                    isConnected: hasGoogleCalendarSource,
+                    actionTitle: "Connect",
+                    action: { Task { await appState.addGoogleAccount() } }
+                )
             }
+            .cardStyle()
+        } footer: {
+            nextButton(title: hasAnyCalendarSource ? "Next" : "Add a Calendar to Continue") {
+                withAnimation { currentStep += 1 }
+            }
+            .disabled(!hasAnyCalendarSource)
+            .opacity(hasAnyCalendarSource ? 1.0 : 0.5)
         }
     }
     
@@ -248,25 +238,29 @@ struct OnboardingView: View {
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-            
-            VStack(spacing: 28) {
-                content()
-            }
-            .frame(maxWidth: 380)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 20)
-            
-            Spacer(minLength: 0)
-            
-            footer()
+        let builtContent = content()
+        let builtFooter = footer()
+        
+        return GeometryReader { geometry in
+            VStack(spacing: 0) {
+                VStack(spacing: 28) {
+                    builtContent
+                }
                 .frame(maxWidth: 380)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.top, topContentInset(for: geometry.size.height))
+                
+                Spacer(minLength: 24)
+                
+                builtFooter
+                    .frame(maxWidth: 380)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func permissionRow(title: String, icon: String, isGranted: Bool, action: @escaping () -> Void) -> some View {
@@ -329,6 +323,121 @@ struct OnboardingView: View {
                         .clipShape(Capsule())
                 }
             }
+        }
+    }
+    
+    private func calendarSourceRow(
+        title: String,
+        subtitle: String?,
+        icon: String,
+        isConnected: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundStyle(WPStyles.primaryOrange)
+                        .frame(width: 32)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.headline)
+                            .foregroundStyle(WPStyles.primaryText)
+                        if let subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(WPStyles.secondaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                
+                Spacer(minLength: 12)
+                sourceTrailingControl(isConnected: isConnected, actionTitle: actionTitle, action: action)
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundStyle(WPStyles.primaryOrange)
+                        .frame(width: 32)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.headline)
+                            .foregroundStyle(WPStyles.primaryText)
+                        if let subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(WPStyles.secondaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                
+                sourceTrailingControl(isConnected: isConnected, actionTitle: actionTitle, action: action)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+    
+    private func sourceTrailingControl(
+        isConnected: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Group {
+            if isConnected {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.green)
+            } else {
+                Button(action: action) {
+                    Text(actionTitle)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(WPStyles.primaryText)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(WPStyles.surfaceRaised)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+    }
+    
+    private func topContentInset(for screenHeight: CGFloat) -> CGFloat {
+        min(max(screenHeight * 0.3, 260), 340)
+    }
+    
+    private var hasAppleCalendarSource: Bool {
+        appState.permissions.calendar == .authorized
+            && (appState.accounts.first { $0.id == AppleCalendarProvider.appleAccountID }?.isEnabled ?? false)
+    }
+    
+    private var connectedGoogleAccounts: [ConnectedCalendarAccount] {
+        appState.accounts.filter { $0.provider == .google && $0.isEnabled }
+    }
+    
+    private var hasGoogleCalendarSource: Bool {
+        !connectedGoogleAccounts.isEmpty
+    }
+    
+    private var hasAnyCalendarSource: Bool {
+        hasAppleCalendarSource || hasGoogleCalendarSource
+    }
+    
+    private var googleCalendarSubtitle: String {
+        switch connectedGoogleAccounts.count {
+        case 0:
+            return "Sync events from a Google account"
+        case 1:
+            return connectedGoogleAccounts[0].displayName
+        default:
+            return "\(connectedGoogleAccounts.count) Google accounts connected"
         }
     }
     

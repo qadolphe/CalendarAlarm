@@ -206,7 +206,40 @@ final class AppState {
 
         do {
             accounts = try await accountService.connectGoogleAccount()
-            noticeMessage = "Google account connected."
+            try await refreshDashboard()
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
+    func connectAppleCalendar() async {
+        noticeMessage = nil
+
+        do {
+            let authorizationState: CalendarAuthorizationState
+            if permissions.calendar == .authorized {
+                authorizationState = .authorized
+            } else {
+                authorizationState = try await permissionService.requestCalendarAccess()
+            }
+
+            guard authorizationState == .authorized else {
+                await load()
+                return
+            }
+
+            var stored = try accountStore.load()
+            if let index = stored.firstIndex(where: { $0.id == AppleCalendarProvider.appleAccountID }) {
+                stored[index].isEnabled = true
+            } else {
+                stored.append(ConnectedCalendarAccount(
+                    id: AppleCalendarProvider.appleAccountID,
+                    provider: .apple,
+                    displayName: "Apple Calendar",
+                    isEnabled: true
+                ))
+            }
+            try accountStore.save(stored)
             try await refreshDashboard()
         } catch {
             dashboardState = .error(format(error))

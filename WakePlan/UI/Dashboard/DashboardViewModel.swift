@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 struct DashboardViewModel {
     let appState: AppState
+    static let displayPlanWindowDays = 4
 
     var title: String {
         "Next Alarm"
@@ -25,6 +26,11 @@ struct DashboardViewModel {
 
     var upcomingPlans: [WakeUpPlan] {
         appState.upcomingPlans
+    }
+
+    var noUpcomingMessage: String {
+        let remainingDays = max(Self.displayPlanWindowDays - 1, 1)
+        return "No upcoming alarms for the next \(remainingDays) days."
     }
 
     var eventSummary: String? {
