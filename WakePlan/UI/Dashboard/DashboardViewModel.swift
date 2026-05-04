@@ -29,7 +29,11 @@ struct DashboardViewModel {
     }
 
     var noUpcomingMessage: String {
-        let remainingDays = max(Self.displayPlanWindowDays - 1, 1)
+        Self.noUpcomingMessage
+    }
+
+    static var noUpcomingMessage: String {
+        let remainingDays = max(displayPlanWindowDays - 1, 1)
         return "No upcoming alarms for the next \(remainingDays) days."
     }
 

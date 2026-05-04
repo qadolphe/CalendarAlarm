@@ -296,9 +296,13 @@ struct RuleEditorView: View {
 
     @State private var name: String
     @State private var conditions: [AlarmRuleCondition]
+    @State private var activeWeekdays: Set<Int>
     @State private var selectedCalendarIDs: Set<String>
     @State private var prepTime: Minutes
     @State private var commuteTime: Minutes
+    @State private var sound: AlarmSoundOption
+    @State private var snoozeEnabled: Bool
+    @State private var snoozeDuration: Minutes
     @State private var newTitleKeyword = ""
     @State private var newLocationKeyword = ""
 
@@ -319,15 +323,23 @@ struct RuleEditorView: View {
             let dr = appState.preferences.defaultAlarmRule
             _name = State(initialValue: "")
             _conditions = State(initialValue: [])
+            _activeWeekdays = State(initialValue: dr.activeWeekdays)
             _selectedCalendarIDs = State(initialValue: dr.selectedCalendarIDs)
             _prepTime = State(initialValue: dr.prepTime)
             _commuteTime = State(initialValue: dr.commuteTime)
+            _sound = State(initialValue: dr.alarmSettings.sound)
+            _snoozeEnabled = State(initialValue: dr.alarmSettings.snoozeEnabled)
+            _snoozeDuration = State(initialValue: dr.alarmSettings.snoozeDuration)
         case .edit(let rule):
             _name = State(initialValue: rule.name)
             _conditions = State(initialValue: rule.conditions)
+            _activeWeekdays = State(initialValue: rule.activeWeekdays)
             _selectedCalendarIDs = State(initialValue: rule.selectedCalendarIDs)
             _prepTime = State(initialValue: rule.prepTime)
             _commuteTime = State(initialValue: rule.commuteTime)
+            _sound = State(initialValue: rule.alarmSettings.sound)
+            _snoozeEnabled = State(initialValue: rule.alarmSettings.snoozeEnabled)
+            _snoozeDuration = State(initialValue: rule.alarmSettings.snoozeDuration)
         }
     }
 
@@ -341,8 +353,12 @@ struct RuleEditorView: View {
                         nameSection
                         conditionsSection
                     }
+                    if !isDefaultRule {
+                        weekdaysSection
+                    }
                     calendarsSection
                     timingSection
+                    alarmSection
                 }
                 .padding(24)
             }
@@ -699,6 +715,76 @@ struct RuleEditorView: View {
         }
     }
 
+    private var weekdaysSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                sectionLabel("Applies On")
+                Spacer()
+                if activeWeekdays != Set(1...7) {
+                    Button("Every day") {
+                        activeWeekdays = Set(1...7)
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WPStyles.secondaryBlue)
+                }
+            }
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7),
+                spacing: 8
+            ) {
+                ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+                    weekdayToggleCell(option)
+                }
+            }
+        }
+    }
+
+    private var alarmSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionLabel("Alarm")
+
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Sound")
+                        .font(.body)
+                        .foregroundStyle(WPStyles.primaryText)
+                    Spacer()
+                    Picker("Sound", selection: $sound) {
+                        ForEach(AlarmSoundOption.allCases, id: \.self) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(WPStyles.primaryOrange)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+
+                Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+
+                Toggle(isOn: $snoozeEnabled) {
+                    Text("Enable Snooze")
+                        .font(.body)
+                        .foregroundStyle(WPStyles.primaryText)
+                }
+                .tint(WPStyles.primaryOrange)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+
+                if snoozeEnabled {
+                    Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+                    stepperRow(label: "Snooze duration", value: $snoozeDuration, range: 1...60)
+                }
+            }
+            .background(WPStyles.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1)
+            )
+        }
+    }
+
     private func stepperRow(label: String, value: Binding<Minutes>, range: ClosedRange<Int>) -> some View {
         Stepper(
             value: Binding(get: { value.wrappedValue.rawValue }, set: { value.wrappedValue = Minutes($0) }),
@@ -716,6 +802,34 @@ struct RuleEditorView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+    }
+
+    private func weekdayToggleCell(_ option: WeekdayOption) -> some View {
+        let isSelected = activeWeekdays.contains(option.weekday)
+
+        return Button {
+            if isSelected {
+                guard activeWeekdays.count > 1 else { return }
+                activeWeekdays.remove(option.weekday)
+            } else {
+                activeWeekdays.insert(option.weekday)
+            }
+        } label: {
+            Text(option.shortLabel)
+                .font(.system(size: 10, weight: .bold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isSelected ? WPStyles.surfaceRaised : WPStyles.surface)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
+                )
+                .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
+        }
+        .buttonStyle(.plain)
     }
 
     private func sectionLabel(_ text: String) -> some View {
@@ -736,7 +850,8 @@ struct RuleEditorView: View {
             }
             let isDuplicate = appState.preferences.alarmRules.contains { existing in
                 let existingSorted = existing.conditions.sorted { $0.displayLabel < $1.displayLabel }
-                return existing.selectedCalendarIDs == selectedCalendarIDs
+                return existing.activeWeekdays == activeWeekdays
+                    && existing.selectedCalendarIDs == selectedCalendarIDs
                     && existingSorted == sortedConditions
             }
             if isDuplicate {
@@ -794,10 +909,16 @@ struct RuleEditorView: View {
                 id: UUID(),
                 name: name.isEmpty ? "New Rule" : name,
                 isDefault: false,
+                activeWeekdays: activeWeekdays,
                 selectedCalendarIDs: selectedCalendarIDs,
                 conditions: conditions,
                 prepTime: prepTime,
-                commuteTime: commuteTime
+                commuteTime: commuteTime,
+                alarmSettings: RuleAlarmSettings(
+                    sound: sound,
+                    snoozeEnabled: snoozeEnabled,
+                    snoozeDuration: snoozeDuration
+                )
             )
             if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
                 copy.alarmRules.insert(newRule, at: idx)
@@ -807,10 +928,16 @@ struct RuleEditorView: View {
         case .edit(let rule):
             if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
                 copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
+                copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
                 copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
                 copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
                 copy.alarmRules[idx].prepTime = prepTime
                 copy.alarmRules[idx].commuteTime = commuteTime
+                copy.alarmRules[idx].alarmSettings = RuleAlarmSettings(
+                    sound: sound,
+                    snoozeEnabled: snoozeEnabled,
+                    snoozeDuration: snoozeDuration
+                )
             }
         }
         Task { await appState.updatePreferences(copy) }

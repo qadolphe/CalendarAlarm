@@ -27,6 +27,7 @@ struct WakePlanCalculator {
         let dayFallback = preferences.fallbackWakeTime(for: weekday)
         let fallbackWakeTime = dayFallback.date(on: targetDay, calendar: calendar)
         let isFallbackEnabled = scheduleRules.fallbackEnabledDays.contains(weekday)
+        let fallbackAlarmSettings = preferences.fallbackAlarmSettings
 
         if !preferences.isSystemEnabled {
             return WakeUpPlan(
@@ -44,6 +45,7 @@ struct WakePlanCalculator {
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
+                alarmSettings: fallbackAlarmSettings,
                 isFallback: true,
                 reason: .systemDisabled,
                 appliedRuleName: nil,
@@ -56,7 +58,8 @@ struct WakePlanCalculator {
                 return makeFallbackPlan(
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
-                    timingRules: timingRules
+                    timingRules: timingRules,
+                    alarmSettings: fallbackAlarmSettings
                 )
             }
 
@@ -76,6 +79,7 @@ struct WakePlanCalculator {
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
+                alarmSettings: fallbackAlarmSettings,
                 isFallback: false,
                 reason: .inactiveDay,
                 appliedRuleName: nil,
@@ -88,7 +92,8 @@ struct WakePlanCalculator {
                 return makeFallbackPlan(
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
-                    timingRules: timingRules
+                    timingRules: timingRules,
+                    alarmSettings: fallbackAlarmSettings
                 )
             }
 
@@ -107,6 +112,7 @@ struct WakePlanCalculator {
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
+                alarmSettings: fallbackAlarmSettings,
                 isFallback: false,
                 reason: .disabled,
                 appliedRuleName: nil,
@@ -131,12 +137,14 @@ struct WakePlanCalculator {
 
         for event in validEvents {
             // Collect every custom rule that matches this event
-            var matchingRules: [AlarmRule] = preferences.customAlarmRules.filter { $0.matches(event: event, activeCalendarIDs: activeCalendarIDs) }
-            
+            var matchingRules: [AlarmRule] = preferences.customAlarmRules.filter {
+                $0.matches(event: event, activeCalendarIDs: activeCalendarIDs, calendar: calendar)
+            }
+
             // If no custom rule matches, try the default rule
             if matchingRules.isEmpty {
                 let defaultRule = preferences.defaultAlarmRule
-                if defaultRule.matches(event: event, activeCalendarIDs: activeCalendarIDs) {
+                if defaultRule.matches(event: event, activeCalendarIDs: activeCalendarIDs, calendar: calendar) {
                     matchingRules.append(defaultRule)
                 }
             }
@@ -160,7 +168,8 @@ struct WakePlanCalculator {
                 return makeFallbackPlan(
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
-                    timingRules: timingRules
+                    timingRules: timingRules,
+                    alarmSettings: fallbackAlarmSettings
                 )
             }
 
@@ -178,6 +187,7 @@ struct WakePlanCalculator {
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
+                alarmSettings: fallbackAlarmSettings,
                 isFallback: false,
                 reason: .noSchedule,
                 appliedRuleName: nil,
@@ -202,7 +212,8 @@ struct WakePlanCalculator {
             return makeFallbackPlan(
                 targetDay: targetDay,
                 wakeTime: fallbackWakeTime,
-                timingRules: timingRules
+                timingRules: timingRules,
+                alarmSettings: fallbackAlarmSettings
             )
         }
 
@@ -224,6 +235,7 @@ struct WakePlanCalculator {
             eventStartTime: winningEvent.startDate,
             prepTime: winningRule.prepTime,
             commuteTime: winningRule.commuteTime,
+            alarmSettings: winningRule.alarmSettings,
             isFallback: false,
             reason: .event,
             appliedRuleName: winningRule.name,
@@ -238,7 +250,8 @@ struct WakePlanCalculator {
     private func makeFallbackPlan(
         targetDay: TargetDay,
         wakeTime: Date,
-        timingRules: TimingRules
+        timingRules: TimingRules,
+        alarmSettings: RuleAlarmSettings = .default
     ) -> WakeUpPlan {
         WakeUpPlan(
             id: hasher.makeID(
@@ -254,6 +267,7 @@ struct WakePlanCalculator {
             eventStartTime: nil,
             prepTime: timingRules.prepTime,
             commuteTime: timingRules.defaultCommuteTime,
+            alarmSettings: alarmSettings,
             isFallback: true,
             reason: .fallback,
             appliedRuleName: nil,

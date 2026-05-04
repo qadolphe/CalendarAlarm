@@ -14,11 +14,15 @@ struct WakePlanAlarmMetadata: AlarmMetadata {
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<WakePlanAlarmMetadata> {
         let title = AppConfiguration.alarmTitle(for: plan.targetEvent?.title)
+        let secondaryButton = snoozeButton(for: plan.alarmSettings)
+        let countdownDuration = snoozeCountdownDuration(for: plan.alarmSettings)
         let alert: AlarmPresentation.Alert
 
         if #available(iOS 26.1, *) {
             alert = AlarmPresentation.Alert(
-                title: localized(title)
+                title: localized(title),
+                secondaryButton: secondaryButton,
+                secondaryButtonBehavior: secondaryButton == nil ? nil : .countdown
             )
         } else {
             let stopButton = AlarmButton(
@@ -29,7 +33,9 @@ enum AlarmKitMappers {
 
             alert = AlarmPresentation.Alert(
                 title: localized(title),
-                stopButton: stopButton
+                stopButton: stopButton,
+                secondaryButton: secondaryButton,
+                secondaryButtonBehavior: secondaryButton == nil ? nil : .countdown
             )
         }
 
@@ -44,9 +50,38 @@ enum AlarmKitMappers {
             tintColor: .orange
         )
 
-        return .alarm(
+        return AlarmManager.AlarmConfiguration(
+            countdownDuration: countdownDuration,
             schedule: .fixed(plan.calculatedWakeTime),
-            attributes: attributes
+            attributes: attributes,
+            sound: sound(for: plan.alarmSettings)
+        )
+    }
+
+    private static func sound(for settings: RuleAlarmSettings) -> ActivityKit.AlertConfiguration.AlertSound {
+        guard let resourceName = settings.sound.resourceName else {
+            return .default
+        }
+
+        return .named(resourceName)
+    }
+
+    private static func snoozeButton(for settings: RuleAlarmSettings) -> AlarmButton? {
+        guard settings.snoozeEnabled else { return nil }
+
+        return AlarmButton(
+            text: localized("Snooze"),
+            textColor: .white,
+            systemImageName: "zzz"
+        )
+    }
+
+    private static func snoozeCountdownDuration(for settings: RuleAlarmSettings) -> Alarm.CountdownDuration? {
+        guard settings.snoozeEnabled else { return nil }
+
+        return Alarm.CountdownDuration(
+            preAlert: nil,
+            postAlert: TimeInterval(settings.snoozeDuration.rawValue * 60)
         )
     }
 

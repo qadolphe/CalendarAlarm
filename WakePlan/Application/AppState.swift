@@ -289,18 +289,22 @@ final class AppState {
 
     private func refreshDashboard(targetDay: TargetDay = .tomorrow()) async throws {
         let now = Date()
+        let calendar = Calendar.current
 
         permissions = await permissionService.currentStatus()
         accounts = try await wakePlanService.accounts()
 
         calendars = try await wakePlanService.calendars()
-        let displayPlans = try await wakePlanService.makeDisplayPlans(startingAt: now, count: 4)
-        let plan: WakeUpPlan
-        if let firstDisplayPlan = displayPlans.first {
-            plan = firstDisplayPlan
-        } else {
-            plan = try await wakePlanService.makePlan(targetDay: TargetDay(date: now))
-        }
+        let displayPlans = try await wakePlanService.makeDisplayPlans(
+            startingAt: now,
+            count: DashboardViewModel.displayPlanWindowDays,
+            calendar: calendar
+        )
+        let plan = Self.primaryDashboardPlan(
+            from: displayPlans,
+            now: now,
+            calendar: calendar
+        )
         upcomingPlans = Array(displayPlans.dropFirst())
         let alarmStatus = try await alarmSyncService.sync(plan: plan)
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
@@ -320,5 +324,31 @@ final class AppState {
         }
 
         dashboardState = .ready(viewState)
+    }
+
+    static func primaryDashboardPlan(
+        from displayPlans: [WakeUpPlan],
+        now: Date,
+        calendar: Calendar = .current
+    ) -> WakeUpPlan {
+        if let firstDisplayPlan = displayPlans.first {
+            return firstDisplayPlan
+        }
+
+        let nextDay = TargetDay.tomorrow(from: now, calendar: calendar)
+        return WakeUpPlan(
+            id: WakePlanID(rawValue: "dashboard-empty-\(Int(nextDay.date.timeIntervalSince1970))"),
+            targetDay: nextDay,
+            targetEvent: nil,
+            calculatedWakeTime: nextDay.date,
+            eventStartTime: nil,
+            prepTime: Minutes(0),
+            commuteTime: Minutes(0),
+            alarmSettings: .default,
+            isFallback: false,
+            reason: .noSchedule,
+            appliedRuleName: nil,
+            matchedRuleNames: []
+        )
     }
 }

@@ -8,6 +8,7 @@ final class AccountServiceTests: XCTestCase {
         let authenticator = StubGoogleAuthenticator(
             result: GoogleAccountAuthResult(
                 accountID: CalendarAccountID(rawValue: "google.user.1"),
+                matchingAccountIDs: [CalendarAccountID(rawValue: "google.user.1")],
                 displayName: "Quentin",
                 email: "quentin@example.com"
             )
@@ -40,6 +41,7 @@ final class AccountServiceTests: XCTestCase {
         let authenticator = StubGoogleAuthenticator(
             result: GoogleAccountAuthResult(
                 accountID: CalendarAccountID(rawValue: "google.user.1"),
+                matchingAccountIDs: [CalendarAccountID(rawValue: "google.user.1")],
                 displayName: "New Name",
                 email: "quentin@example.com"
             )

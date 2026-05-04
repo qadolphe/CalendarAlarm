@@ -4,6 +4,15 @@ import CryptoKit
 import Foundation
 
 @available(iOS 26.0, *)
+private struct AlarmKitScheduleError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? {
+        message
+    }
+}
+
+@available(iOS 26.0, *)
 final class AlarmKitScheduler: AlarmScheduling {
     func authorizationState() async -> AlarmAuthorizationState {
         switch AlarmManager.shared.authorizationState {
@@ -37,10 +46,18 @@ final class AlarmKitScheduler: AlarmScheduling {
         let nativeAlarmID = deterministicAlarmID(for: plan.id.rawValue)
         let configuration = try AlarmKitMappers.configuration(from: plan)
 
-        _ = try await AlarmManager.shared.schedule(
-            id: nativeAlarmID,
-            configuration: configuration
-        )
+        try? AlarmManager.shared.cancel(id: nativeAlarmID)
+
+        do {
+            _ = try await AlarmManager.shared.schedule(
+                id: nativeAlarmID,
+                configuration: configuration
+            )
+        } catch {
+            throw AlarmKitScheduleError(
+                message: failureMessage(for: error, plan: plan, alarmID: nativeAlarmID)
+            )
+        }
 
         let now = Date()
 
@@ -72,6 +89,30 @@ final class AlarmKitScheduler: AlarmScheduling {
         )
 
         return UUID(uuid: uuidBytes)
+    }
+
+    private func failureMessage(
+        for error: Error,
+        plan: WakeUpPlan,
+        alarmID: UUID
+    ) -> String {
+        let nsError = error as NSError
+        var parts: [String] = [
+            nsError.localizedDescription
+        ]
+
+        if let failureReason = nsError.localizedFailureReason, !failureReason.isEmpty {
+            parts.append(failureReason)
+        }
+
+        if let recoverySuggestion = nsError.localizedRecoverySuggestion, !recoverySuggestion.isEmpty {
+            parts.append(recoverySuggestion)
+        }
+
+        parts.append("Plan: \(plan.reason.rawValue)")
+        parts.append("Alarm ID: \(alarmID.uuidString)")
+
+        return parts.joined(separator: " ")
     }
 }
 #endif

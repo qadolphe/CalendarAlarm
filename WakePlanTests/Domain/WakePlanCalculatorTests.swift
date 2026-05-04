@@ -223,6 +223,75 @@ final class WakePlanCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.targetEvent?.id, "work")
     }
 
+    func testFallbackInheritsDefaultRuleAlarmSettings() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [
+            AlarmRule.makeDefault(
+                prepTime: Minutes(45),
+                commuteTime: Minutes(20),
+                alarmSettings: RuleAlarmSettings(
+                    sound: .glass,
+                    snoozeEnabled: false,
+                    snoozeDuration: Minutes(15)
+                )
+            )
+        ]
+
+        let plan = calculator.calculate(
+            events: [],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .fallback)
+        XCTAssertEqual(plan.alarmSettings.sound, .glass)
+        XCTAssertFalse(plan.alarmSettings.snoozeEnabled)
+        XCTAssertEqual(plan.alarmSettings.snoozeDuration, Minutes(15))
+    }
+
+    func testRuleWeekdaysGateRuleMatching() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        let saturdayEvent = event(
+            id: "office",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar),
+            title: "Office planning"
+        )
+        let weekdaysOnlyRule = AlarmRule(
+            id: UUID(),
+            name: "Weekdays Only",
+            isDefault: false,
+            activeWeekdays: Set([2, 3, 4, 5, 6]),
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("office")],
+            prepTime: Minutes(60),
+            commuteTime: Minutes(30),
+            alarmSettings: .default
+        )
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [
+            weekdaysOnlyRule,
+            AlarmRule.makeDefault(prepTime: Minutes(10), commuteTime: Minutes(0))
+        ]
+        preferences.fallbackEnabledDays = []
+
+        let plan = calculator.calculate(
+            events: [saturdayEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.appliedRuleName, "Default")
+        XCTAssertEqual(plan.prepTime, Minutes(10))
+        XCTAssertEqual(plan.commuteTime, Minutes(0))
+    }
+
     // MARK: - Earliest wake time policy
 
     /// An event that starts later but needs heavy prep wins over an earlier event with minimal prep.
@@ -249,15 +318,19 @@ final class WakePlanCalculatorTests: XCTestCase {
 
         let remoteRule = AlarmRule(
             id: UUID(), name: "Remote", isDefault: false,
+            activeWeekdays: Set(1...7),
             selectedCalendarIDs: [],
             conditions: [.titleContains("remote")],
-            prepTime: Minutes(15), commuteTime: Minutes(0)
+            prepTime: Minutes(15), commuteTime: Minutes(0),
+            alarmSettings: .default
         )
         let officeRule = AlarmRule(
             id: UUID(), name: "Office", isDefault: false,
+            activeWeekdays: Set(1...7),
             selectedCalendarIDs: [],
             conditions: [.titleContains("office")],
-            prepTime: Minutes(45), commuteTime: Minutes(30)
+            prepTime: Minutes(45), commuteTime: Minutes(30),
+            alarmSettings: .default
         )
         var preferences = AlarmPreferences.default
         preferences.alarmRules = [remoteRule, officeRule, AlarmRule.makeDefault(prepTime: Minutes(0), commuteTime: Minutes(0))]
@@ -290,18 +363,23 @@ final class WakePlanCalculatorTests: XCTestCase {
 
         let workRule = AlarmRule(
             id: UUID(), name: "Work", isDefault: false,
+            activeWeekdays: Set(1...7),
             selectedCalendarIDs: [],
             conditions: [.titleContains("work")],
-            prepTime: Minutes(30), commuteTime: Minutes(0)   // wake at 8:30
+            prepTime: Minutes(30), commuteTime: Minutes(0),   // wake at 8:30
+            alarmSettings: .default
         )
         let schoolRule = AlarmRule(
             id: UUID(), name: "School", isDefault: false,
+            activeWeekdays: Set(1...7),
             selectedCalendarIDs: [],
             conditions: [.titleContains("school")],
-            prepTime: Minutes(15), commuteTime: Minutes(0)   // wake at 8:45
+            prepTime: Minutes(15), commuteTime: Minutes(0),   // wake at 8:45
+            alarmSettings: .default
         )
         var preferences = AlarmPreferences.default
         preferences.alarmRules = [workRule, schoolRule, AlarmRule.makeDefault(prepTime: Minutes(0), commuteTime: Minutes(0))]
+        preferences.fallbackEnabledDays = []
 
         let plan = calculator.calculate(
             events: [evt],

@@ -107,6 +107,7 @@ final class AlarmSyncService {
             eventStartTime: nil,
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
+            alarmSettings: .default,
             isFallback: false,
             reason: .manualOverride,
             appliedRuleName: nil,

@@ -1,8 +1,17 @@
 import SwiftUI
 
 struct DashboardView: View {
+    private struct PlanDetailsPresentation: Identifiable {
+        let plan: WakeUpPlan
+        let alarmStatus: AlarmScheduleStatus?
+
+        var id: String {
+            plan.id.rawValue
+        }
+    }
+
     @Bindable var appState: AppState
-    @State private var selectedPlanDetails: WakeUpPlan? = nil
+    @State private var selectedPlanDetails: PlanDetailsPresentation? = nil
 
     var body: some View {
         let viewModel = DashboardViewModel(appState: appState)
@@ -48,8 +57,8 @@ struct DashboardView: View {
         .task {
             await appState.loadIfNeeded()
         }
-        .sheet(item: $selectedPlanDetails) { plan in
-            WakePlanDetailsView(plan: plan)
+        .sheet(item: $selectedPlanDetails) { item in
+            WakePlanDetailsView(plan: item.plan, alarmStatus: item.alarmStatus)
         }
     }
 
@@ -128,7 +137,10 @@ struct DashboardView: View {
     @ViewBuilder
     private func planCard(for plan: WakeUpPlan, viewModel: DashboardViewModel) -> some View {
         Button {
-            selectedPlanDetails = plan
+            selectedPlanDetails = PlanDetailsPresentation(
+                plan: plan,
+                alarmStatus: viewModel.viewState?.alarmStatus
+            )
         } label: {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -174,7 +186,7 @@ struct DashboardView: View {
                             .foregroundStyle(.indigo)
                         Text(viewModel.statusMessage ?? "Sleeping in")
                             .font(.headline)
-                            .lineLimit(1)
+                            .lineLimit(2)
                             .foregroundStyle(WPStyles.primaryText)
                         Spacer()
                     }
@@ -403,7 +415,7 @@ struct DashboardView: View {
         case .inactiveDay:
             return "Auto-Pilot is paused for this day."
         case .noSchedule:
-            return "No alarms are scheduled for the next \(DashboardViewModel.displayPlanWindowDays) days."
+            return DashboardViewModel.noUpcomingMessage
         case .disabled:
             return "Automatic alarms are turned off."
         case .systemDisabled:

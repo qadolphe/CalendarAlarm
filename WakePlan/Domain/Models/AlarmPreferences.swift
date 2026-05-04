@@ -176,6 +176,10 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         )
     }
 
+    var fallbackAlarmSettings: RuleAlarmSettings {
+        defaultAlarmRule.alarmSettings
+    }
+
     /// User-created rules (non-default, evaluated before the default).
     var customAlarmRules: [AlarmRule] {
         alarmRules.filter { !$0.isDefault }
@@ -189,6 +193,7 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         var normalized = alarmRules
 
         if let defaultIndex = normalized.firstIndex(where: { $0.isDefault }) {
+            normalized[defaultIndex].activeWeekdays = Set(1...7)
             if normalized[defaultIndex].selectedCalendarIDs.isEmpty,
                !legacySelectedCalendarIDs.isEmpty {
                 normalized[defaultIndex].selectedCalendarIDs = legacySelectedCalendarIDs
