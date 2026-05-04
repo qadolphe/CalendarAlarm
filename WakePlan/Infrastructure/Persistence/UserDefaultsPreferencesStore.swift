@@ -22,6 +22,10 @@ final class UserDefaultsPreferencesStore: PreferencesStoring {
         let data = try encoder.encode(preferences)
         defaults.set(data, forKey: key)
     }
+
+    func clear() {
+        defaults.removeObject(forKey: key)
+    }
 }
 
 final class UserDefaultsAccountStore: AccountStoring {
@@ -45,5 +49,9 @@ final class UserDefaultsAccountStore: AccountStoring {
     func save(_ accounts: [ConnectedCalendarAccount]) throws {
         let data = try encoder.encode(accounts)
         defaults.set(data, forKey: key)
+    }
+
+    func clear() {
+        defaults.removeObject(forKey: key)
     }
 }

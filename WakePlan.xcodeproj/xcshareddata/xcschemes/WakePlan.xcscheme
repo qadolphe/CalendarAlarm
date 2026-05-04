@@ -80,7 +80,11 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-WakePlanForceOnboarding"
+            argument = "-EarlyOtterForceOnboarding"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-EarlyOtterResetAppData"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

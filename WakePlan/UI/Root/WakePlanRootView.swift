@@ -1,12 +1,20 @@
 import SwiftUI
 
 struct WakePlanRootView: View {
-    private static let forceOnboardingLaunchArgument = "-WakePlanForceOnboarding"
-
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Bindable var appState: AppState
+    @State private var forceOnboardingThisLaunch: Bool
     @State private var selectedTab: MainTab = .home
+
+    init(appState: AppState) {
+        self.appState = appState
+        _forceOnboardingThisLaunch = State(
+            initialValue: LaunchArguments.allForceOnboarding.contains {
+                ProcessInfo.processInfo.arguments.contains($0)
+            }
+        )
+    }
 
     var body: some View {
         Group {
@@ -15,7 +23,10 @@ struct WakePlanRootView: View {
             } else if shouldShowOnboarding {
                 OnboardingView(
                     appState: appState,
-                    onFinish: { hasCompletedOnboarding = true }
+                    onFinish: {
+                        hasCompletedOnboarding = true
+                        forceOnboardingThisLaunch = false
+                    }
                 )
             } else {
                 mainTabView
@@ -34,11 +45,7 @@ struct WakePlanRootView: View {
     }
 
     private var shouldShowOnboarding: Bool {
-        if ProcessInfo.processInfo.arguments.contains(Self.forceOnboardingLaunchArgument) {
-            return true
-        }
-
-        return !hasCompletedOnboarding
+        forceOnboardingThisLaunch || !hasCompletedOnboarding
     }
 
     private var mainTabView: some View {

@@ -209,7 +209,7 @@ struct DashboardView: View {
     private var topBar: some View {
         HStack {
             Text(AppConfiguration.appName)
-                .font(.custom("Noteworthy-Bold", size: 26))
+                .font(.system(size: 26, weight: .bold, design: .rounded))
                 .foregroundStyle(WPStyles.primaryOrange)
                 .padding(.leading, 10)
                 .offset(y: 15)

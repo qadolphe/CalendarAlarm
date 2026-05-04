@@ -25,3 +25,14 @@ enum AppConfiguration {
         "Test alarm scheduled for \(wakeTime.formatted(date: .omitted, time: .shortened))."
     }
 }
+
+enum LaunchArguments {
+    static let forceOnboarding = "-EarlyOtterForceOnboarding"
+    static let legacyForceOnboarding = "-WakePlanForceOnboarding"
+    static let resetAppData = "-EarlyOtterResetAppData"
+
+    static let allForceOnboarding = [
+        forceOnboarding,
+        legacyForceOnboarding
+    ]
+}

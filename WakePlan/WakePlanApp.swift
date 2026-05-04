@@ -3,9 +3,12 @@ import SwiftUI
 
 @main
 struct WakePlanApp: App {
+    private static let onboardingStorageKey = "hasCompletedOnboarding"
+
     @State private var appState: AppState
 
     init() {
+        let launchArguments = ProcessInfo.processInfo.arguments
         let accountStore = UserDefaultsAccountStore()
         let googleAuthenticator = GoogleSignInAuthenticator()
         let accountService = AccountService(
@@ -35,6 +38,15 @@ struct WakePlanApp: App {
             alarmStore: alarmStore
         )
 
+        if launchArguments.contains(LaunchArguments.resetAppData) {
+            Self.resetPersistedAppState(
+                accountStore: accountStore,
+                preferencesStore: preferencesStore,
+                alarmStore: alarmStore,
+                alarmScheduler: alarmScheduler
+            )
+        }
+
         _appState = State(
             initialValue: AppState(
                 accountStore: accountStore,
@@ -54,5 +66,24 @@ struct WakePlanApp: App {
                     GIDSignIn.sharedInstance.handle(url)
                 }
         }
+    }
+
+    private static func resetPersistedAppState(
+        accountStore: UserDefaultsAccountStore,
+        preferencesStore: UserDefaultsPreferencesStore,
+        alarmStore: UserDefaultsScheduledAlarmStore,
+        alarmScheduler: AlarmKitScheduler
+    ) {
+        if let existingRecord = try? alarmStore.load() {
+            Task {
+                try? await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+            }
+        }
+
+        preferencesStore.clear()
+        accountStore.clear()
+        try? alarmStore.clear()
+        UserDefaults.standard.removeObject(forKey: Self.onboardingStorageKey)
+        GIDSignIn.sharedInstance.signOut()
     }
 }

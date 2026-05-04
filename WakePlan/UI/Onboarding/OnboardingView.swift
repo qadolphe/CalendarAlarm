@@ -9,8 +9,10 @@ struct OnboardingView: View {
     private let totalSteps = 5
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.clear.withAppBackground()
+            
+            persistentBackground
             
             TabView(selection: $currentStep) {
                 welcomeStep.tag(0)
@@ -24,57 +26,72 @@ struct OnboardingView: View {
         }
     }
     
+    // MARK: - Persistent Background
+    
+    private var persistentBackground: some View {
+        Image("OtterSwim")
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity, maxHeight: 380)
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .black, location: 0.15),
+                        .init(color: .black, location: 0.65),
+                        .init(color: .clear, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(false)
+    }
+    
     // MARK: - Steps
     
     private var welcomeStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
-            VStack(spacing: 18) {
-                ZStack {
-                    Circle()
-                        .fill(WPStyles.surfaceRaised)
-                        .frame(width: 132, height: 132)
-                    Image(systemName: "alarm.waves.left.and.right.fill")
-                        .font(.system(size: 62))
-                        .foregroundStyle(WPStyles.primaryOrange)
-                }
+        onboardingPage {
+            VStack(spacing: 8) {
+                Text("Welcome to")
+                    .font(.title2.weight(.medium))
+                    .foregroundStyle(WPStyles.secondaryText)
+                    .multilineTextAlignment(.center)
                 
-                VStack(spacing: 10) {
-                    Text("Welcome to \(AppConfiguration.appName)")
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(WPStyles.primaryText)
-                    Text("Your alarm, perfectly synced with your morning schedule.")
-                        .font(.body)
-                        .foregroundStyle(WPStyles.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
+                Text(AppConfiguration.appName)
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundStyle(WPStyles.primaryOrange)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+                
+                Text("Your alarm, perfectly synced with your morning schedule.")
+                    .font(.body)
+                    .foregroundStyle(WPStyles.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 16)
             }
-            
-            Spacer()
-            
+        } footer: {
             nextButton(title: "Get Started") {
                 withAnimation { currentStep += 1 }
             }
         }
-        .padding(20)
     }
     
     private var permissionsStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
+        onboardingPage {
             VStack(spacing: 12) {
                 Text("Core Access")
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
+                    .multilineTextAlignment(.center)
                 
                 Text("EarlyOtter needs access to your calendars to scan your schedule, and notifications to wake you up.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             VStack(spacing: 16) {
@@ -93,9 +110,7 @@ struct OnboardingView: View {
                 )
             }
             .cardStyle()
-            
-            Spacer()
-            
+        } footer: {
             let bothGranted = appState.permissions.calendar == .authorized && appState.permissions.alarm == .authorized
             
             nextButton(title: bothGranted ? "Next" : "Grant Access to Continue") {
@@ -104,13 +119,10 @@ struct OnboardingView: View {
             .disabled(!bothGranted)
             .opacity(bothGranted ? 1.0 : 0.5)
         }
-        .padding(20)
     }
     
     private var googleStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
+        onboardingPage {
             ZStack {
                 Circle()
                     .fill(WPStyles.surfaceRaised)
@@ -124,16 +136,15 @@ struct OnboardingView: View {
                 Text("Google Calendar")
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
+                    .multilineTextAlignment(.center)
                 
                 Text("Do you use Google Calendar? You can connect it now to perfectly sync your schedule.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            
-            Spacer()
-            
+        } footer: {
             VStack(spacing: 12) {
                 Button(action: {
                     withAnimation { currentStep += 1 }
@@ -155,78 +166,51 @@ struct OnboardingView: View {
                 .padding()
             }
         }
-        .padding(20)
     }
     
     private var routineStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
+        onboardingPage {
             VStack(spacing: 12) {
                 Text("Your Default Routine")
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
+                    .multilineTextAlignment(.center)
                 
                 Text("How long does it typically take you to get ready and commute? We'll subtract this from your first event.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             VStack(spacing: 20) {
-                HStack {
-                    Image(systemName: "cup.and.saucer.fill")
-                        .foregroundStyle(WPStyles.primaryOrange)
-                        .frame(width: 24)
-                    Text("Prep Time")
-                        .foregroundStyle(WPStyles.primaryText)
-                    Spacer()
-                    Stepper("", value: prepTimeBinding, in: 0...180, step: 5)
-                        .labelsHidden()
-                        .background(WPStyles.surfaceRaised)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                    Text("\(appState.preferences.defaultAlarmRule.prepTime.rawValue)m")
-                        .font(.headline)
-                        .foregroundStyle(WPStyles.primaryOrange)
-                        .frame(width: 45, alignment: .trailing)
-                }
+                routineRow(
+                    title: "Prep Time",
+                    icon: "cup.and.saucer.fill",
+                    value: appState.preferences.defaultAlarmRule.prepTime.rawValue,
+                    binding: prepTimeBinding
+                )
                 
-                HStack {
-                    Image(systemName: "car.fill")
-                        .foregroundStyle(WPStyles.primaryOrange)
-                        .frame(width: 24)
-                    Text("Commute Time")
-                        .foregroundStyle(WPStyles.primaryText)
-                    Spacer()
-                    Stepper("", value: commuteTimeBinding, in: 0...180, step: 5)
-                        .labelsHidden()
-                        .background(WPStyles.surfaceRaised)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                    Text("\(appState.preferences.defaultAlarmRule.commuteTime.rawValue)m")
-                        .font(.headline)
-                        .foregroundStyle(WPStyles.primaryOrange)
-                        .frame(width: 45, alignment: .trailing)
-                }
+                routineRow(
+                    title: "Commute Time",
+                    icon: "car.fill",
+                    value: appState.preferences.defaultAlarmRule.commuteTime.rawValue,
+                    binding: commuteTimeBinding
+                )
             }
             .padding()
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
-            
-            Spacer()
-            
+        } footer: {
             nextButton(title: "Next") {
                 withAnimation { currentStep += 1 }
             }
         }
-        .padding(20)
     }
     
     private var finishStep: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            
+        onboardingPage {
             ZStack {
                 Circle()
                     .fill(WPStyles.primaryOrange.opacity(0.15))
@@ -240,17 +224,17 @@ struct OnboardingView: View {
                 Text("You're All Set!")
                     .font(.title.weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
+                    .multilineTextAlignment(.center)
                 
                 Text("EarlyOtter is now analyzing your calendar and scheduling your first smart alarm.")
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            
-            Spacer()
+        } footer: {
+            EmptyView()
         }
-        .padding(20)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 finish()
@@ -260,7 +244,61 @@ struct OnboardingView: View {
     
     // MARK: - Components & Bindings
     
+    private func onboardingPage<Content: View, Footer: View>(
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            
+            VStack(spacing: 28) {
+                content()
+            }
+            .frame(maxWidth: 380)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            
+            Spacer(minLength: 0)
+            
+            footer()
+                .frame(maxWidth: 380)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
     private func permissionRow(title: String, icon: String, isGranted: Bool, action: @escaping () -> Void) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                permissionLabel(title: title, icon: icon)
+                Spacer(minLength: 12)
+                permissionTrailingControl(isGranted: isGranted, action: action)
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                permissionLabel(title: title, icon: icon)
+                permissionTrailingControl(isGranted: isGranted, action: action)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+    
+    private func nextButton(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(WPStyles.primaryOrange)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .padding(.bottom, 24)
+    }
+    
+    private func permissionLabel(title: String, icon: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
@@ -270,9 +308,12 @@ struct OnboardingView: View {
             Text(title)
                 .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)
-            
-            Spacer()
-            
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+    
+    private func permissionTrailingControl(isGranted: Bool, action: @escaping () -> Void) -> some View {
+        Group {
             if isGranted {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title2)
@@ -291,17 +332,52 @@ struct OnboardingView: View {
         }
     }
     
-    private func nextButton(title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.black)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(WPStyles.primaryOrange)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    private func routineRow(title: String, icon: String, value: Int, binding: Binding<Int>) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: icon)
+                        .foregroundStyle(WPStyles.primaryOrange)
+                        .frame(width: 24)
+                    Text(title)
+                        .foregroundStyle(WPStyles.primaryText)
+                }
+                
+                Spacer(minLength: 8)
+                
+                Stepper("", value: binding, in: 0...180, step: 5)
+                    .labelsHidden()
+                    .background(WPStyles.surfaceRaised)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                Text("\(value)m")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryOrange)
+                    .frame(width: 45, alignment: .trailing)
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: icon)
+                        .foregroundStyle(WPStyles.primaryOrange)
+                        .frame(width: 24)
+                    Text(title)
+                        .foregroundStyle(WPStyles.primaryText)
+                }
+                
+                HStack(spacing: 12) {
+                    Stepper("", value: binding, in: 0...180, step: 5)
+                        .labelsHidden()
+                        .background(WPStyles.surfaceRaised)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    Text("\(value)m")
+                        .font(.headline)
+                        .foregroundStyle(WPStyles.primaryOrange)
+                        .frame(width: 45, alignment: .trailing)
+                }
+            }
         }
-        .padding(.bottom, 24)
     }
     
     private var prepTimeBinding: Binding<Int> {
