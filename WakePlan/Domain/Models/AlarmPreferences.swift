@@ -53,7 +53,7 @@ struct EventFilterRules: Codable, Equatable, Sendable {
 
     static let `default` = EventFilterRules(
         selectedCalendarIDs: [],
-        ignoreAllDayEvents: false,
+        ignoreAllDayEvents: true,
         ignoreTentativeEvents: false,
         ignoreCanceledEvents: false,
         ignoreFreeEvents: false,
