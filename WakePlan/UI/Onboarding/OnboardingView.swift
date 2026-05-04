@@ -249,17 +249,17 @@ struct OnboardingView: View {
                 VStack(spacing: 28) {
                     builtContent
                 }
-                .frame(maxWidth: 320)
+                .frame(maxWidth: 340)
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
                 .padding(.top, topContentInset(for: geometry.size.height))
                 
                 Spacer(minLength: 24)
                 
                 builtFooter
-                    .frame(maxWidth: 320)
+                    .frame(maxWidth: 340)
                     .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 24)
                     .padding(.bottom, 20)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -410,14 +410,15 @@ struct OnboardingView: View {
     }
     
     private func routineRow(title: String, icon: String, value: Int, binding: Binding<Int>) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Image(systemName: icon)
                 .foregroundStyle(WPStyles.primaryOrange)
                 .frame(width: 24)
             Text(title)
                 .foregroundStyle(WPStyles.primaryText)
-            
-            Spacer()
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             Stepper(
                 "",
@@ -430,7 +431,7 @@ struct OnboardingView: View {
             Text("\(value)m")
                 .font(.body.monospacedDigit())
                 .foregroundStyle(WPStyles.secondaryText)
-                .frame(width: 45, alignment: .trailing)
+                .frame(width: 42, alignment: .trailing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)

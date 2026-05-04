@@ -33,32 +33,3 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     /// Names of all rules that matched the chosen event (only populated when >1 rule matched).
     let matchedRuleNames: [String]
 }
-
-extension WakeUpPlan {
-    var alarmDebugSummary: String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        func formatted(_ date: Date?) -> String {
-            guard let date else { return "nil" }
-            return formatter.string(from: date)
-        }
-
-        return [
-            "planID=\(id.rawValue)",
-            "reason=\(reason.rawValue)",
-            "isFallback=\(isFallback)",
-            "targetDay=\(formatted(targetDay.date))",
-            "wakeTime=\(formatted(calculatedWakeTime))",
-            "eventID=\(targetEvent?.id ?? "nil")",
-            "eventStart=\(formatted(eventStartTime))",
-            "eventTitle=\(targetEvent?.title ?? "nil")",
-            "appliedRule=\(appliedRuleName ?? "nil")",
-            "prepMinutes=\(prepTime.rawValue)",
-            "commuteMinutes=\(commuteTime.rawValue)",
-            "sound=\(alarmSettings.sound.rawValue)",
-            "snoozeEnabled=\(alarmSettings.snoozeEnabled)",
-            "snoozeMinutes=\(alarmSettings.snoozeDuration.rawValue)"
-        ].joined(separator: ", ")
-    }
-}

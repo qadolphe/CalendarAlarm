@@ -38,7 +38,7 @@ struct TitleKeywordRules: Codable, Equatable, Sendable {
     var allowedKeywords: [String]
 
     static let `default` = TitleKeywordRules(
-        blockedKeywords: ["ooo", "pto", "vacation", "holiday"],
+        blockedKeywords: [],
         allowedKeywords: []
     )
 }
@@ -53,10 +53,10 @@ struct EventFilterRules: Codable, Equatable, Sendable {
 
     static let `default` = EventFilterRules(
         selectedCalendarIDs: [],
-        ignoreAllDayEvents: true,
-        ignoreTentativeEvents: true,
-        ignoreCanceledEvents: true,
-        ignoreFreeEvents: true,
+        ignoreAllDayEvents: false,
+        ignoreTentativeEvents: false,
+        ignoreCanceledEvents: false,
+        ignoreFreeEvents: false,
         titleKeywords: .default
     )
 }

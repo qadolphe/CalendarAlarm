@@ -29,7 +29,7 @@ final class AlarmSyncService {
                 try alarmStore.clear()
                 existingRecord = nil
             } catch {
-                return .failed("Couldn't clear stale alarm record: \(record.debugSummary). \(error.localizedDescription)")
+                return .failed("Couldn't clear stale alarm record. \(error.localizedDescription)")
             }
         }
 
@@ -42,7 +42,7 @@ final class AlarmSyncService {
                 try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
                 try alarmStore.clear()
             } catch {
-                return .failed("Couldn't remove previous alarm: \(existingRecord.debugSummary). \(error.localizedDescription)")
+                return .failed("Couldn't remove previous alarm. \(error.localizedDescription)")
             }
 
             return unscheduledStatus
@@ -57,7 +57,7 @@ final class AlarmSyncService {
                 try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
                 try alarmStore.clear()
             } catch {
-                return .failed("Couldn't replace previous alarm: \(existingRecord.debugSummary). \(error.localizedDescription)")
+                return .failed("Couldn't replace previous alarm. \(error.localizedDescription)")
             }
         }
 

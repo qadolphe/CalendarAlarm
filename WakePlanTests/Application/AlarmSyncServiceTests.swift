@@ -142,7 +142,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         }
 
         XCTAssertTrue(message.contains("Couldn't replace previous alarm"))
-        XCTAssertTrue(message.contains("future-native-id"))
+        XCTAssertTrue(message.contains("The operation couldn’t be completed."))
         XCTAssertEqual(alarmScheduler.scheduledPlans.count, 0)
     }
 

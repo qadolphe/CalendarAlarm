@@ -8,7 +8,6 @@ import SwiftUI
 struct WakePlanAlarmMetadata: AlarmMetadata {
     let planID: String
     let eventTitle: String
-    let planReason: String
 }
 
 @available(iOS 26.0, *)
@@ -47,8 +46,7 @@ enum AlarmKitMappers {
             presentation: presentation,
             metadata: WakePlanAlarmMetadata(
                 planID: plan.id.rawValue,
-                eventTitle: eventTitle ?? AppConfiguration.genericAlarmTitle,
-                planReason: plan.reason.rawValue
+                eventTitle: eventTitle ?? AppConfiguration.genericAlarmTitle
             ),
             tintColor: .orange
         )
@@ -59,27 +57,6 @@ enum AlarmKitMappers {
             attributes: attributes,
             sound: sound(for: plan.alarmSettings)
         )
-    }
-
-    static func debugSummary(for plan: WakeUpPlan) -> String {
-        let eventTitle = normalizedEventTitle(from: plan)
-        let title = AppConfiguration.alarmTitle(for: eventTitle)
-        let soundName = plan.alarmSettings.sound.resourceName ?? "default"
-        let secondaryButton = plan.alarmSettings.snoozeEnabled ? "snooze" : "none"
-        let countdown = plan.alarmSettings.snoozeEnabled
-            ? "\(plan.alarmSettings.snoozeDuration.rawValue)m"
-            : "none"
-
-        return [
-            plan.alarmDebugSummary,
-            "alarmTitle=\(title)",
-            "metadataTitle=\(eventTitle ?? AppConfiguration.genericAlarmTitle)",
-            "metadataReason=\(plan.reason.rawValue)",
-            "schedule=fixed",
-            "soundResource=\(soundName)",
-            "secondaryButton=\(secondaryButton)",
-            "countdown=\(countdown)"
-        ].joined(separator: ", ")
     }
 
     private static func sound(for settings: RuleAlarmSettings) -> ActivityKit.AlertConfiguration.AlertSound {
