@@ -15,6 +15,33 @@ struct RulesView: View {
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+
+                NavigationLink(destination: GlobalEventFiltersView(appState: appState)) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(WPStyles.surfaceRaised)
+                                .frame(width: 40, height: 40)
+                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                .foregroundStyle(WPStyles.primaryOrange)
+                        }
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Ignored Events & Filters")
+                                .font(.headline)
+                                .foregroundStyle(WPStyles.primaryText)
+                            Text("Configure which events are always skipped")
+                                .font(.subheadline)
+                                .foregroundStyle(WPStyles.secondaryText)
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                .cardStyle()
             }
 
             // MARK: Rules
@@ -997,55 +1024,9 @@ private struct FlowLayout: Layout {
     }
 }
 
-// MARK: - Event filter settings (used from Settings tab)
+// MARK: - Global Event Filters (used from Rules tab)
 
-struct EventFilterSettingsView: View {
-    @Bindable var appState: AppState
-
-    var body: some View {
-        ZStack {
-            Color.clear.withAppBackground()
-
-            List {
-                Section {
-                    filterToggle("All-Day Events", isOn: filterBinding(\.ignoreAllDayEvents))
-                    filterToggle("Tentative Events", isOn: filterBinding(\.ignoreTentativeEvents))
-                    filterToggle("Canceled Events", isOn: filterBinding(\.ignoreCanceledEvents))
-                    filterToggle("Free Events", isOn: filterBinding(\.ignoreFreeEvents))
-                } header: {
-                    Text("Ignore")
-                } footer: {
-                    Text("Matching events will never trigger an alarm.")
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .listStyle(.insetGrouped)
-        }
-        .navigationTitle("Event Filters")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func filterToggle(_ label: String, isOn: Binding<Bool>) -> some View {
-        Toggle(label, isOn: isOn)
-            .tint(WPStyles.primaryOrange)
-            .foregroundStyle(WPStyles.primaryText)
-    }
-
-    private func filterBinding(_ keyPath: WritableKeyPath<AlarmPreferences, Bool>) -> Binding<Bool> {
-        Binding(
-            get: { appState.preferences[keyPath: keyPath] },
-            set: { value in
-                var copy = appState.preferences
-                copy[keyPath: keyPath] = value
-                Task { await appState.updatePreferences(copy) }
-            }
-        )
-    }
-}
-
-// MARK: - Keyword rules editor (used from Settings tab)
-
-struct KeywordRulesEditorView: View {
+struct GlobalEventFiltersView: View {
     @Bindable var appState: AppState
     @Environment(\.dismiss) private var dismiss
 
@@ -1065,15 +1046,26 @@ struct KeywordRulesEditorView: View {
             Color.clear.withAppBackground()
 
             List {
+                Section {
+                    filterToggle("All-Day Events", isOn: filterBinding(\.ignoreAllDayEvents))
+                    filterToggle("Tentative Events", isOn: filterBinding(\.ignoreTentativeEvents))
+                    filterToggle("Canceled Events", isOn: filterBinding(\.ignoreCanceledEvents))
+                    filterToggle("Free Events", isOn: filterBinding(\.ignoreFreeEvents))
+                } header: {
+                    Text("Ignore Calendar Status")
+                } footer: {
+                    Text("Matching events will never trigger an alarm.")
+                }
+
                 keywordSection(
-                    title: "Blocked",
+                    title: "Blocked Keywords",
                     footer: "Events whose title contains any of these words are ignored.",
                     keywords: $blockedKeywords,
                     newKeyword: $newBlockedKeyword
                 )
 
                 keywordSection(
-                    title: "Allowed Only",
+                    title: "Allowed Only Keywords",
                     footer: "When non-empty, only events matching these words are considered.",
                     keywords: $allowedKeywords,
                     newKeyword: $newAllowedKeyword
@@ -1082,7 +1074,7 @@ struct KeywordRulesEditorView: View {
             .scrollContentBackground(.hidden)
             .listStyle(.insetGrouped)
         }
-        .navigationTitle("Keywords")
+        .navigationTitle("Ignored Events & Filters")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -1100,6 +1092,23 @@ struct KeywordRulesEditorView: View {
                 .foregroundStyle(WPStyles.primaryOrange)
             }
         }
+    }
+
+    private func filterToggle(_ label: String, isOn: Binding<Bool>) -> some View {
+        Toggle(label, isOn: isOn)
+            .tint(WPStyles.primaryOrange)
+            .foregroundStyle(WPStyles.primaryText)
+    }
+
+    private func filterBinding(_ keyPath: WritableKeyPath<AlarmPreferences, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { appState.preferences[keyPath: keyPath] },
+            set: { value in
+                var copy = appState.preferences
+                copy[keyPath: keyPath] = value
+                Task { await appState.updatePreferences(copy) }
+            }
+        )
     }
 
     private func keywordSection(

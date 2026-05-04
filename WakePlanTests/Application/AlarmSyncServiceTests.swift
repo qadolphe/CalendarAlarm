@@ -31,7 +31,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         alarmStore.record = ScheduledAlarmRecord(
             planID: plan.id,
             nativeAlarmID: "existing-alarm",
-            scheduledWakeTime: plan.calculatedWakeTime,
+            scheduledWakeTime: .distantFuture,
             targetEventID: plan.targetEvent?.id,
             createdAt: Date(),
             updatedAt: Date()
@@ -60,7 +60,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         alarmStore.record = ScheduledAlarmRecord(
             planID: "old-plan",
             nativeAlarmID: "old-native-id",
-            scheduledWakeTime: Date(),
+            scheduledWakeTime: .distantFuture,
             targetEventID: "old-event",
             createdAt: Date(),
             updatedAt: Date()
@@ -80,6 +80,70 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertEqual(alarmScheduler.scheduledPlans.count, 1)
         XCTAssertEqual(alarmStore.clearCallCount, 1)
         XCTAssertNotNil(alarmStore.record)
+    }
+
+    func testExpiredStoredAlarmIsClearedWithoutCancelBeforeSchedulingReplacement() async throws {
+        let plan = makeFallbackPlan(wakeTime: Date().addingTimeInterval(86_400))
+        let alarmStore = FakeScheduledAlarmStore()
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.cancelError = NSError(domain: "AlarmKit", code: 0, userInfo: [
+            NSLocalizedDescriptionKey: "The operation couldn’t be completed."
+        ])
+        alarmStore.record = ScheduledAlarmRecord(
+            planID: "expired-plan",
+            nativeAlarmID: "expired-native-id",
+            scheduledWakeTime: .distantPast,
+            targetEventID: nil,
+            createdAt: .distantPast,
+            updatedAt: .distantPast
+        )
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        let status = try await service.sync(plan: plan)
+
+        guard case .scheduled(let record) = status else {
+            return XCTFail("Expected scheduled status")
+        }
+
+        XCTAssertEqual(record.planID, plan.id)
+        XCTAssertTrue(alarmScheduler.canceledIDs.isEmpty)
+        XCTAssertEqual(alarmStore.clearCallCount, 1)
+        XCTAssertEqual(alarmScheduler.scheduledPlans.count, 1)
+    }
+
+    func testCancelFailureForFutureAlarmIncludesReplacementContext() async throws {
+        let now = Date()
+        let plan = makeFallbackPlan(wakeTime: now.addingTimeInterval(86_400))
+        let alarmStore = FakeScheduledAlarmStore()
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.cancelError = NSError(domain: "AlarmKit", code: 0, userInfo: [
+            NSLocalizedDescriptionKey: "The operation couldn’t be completed."
+        ])
+        alarmStore.record = ScheduledAlarmRecord(
+            planID: "future-plan",
+            nativeAlarmID: "future-native-id",
+            scheduledWakeTime: now.addingTimeInterval(3_600),
+            targetEventID: nil,
+            createdAt: now,
+            updatedAt: now
+        )
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        let status = try await service.sync(plan: plan)
+
+        guard case .failed(let message) = status else {
+            return XCTFail("Expected failed status")
+        }
+
+        XCTAssertTrue(message.contains("Couldn't replace previous alarm"))
+        XCTAssertTrue(message.contains("future-native-id"))
+        XCTAssertEqual(alarmScheduler.scheduledPlans.count, 0)
     }
 
     func testClearsExistingAlarmWhenPlanDisabled() async throws {
@@ -102,7 +166,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         alarmStore.record = ScheduledAlarmRecord(
             planID: "managed-plan",
             nativeAlarmID: "managed-alarm",
-            scheduledWakeTime: Date(),
+            scheduledWakeTime: .distantFuture,
             targetEventID: nil,
             createdAt: Date(),
             updatedAt: Date()
@@ -158,7 +222,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         alarmStore.record = ScheduledAlarmRecord(
             planID: "managed-plan",
             nativeAlarmID: "managed-alarm",
-            scheduledWakeTime: Date(),
+            scheduledWakeTime: .distantFuture,
             targetEventID: nil,
             createdAt: Date(),
             updatedAt: Date()
@@ -286,6 +350,23 @@ final class AlarmSyncServiceTests: XCTestCase {
         )
     }
 
+    private func makeFallbackPlan(wakeTime: Date) -> WakeUpPlan {
+        WakeUpPlan(
+            id: WakePlanID(rawValue: "fallback-\(Int(wakeTime.timeIntervalSince1970))"),
+            targetDay: TargetDay(date: wakeTime),
+            targetEvent: nil,
+            calculatedWakeTime: wakeTime,
+            eventStartTime: nil,
+            prepTime: Minutes(45),
+            commuteTime: Minutes(20),
+            alarmSettings: .default,
+            isFallback: true,
+            reason: .fallback,
+            appliedRuleName: "Fallback",
+            matchedRuleNames: []
+        )
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -350,7 +431,12 @@ private final class FakeAlarmScheduler: AlarmScheduling {
 
     func cancel(nativeAlarmID: String) async throws {
         canceledIDs.append(nativeAlarmID)
+        if let cancelError {
+            throw cancelError
+        }
     }
+
+    var cancelError: Error?
 }
 
 private final class FakeScheduledAlarmStore: ScheduledAlarmStoring {

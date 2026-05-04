@@ -37,14 +37,6 @@ struct SettingsView: View {
                 AccountsView(appState: appState)
             }
             Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-            navRow(title: "Event Filters", icon: "line.3.horizontal.decrease.circle") {
-                EventFilterSettingsView(appState: appState)
-            }
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-            navRow(title: "Keywords", icon: "text.magnifyingglass") {
-                KeywordRulesEditorView(appState: appState)
-            }
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
             navRow(title: "Permissions", icon: "lock.shield") {
                 PermissionsView(appState: appState)
             }

@@ -21,32 +21,31 @@ final class AlarmSyncService {
     }
 
     func sync(plan: WakeUpPlan) async throws -> AlarmScheduleStatus {
-        let existingRecord = try alarmStore.load()
+        let now = Date()
+        var existingRecord = try alarmStore.load()
 
-        if plan.reason == .noSchedule {
-            if let existingRecord {
-                do {
-                    try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
-                    try alarmStore.clear()
-                } catch {
-                    return .failed(error.localizedDescription)
-                }
+        if let record = existingRecord, record.isExpired(at: now) {
+            do {
+                try alarmStore.clear()
+                existingRecord = nil
+            } catch {
+                return .failed("Couldn't clear stale alarm record: \(record.debugSummary). \(error.localizedDescription)")
             }
-
-            return .notScheduled
         }
 
-        if plan.reason == .disabled || plan.reason == .systemDisabled || plan.reason == .inactiveDay {
-            if let existingRecord {
-                do {
-                    try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
-                    try alarmStore.clear()
-                } catch {
-                    return .failed(error.localizedDescription)
-                }
+        if let unscheduledStatus = statusForPlanWithoutManagedAlarm(plan) {
+            guard let existingRecord else {
+                return unscheduledStatus
             }
 
-            return .disabled
+            do {
+                try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+                try alarmStore.clear()
+            } catch {
+                return .failed("Couldn't remove previous alarm: \(existingRecord.debugSummary). \(error.localizedDescription)")
+            }
+
+            return unscheduledStatus
         }
 
         if let existingRecord, existingRecord.planID == plan.id {
@@ -58,7 +57,7 @@ final class AlarmSyncService {
                 try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
                 try alarmStore.clear()
             } catch {
-                return .failed(error.localizedDescription)
+                return .failed("Couldn't replace previous alarm: \(existingRecord.debugSummary). \(error.localizedDescription)")
             }
         }
 
@@ -129,4 +128,17 @@ final class AlarmSyncService {
             ?? date.addingTimeInterval(60)
     }
 #endif
+}
+
+private extension AlarmSyncService {
+    func statusForPlanWithoutManagedAlarm(_ plan: WakeUpPlan) -> AlarmScheduleStatus? {
+        switch plan.reason {
+        case .noSchedule:
+            return .notScheduled
+        case .disabled, .systemDisabled, .inactiveDay:
+            return .disabled
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return nil
+        }
+    }
 }

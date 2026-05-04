@@ -7,13 +7,15 @@ import SwiftUI
 @available(iOS 26.0, *)
 struct WakePlanAlarmMetadata: AlarmMetadata {
     let planID: String
-    let eventTitle: String?
+    let eventTitle: String
+    let planReason: String
 }
 
 @available(iOS 26.0, *)
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<WakePlanAlarmMetadata> {
-        let title = AppConfiguration.alarmTitle(for: plan.targetEvent?.title)
+        let eventTitle = normalizedEventTitle(from: plan)
+        let title = AppConfiguration.alarmTitle(for: eventTitle)
         let secondaryButton = snoozeButton(for: plan.alarmSettings)
         let countdownDuration = snoozeCountdownDuration(for: plan.alarmSettings)
         let alert: AlarmPresentation.Alert
@@ -45,7 +47,8 @@ enum AlarmKitMappers {
             presentation: presentation,
             metadata: WakePlanAlarmMetadata(
                 planID: plan.id.rawValue,
-                eventTitle: plan.targetEvent?.title
+                eventTitle: eventTitle ?? AppConfiguration.genericAlarmTitle,
+                planReason: plan.reason.rawValue
             ),
             tintColor: .orange
         )
@@ -56,6 +59,27 @@ enum AlarmKitMappers {
             attributes: attributes,
             sound: sound(for: plan.alarmSettings)
         )
+    }
+
+    static func debugSummary(for plan: WakeUpPlan) -> String {
+        let eventTitle = normalizedEventTitle(from: plan)
+        let title = AppConfiguration.alarmTitle(for: eventTitle)
+        let soundName = plan.alarmSettings.sound.resourceName ?? "default"
+        let secondaryButton = plan.alarmSettings.snoozeEnabled ? "snooze" : "none"
+        let countdown = plan.alarmSettings.snoozeEnabled
+            ? "\(plan.alarmSettings.snoozeDuration.rawValue)m"
+            : "none"
+
+        return [
+            plan.alarmDebugSummary,
+            "alarmTitle=\(title)",
+            "metadataTitle=\(eventTitle ?? AppConfiguration.genericAlarmTitle)",
+            "metadataReason=\(plan.reason.rawValue)",
+            "schedule=fixed",
+            "soundResource=\(soundName)",
+            "secondaryButton=\(secondaryButton)",
+            "countdown=\(countdown)"
+        ].joined(separator: ", ")
     }
 
     private static func sound(for settings: RuleAlarmSettings) -> ActivityKit.AlertConfiguration.AlertSound {
@@ -87,6 +111,19 @@ enum AlarmKitMappers {
 
     private static func localized(_ text: String) -> LocalizedStringResource {
         LocalizedStringResource(String.LocalizationValue(text))
+    }
+
+    private static func normalizedEventTitle(from plan: WakeUpPlan) -> String? {
+        guard let rawTitle = plan.targetEvent?.title else {
+            return nil
+        }
+
+        let title = rawTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else {
+            return nil
+        }
+
+        return title
     }
 }
 #endif

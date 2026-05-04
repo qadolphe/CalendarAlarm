@@ -2,6 +2,7 @@
 import AlarmKit
 import CryptoKit
 import Foundation
+import OSLog
 
 @available(iOS 26.0, *)
 private struct AlarmKitScheduleError: LocalizedError {
@@ -14,6 +15,11 @@ private struct AlarmKitScheduleError: LocalizedError {
 
 @available(iOS 26.0, *)
 final class AlarmKitScheduler: AlarmScheduling {
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "WakePlan",
+        category: "AlarmScheduling"
+    )
+
     func authorizationState() async -> AlarmAuthorizationState {
         switch AlarmManager.shared.authorizationState {
         case .notDetermined:
@@ -45,8 +51,10 @@ final class AlarmKitScheduler: AlarmScheduling {
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord {
         let nativeAlarmID = deterministicAlarmID(for: plan.id.rawValue)
         let configuration = try AlarmKitMappers.configuration(from: plan)
+        let debugSummary = AlarmKitMappers.debugSummary(for: plan)
 
         try? AlarmManager.shared.cancel(id: nativeAlarmID)
+        logger.info("Scheduling alarm with payload: \(debugSummary, privacy: .public), alarmUUID=\(nativeAlarmID.uuidString, privacy: .public)")
 
         do {
             _ = try await AlarmManager.shared.schedule(
@@ -54,6 +62,7 @@ final class AlarmKitScheduler: AlarmScheduling {
                 configuration: configuration
             )
         } catch {
+            logger.error("Alarm scheduling failed: \(self.failureMessage(for: error, plan: plan, alarmID: nativeAlarmID), privacy: .public)")
             throw AlarmKitScheduleError(
                 message: failureMessage(for: error, plan: plan, alarmID: nativeAlarmID)
             )
@@ -101,6 +110,10 @@ final class AlarmKitScheduler: AlarmScheduling {
             nsError.localizedDescription
         ]
 
+        parts.append("Domain: \(nsError.domain)")
+        parts.append("Code: \(nsError.code)")
+        parts.append("Error: \(String(describing: error))")
+
         if let failureReason = nsError.localizedFailureReason, !failureReason.isEmpty {
             parts.append(failureReason)
         }
@@ -110,6 +123,7 @@ final class AlarmKitScheduler: AlarmScheduling {
         }
 
         parts.append("Plan: \(plan.reason.rawValue)")
+        parts.append("Payload: \(AlarmKitMappers.debugSummary(for: plan))")
         parts.append("Alarm ID: \(alarmID.uuidString)")
 
         return parts.joined(separator: " ")
