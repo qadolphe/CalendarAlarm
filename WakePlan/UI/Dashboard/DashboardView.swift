@@ -77,11 +77,13 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity, minHeight: 180)
             }
             .cardStyle()
-        case .needsCalendarPermission, .needsAlarmPermission(_):
+        case .needsCalendarPermission:
             permissionPromptCard(viewModel: viewModel)
         case .error:
             ContentUnavailableView("Unavailable", systemImage: "exclamationmark.triangle")
-        case .ready(let viewState), .emptyFallback(let viewState):
+        case .needsAlarmPermission(let viewState),
+             .ready(let viewState),
+             .emptyFallback(let viewState):
             VStack(alignment: .leading, spacing: 24) {
                 ZStack(alignment: .topTrailing) {
                     if viewState.plan.reason == .disabled

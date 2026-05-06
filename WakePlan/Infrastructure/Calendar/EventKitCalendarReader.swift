@@ -487,22 +487,43 @@ struct CompositeCalendarProvider: CalendarEventProviding {
     }
 
     func calendars() async throws -> [CalendarSource] {
-        var merged: [CalendarSource] = []
-
-        for provider in providers {
-            merged.append(contentsOf: try await provider.calendars())
+        try await mergeProviderResults { provider in
+            try await provider.calendars()
         }
-
-        return merged
     }
 
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
-        var merged: [ParsedEvent] = []
+        try await mergeProviderResults { provider in
+            try await provider.events(for: targetDay)
+        }
+    }
+
+    private func mergeProviderResults<T>(
+        _ loader: (CalendarEventProviding) async throws -> [T]
+    ) async throws -> [T] {
+        var merged: [T] = []
+        var firstError: Error?
+        var successfulProviderCount = 0
 
         for provider in providers {
-            merged.append(contentsOf: try await provider.events(for: targetDay))
+            do {
+                merged.append(contentsOf: try await loader(provider))
+                successfulProviderCount += 1
+            } catch {
+                if firstError == nil {
+                    firstError = error
+                }
+            }
         }
 
-        return merged
+        if successfulProviderCount > 0 {
+            return merged
+        }
+
+        if let firstError {
+            throw firstError
+        }
+
+        return []
     }
 }

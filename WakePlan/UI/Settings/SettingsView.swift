@@ -40,15 +40,6 @@ struct SettingsView: View {
             navRow(title: "Permissions", icon: "lock.shield") {
                 PermissionsView(appState: appState)
             }
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
-            Button("Refresh App State") {
-                Task { await appState.load() }
-            }
-            .foregroundStyle(WPStyles.primaryOrange)
-            .font(.body)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
         }
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))

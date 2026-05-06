@@ -120,6 +120,10 @@ final class AppState {
         }
     }
 
+    func refreshPermissions() async {
+        permissions = await permissionService.currentStatus()
+    }
+
     func requestCalendarAccess() async {
         noticeMessage = nil
 
@@ -294,6 +298,11 @@ final class AppState {
         let calendar = Calendar.current
 
         let permissions = await permissionService.currentStatus()
+
+        guard isCurrentRefresh(refreshGeneration) else { return }
+
+        self.permissions = permissions
+
         let accounts = try await wakePlanService.accounts()
         let calendars = try await wakePlanService.calendars()
         let displayPlans = try await wakePlanService.makeDisplayPlans(
@@ -313,7 +322,6 @@ final class AppState {
 
         guard isCurrentRefresh(refreshGeneration) else { return }
 
-        self.permissions = permissions
         self.accounts = accounts
         self.calendars = calendars
         upcomingPlans = Array(displayPlans.dropFirst())

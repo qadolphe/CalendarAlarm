@@ -11,7 +11,10 @@ enum AppConfiguration {
         "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time."
 
     static let alarmPermissionExplanation =
-        "\(appName) needs alarm access to schedule real wake-up alarms for your calendar events."
+        "Alarm access lets \(appName) schedule real wake-up alarms for your calendar events. You can enable it later in Settings."
+
+    static let onboardingAlarmPermissionExplanation =
+        "Alarm access is optional during setup. Enable it now to let \(appName) schedule wake-up alarms automatically, or continue and turn it on later in Settings."
 
     static func alarmTitle(for eventTitle: String?) -> String {
         guard let eventTitle, !eventTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

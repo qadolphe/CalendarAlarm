@@ -84,23 +84,32 @@ struct OnboardingView: View {
     private var permissionsStep: some View {
         onboardingPage {
             VStack(spacing: 12) {
-                Text("Core Access")
+                Text("Wake-Up Alarms")
                     .font(.system(.title, design: .rounded).weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text("We need alarm and notification access to wake you up reliably.")
+                Text(AppConfiguration.onboardingAlarmPermissionExplanation)
                     .font(.body)
                     .foregroundStyle(WPStyles.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            if let errorMessage = appState.errorMessage {
+                statusBanner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
+            }
+
+            if let noticeMessage = appState.noticeMessage {
+                statusBanner(noticeMessage, tint: WPStyles.primaryOrange, icon: "info.circle.fill")
+            }
             
             VStack(spacing: 16) {
                 permissionRow(
-                    title: "Alarms & Notifications",
-                    icon: "bell.fill",
+                    title: "Alarm Access",
+                    icon: "alarm.fill",
                     isGranted: appState.permissions.alarm == .authorized,
+                    actionTitle: "Allow",
                     action: { Task { await appState.requestAlarmAccess() } }
                 )
             }
@@ -108,11 +117,9 @@ struct OnboardingView: View {
         } footer: {
             let alarmGranted = appState.permissions.alarm == .authorized
             
-            nextButton(title: alarmGranted ? "Next" : "Grant Access to Continue") {
+            nextButton(title: alarmGranted ? "Next" : "Continue for Now") {
                 withAnimation { currentStep += 1 }
             }
-            .disabled(!alarmGranted)
-            .opacity(alarmGranted ? 1.0 : 0.5)
         }
     }
     
@@ -146,7 +153,7 @@ struct OnboardingView: View {
                     subtitle: googleCalendarSubtitle,
                     icon: "g.circle.fill",
                     isConnected: hasGoogleCalendarSource,
-                    actionTitle: "Connect",
+                    actionTitle: "Add",
                     action: { Task { await appState.addGoogleAccount() } }
                 )
             }
@@ -266,11 +273,21 @@ struct OnboardingView: View {
         }
     }
     
-    private func permissionRow(title: String, icon: String, isGranted: Bool, action: @escaping () -> Void) -> some View {
+    private func permissionRow(
+        title: String,
+        icon: String,
+        isGranted: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
         HStack(spacing: 16) {
             permissionLabel(title: title, icon: icon)
             Spacer(minLength: 12)
-            permissionTrailingControl(isGranted: isGranted, action: action)
+            permissionTrailingControl(
+                isGranted: isGranted,
+                actionTitle: actionTitle,
+                action: action
+            )
         }
     }
     
@@ -302,7 +319,11 @@ struct OnboardingView: View {
         }
     }
     
-    private func permissionTrailingControl(isGranted: Bool, action: @escaping () -> Void) -> some View {
+    private func permissionTrailingControl(
+        isGranted: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Group {
             if isGranted {
                 Image(systemName: "checkmark.circle.fill")
@@ -310,7 +331,7 @@ struct OnboardingView: View {
                     .foregroundStyle(.green)
             } else {
                 Button(action: action) {
-                    Text("Grant")
+                    Text(actionTitle)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 20)
@@ -379,6 +400,27 @@ struct OnboardingView: View {
     
     private func topContentInset(for screenHeight: CGFloat) -> CGFloat {
         min(max(screenHeight * 0.3, 260), 340)
+    }
+
+    private func statusBanner(_ text: String, tint: Color, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(tint)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(tint.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.25), lineWidth: 1)
+        )
     }
     
     private var hasAppleCalendarSource: Bool {

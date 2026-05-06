@@ -26,6 +26,9 @@ struct WakePlanRootView: View {
                     onFinish: {
                         hasCompletedOnboarding = true
                         forceOnboardingThisLaunch = false
+                        Task {
+                            await appState.load()
+                        }
                     }
                 )
             } else {

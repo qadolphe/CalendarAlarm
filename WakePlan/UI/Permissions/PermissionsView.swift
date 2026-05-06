@@ -36,7 +36,7 @@ struct PermissionsView: View {
                     )
 
                     permissionCard(
-                        title: "Alarms & Notifications",
+                        title: "Alarm Access",
                         description: AppConfiguration.alarmPermissionExplanation,
                         status: viewModel.alarmStatus,
                         icon: "alarm",
@@ -44,18 +44,15 @@ struct PermissionsView: View {
                         actionTitle: "Allow Alarm Access",
                         action: { Task { await appState.requestAlarmAccess() } }
                     )
-
-                    Button("Refresh Permission Status") {
-                        Task { await appState.load() }
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(WPStyles.primaryOrange)
                 }
                 .padding(24)
             }
         }
         .navigationTitle("Permissions")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await appState.refreshPermissions()
+        }
     }
 
     private func permissionCard(
