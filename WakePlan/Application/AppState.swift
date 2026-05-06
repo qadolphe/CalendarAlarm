@@ -33,6 +33,7 @@ final class AppState {
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
     private var hasLoaded = false
+    private var refreshGeneration = 0
 
     var hasLoadedInitialState: Bool {
         hasLoaded
@@ -287,26 +288,35 @@ final class AppState {
         error.localizedDescription
     }
 
-    private func refreshDashboard(targetDay: TargetDay = .tomorrow()) async throws {
+    private func refreshDashboard() async throws {
+        let refreshGeneration = beginRefresh()
         let now = Date()
         let calendar = Calendar.current
 
-        permissions = await permissionService.currentStatus()
-        accounts = try await wakePlanService.accounts()
-
-        calendars = try await wakePlanService.calendars()
+        let permissions = await permissionService.currentStatus()
+        let accounts = try await wakePlanService.accounts()
+        let calendars = try await wakePlanService.calendars()
         let displayPlans = try await wakePlanService.makeDisplayPlans(
             startingAt: now,
             count: DashboardViewModel.displayPlanWindowDays,
             calendar: calendar
         )
+
+        guard isCurrentRefresh(refreshGeneration) else { return }
+
         let plan = Self.primaryDashboardPlan(
             from: displayPlans,
             now: now,
             calendar: calendar
         )
-        upcomingPlans = Array(displayPlans.dropFirst())
         let alarmStatus = try await alarmSyncService.sync(plan: plan)
+
+        guard isCurrentRefresh(refreshGeneration) else { return }
+
+        self.permissions = permissions
+        self.accounts = accounts
+        self.calendars = calendars
+        upcomingPlans = Array(displayPlans.dropFirst())
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 
         if alarmStatus == .needsPermission {
@@ -324,6 +334,15 @@ final class AppState {
         }
 
         dashboardState = .ready(viewState)
+    }
+
+    private func beginRefresh() -> Int {
+        refreshGeneration += 1
+        return refreshGeneration
+    }
+
+    private func isCurrentRefresh(_ generation: Int) -> Bool {
+        generation == refreshGeneration
     }
 
     static func primaryDashboardPlan(

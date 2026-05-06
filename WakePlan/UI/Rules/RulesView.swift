@@ -170,20 +170,6 @@ struct RulesView: View {
                         .foregroundStyle(WPStyles.primaryText)
                 }
 
-                if rule.conditions.isEmpty {
-                    if !rule.isDefault {
-                        Text("All events")
-                            .font(.subheadline)
-                            .foregroundStyle(WPStyles.secondaryText)
-                    }
-                } else {
-                    FlowLayout(spacing: 6) {
-                        ForEach(Array(rule.conditions.enumerated()), id: \.offset) { _, condition in
-                            conditionChip(condition)
-                        }
-                    }
-                }
-
                 HStack(spacing: 12) {
                     timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
                     timingBadge(icon: "car.fill", value: rule.commuteTime.rawValue, unit: "commute")
@@ -199,20 +185,6 @@ struct RulesView: View {
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
         .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
-    }
-
-    private func conditionChip(_ condition: AlarmRuleCondition) -> some View {
-        HStack(alignment: .center, spacing: 4) {
-            Image(systemName: condition.iconName)
-                .font(.caption2)
-            Text(condition.displayLabel)
-                .font(.caption.weight(.semibold))
-        }
-        .foregroundStyle(WPStyles.secondaryBlue)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(WPStyles.secondaryBlue.opacity(0.12))
-        .clipShape(Capsule())
     }
 
     private func timingBadge(icon: String, value: Int, unit: String) -> some View {

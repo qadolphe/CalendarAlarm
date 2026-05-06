@@ -82,6 +82,45 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertNotNil(alarmStore.record)
     }
 
+    func testConcurrentPlanUpdatesReplaceEarlierAlarm() async throws {
+        let originalPlan = makeManagedEventPlan(
+            id: "event-plan-1",
+            wakeOffset: 3_600,
+            eventStartOffset: 5_400
+        )
+        let updatedPlan = makeManagedEventPlan(
+            id: "event-plan-2",
+            wakeOffset: 3_900,
+            eventStartOffset: 5_400
+        )
+        let alarmStore = FakeScheduledAlarmStore()
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.scheduleDelayNanoseconds = 50_000_000
+
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        async let firstStatus = service.sync(plan: originalPlan)
+        try await Task.sleep(nanoseconds: 10_000_000)
+        async let secondStatus = service.sync(plan: updatedPlan)
+
+        guard case .scheduled(let firstRecord) = try await firstStatus else {
+            return XCTFail("Expected first sync to schedule an alarm")
+        }
+
+        guard case .scheduled(let secondRecord) = try await secondStatus else {
+            return XCTFail("Expected second sync to schedule a replacement alarm")
+        }
+
+        XCTAssertEqual(firstRecord.planID, originalPlan.id)
+        XCTAssertEqual(secondRecord.planID, updatedPlan.id)
+        XCTAssertEqual(alarmScheduler.canceledIDs, ["native-1"])
+        XCTAssertEqual(alarmScheduler.scheduledPlans.map(\.id), [originalPlan.id, updatedPlan.id])
+        XCTAssertEqual(alarmStore.record?.planID, updatedPlan.id)
+    }
+
     func testExpiredStoredAlarmIsClearedWithoutCancelBeforeSchedulingReplacement() async throws {
         let plan = makeFallbackPlan(wakeTime: Date().addingTimeInterval(86_400))
         let alarmStore = FakeScheduledAlarmStore()
@@ -367,6 +406,42 @@ final class AlarmSyncServiceTests: XCTestCase {
         )
     }
 
+    private func makeManagedEventPlan(
+        id: String,
+        wakeOffset: TimeInterval,
+        eventStartOffset: TimeInterval
+    ) -> WakeUpPlan {
+        let baseDate = Date().addingTimeInterval(86_400)
+        let event = ParsedEvent(
+            id: "event-1",
+            calendarID: "work",
+            title: "Standup",
+            startDate: baseDate.addingTimeInterval(eventStartOffset),
+            endDate: baseDate.addingTimeInterval(eventStartOffset + 1_800),
+            timeZoneIdentifier: nil,
+            isAllDay: false,
+            status: .confirmed,
+            availability: .busy,
+            location: nil,
+            notes: nil
+        )
+
+        return WakeUpPlan(
+            id: WakePlanID(rawValue: id),
+            targetDay: TargetDay(date: baseDate),
+            targetEvent: event,
+            calculatedWakeTime: baseDate.addingTimeInterval(wakeOffset),
+            eventStartTime: event.startDate,
+            prepTime: Minutes(45),
+            commuteTime: Minutes(20),
+            alarmSettings: .default,
+            isFallback: false,
+            reason: .event,
+            appliedRuleName: "Default",
+            matchedRuleNames: []
+        )
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -402,6 +477,7 @@ private final class FakeAlarmScheduler: AlarmScheduling {
     var requestAuthorizationCallCount = 0
     var scheduledPlans: [WakeUpPlan] = []
     var canceledIDs: [String] = []
+    var scheduleDelayNanoseconds: UInt64 = 0
 
     func authorizationState() async -> AlarmAuthorizationState {
         state
@@ -418,6 +494,10 @@ private final class FakeAlarmScheduler: AlarmScheduling {
     }
 
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord {
+        if scheduleDelayNanoseconds > 0 {
+            try await Task.sleep(nanoseconds: scheduleDelayNanoseconds)
+        }
+
         scheduledPlans.append(plan)
         return ScheduledAlarmRecord(
             planID: plan.id,
