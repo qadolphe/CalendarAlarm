@@ -83,15 +83,11 @@ struct AppleCalendarProvider: CalendarEventProviding {
     }
 
     func accounts() async throws -> [ConnectedCalendarAccount] {
-        let isEnabled = appleCalendarIsEnabled()
-        return [
-            ConnectedCalendarAccount(
-                id: Self.appleAccountID,
-                provider: .apple,
-                displayName: "Apple Calendar",
-                isEnabled: isEnabled
-            )
-        ]
+        guard let account = storedAppleAccount() else {
+            return []
+        }
+
+        return [account]
     }
 
     func calendars() async throws -> [CalendarSource] {
@@ -105,9 +101,12 @@ struct AppleCalendarProvider: CalendarEventProviding {
     }
 
     private func appleCalendarIsEnabled() -> Bool {
+        storedAppleAccount()?.isEnabled ?? false
+    }
+
+    private func storedAppleAccount() -> ConnectedCalendarAccount? {
         (try? accountStore.load())?
-            .first(where: { $0.id == Self.appleAccountID })?
-            .isEnabled ?? true
+            .first(where: { $0.id == Self.appleAccountID && $0.provider == .apple })
     }
 }
 

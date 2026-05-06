@@ -109,32 +109,62 @@ struct SettingsView: View {
 struct AccountsView: View {
     @Bindable var appState: AppState
 
+    private var appleAccount: ConnectedCalendarAccount? {
+        appState.accounts.first(where: { $0.provider == .apple })
+    }
+
+    private var googleAccounts: [ConnectedCalendarAccount] {
+        appState.accounts.filter { $0.provider == .google }
+    }
+
     var body: some View {
         ZStack {
             Color.clear.withAppBackground()
 
             List {
-                Section(header: sectionHeader("Connected Accounts"), footer: Text("EarlyOtter keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
-                    
-                    if let appleAccount = appState.accounts.first(where: { $0.provider == .apple }) {
+                if appleAccount != nil || !googleAccounts.isEmpty {
+                    Section(header: sectionHeader("Connected Accounts"), footer: Text("EarlyOtter keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
+                        if let appleAccount {
                         accountToggleRow(appleAccount, icon: "apple.logo")
                             .listRowBackground(WPStyles.surface)
-                    }
+                        }
 
-                    ForEach(appState.accounts.filter { $0.provider == .google }) { account in
-                        accountToggleRow(account, icon: "G")
-                            .listRowBackground(WPStyles.surface)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    Task { await appState.removeAccount(id: account.id) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                        ForEach(googleAccounts) { account in
+                            accountToggleRow(account, icon: "G")
+                                .listRowBackground(WPStyles.surface)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        Task { await appState.removeAccount(id: account.id) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
-                            }
+                        }
                     }
                 }
 
                 Section {
+                    if appleAccount == nil {
+                        Button {
+                            Task { await appState.connectAppleCalendar() }
+                        } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(WPStyles.primaryOrange)
+                                    .frame(width: 24)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Apple Calendar")
+                                        .foregroundStyle(WPStyles.primaryText)
+                                    Text("Connect Apple Calendar")
+                                        .font(.subheadline)
+                                        .foregroundStyle(WPStyles.secondaryText)
+                                }
+                            }
+                        }
+                        .listRowBackground(WPStyles.surface)
+                    }
+
                     Button {
                         Task { await appState.addGoogleAccount() }
                     } label: {

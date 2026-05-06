@@ -82,14 +82,6 @@ struct WakePlanApp: App {
 
         preferencesStore.clear()
         accountStore.clear()
-        try? accountStore.save([
-            ConnectedCalendarAccount(
-                id: AppleCalendarProvider.appleAccountID,
-                provider: .apple,
-                displayName: "Apple Calendar",
-                isEnabled: false
-            )
-        ])
         try? alarmStore.clear()
         UserDefaults.standard.removeObject(forKey: Self.onboardingStorageKey)
         GIDSignIn.sharedInstance.signOut()

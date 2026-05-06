@@ -202,6 +202,36 @@ final class CompositeCalendarProviderTests: XCTestCase {
     }
 }
 
+final class AppleCalendarProviderTests: XCTestCase {
+    func testAccountsIsEmptyWhenAppleCalendarWasNeverConnected() async throws {
+        let provider = AppleCalendarProvider(
+            calendarReader: EventKitCalendarReader(),
+            accountStore: StubAccountStore()
+        )
+
+        let accounts = try await provider.accounts()
+
+        XCTAssertTrue(accounts.isEmpty)
+    }
+
+    func testAccountsReturnsStoredAppleAccountWhenConnected() async throws {
+        let storedAppleAccount = ConnectedCalendarAccount(
+            id: AppleCalendarProvider.appleAccountID,
+            provider: .apple,
+            displayName: "Apple Calendar",
+            isEnabled: true
+        )
+        let provider = AppleCalendarProvider(
+            calendarReader: EventKitCalendarReader(),
+            accountStore: StubAccountStore(accounts: [storedAppleAccount])
+        )
+
+        let accounts = try await provider.accounts()
+
+        XCTAssertEqual(accounts, [storedAppleAccount])
+    }
+}
+
 private enum StubCalendarProviderError: LocalizedError {
     case googleExpired
 
@@ -298,11 +328,19 @@ private final class StubAlarmScheduler: AlarmScheduling {
 }
 
 private final class StubAccountStore: AccountStoring {
-    func load() throws -> [ConnectedCalendarAccount] {
-        []
+    private var accounts: [ConnectedCalendarAccount]
+
+    init(accounts: [ConnectedCalendarAccount] = []) {
+        self.accounts = accounts
     }
 
-    func save(_ accounts: [ConnectedCalendarAccount]) throws {}
+    func load() throws -> [ConnectedCalendarAccount] {
+        accounts
+    }
+
+    func save(_ accounts: [ConnectedCalendarAccount]) throws {
+        self.accounts = accounts
+    }
 }
 
 private final class StubPreferencesStore: PreferencesStoring {
