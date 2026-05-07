@@ -84,6 +84,14 @@ final class AppStateTests: XCTestCase {
             ]),
             preferencesStore: preferencesStore
         )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            )
+        )
         let appState = AppState(
             accountStore: accountStore,
             accountService: AccountService(
@@ -91,12 +99,12 @@ final class AppStateTests: XCTestCase {
                 googleAuthenticator: StubGoogleAuthenticator()
             ),
             preferencesStore: preferencesStore,
-            wakePlanService: wakePlanService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
                 alarmStore: StubScheduledAlarmStore()
-            )
+            ),
+            refreshService: refreshService
         )
 
         await appState.load()
@@ -124,6 +132,14 @@ final class AppStateTests: XCTestCase {
             calendarProvider: CompositeCalendarProvider(providers: []),
             preferencesStore: preferencesStore
         )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            )
+        )
         var openedSettings = false
         let appState = AppState(
             accountStore: accountStore,
@@ -132,12 +148,12 @@ final class AppStateTests: XCTestCase {
                 googleAuthenticator: StubGoogleAuthenticator()
             ),
             preferencesStore: preferencesStore,
-            wakePlanService: wakePlanService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
                 alarmStore: StubScheduledAlarmStore()
             ),
+            refreshService: refreshService,
             openAppSettings: {
                 openedSettings = true
             }
@@ -145,10 +161,10 @@ final class AppStateTests: XCTestCase {
 
         await appState.requestCalendarAccess()
 
-        XCTAssertTrue(openedSettings)
+        XCTAssertFalse(openedSettings)
         XCTAssertEqual(calendarReader.requestAuthorizationCallCount, 0)
         XCTAssertEqual(
-            appState.noticeMessage,
+            appState.settingsAlertMessage,
             "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar."
         )
     }
@@ -166,6 +182,14 @@ final class AppStateTests: XCTestCase {
             calendarProvider: CompositeCalendarProvider(providers: []),
             preferencesStore: preferencesStore
         )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            )
+        )
         var openedSettings = false
         let appState = AppState(
             accountStore: accountStore,
@@ -174,12 +198,12 @@ final class AppStateTests: XCTestCase {
                 googleAuthenticator: StubGoogleAuthenticator()
             ),
             preferencesStore: preferencesStore,
-            wakePlanService: wakePlanService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
                 alarmStore: StubScheduledAlarmStore()
             ),
+            refreshService: refreshService,
             openAppSettings: {
                 openedSettings = true
             }
@@ -187,10 +211,10 @@ final class AppStateTests: XCTestCase {
 
         await appState.requestAlarmAccess()
 
-        XCTAssertTrue(openedSettings)
+        XCTAssertFalse(openedSettings)
         XCTAssertEqual(alarmScheduler.requestAuthorizationCallCount, 0)
         XCTAssertEqual(
-            appState.noticeMessage,
+            appState.settingsAlertMessage,
             "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms."
         )
     }
@@ -440,11 +464,9 @@ private final class StubPreferencesStore: PreferencesStoring {
 }
 
 private final class StubScheduledAlarmStore: ScheduledAlarmStoring {
-    func load() throws -> ScheduledAlarmRecord? {
-        nil
-    }
+    func load() throws -> [ScheduledAlarmRecord] { [] }
 
-    func save(_ record: ScheduledAlarmRecord) throws {}
+    func save(_ records: [ScheduledAlarmRecord]) throws {}
 
     func clear() throws {}
 }

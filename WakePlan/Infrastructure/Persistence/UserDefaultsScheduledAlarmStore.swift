@@ -10,16 +10,25 @@ final class UserDefaultsScheduledAlarmStore: ScheduledAlarmStoring {
         self.defaults = defaults
     }
 
-    func load() throws -> ScheduledAlarmRecord? {
+    func load() throws -> [ScheduledAlarmRecord] {
         guard let data = defaults.data(forKey: key) else {
-            return nil
+            return []
         }
 
-        return try decoder.decode(ScheduledAlarmRecord.self, from: data)
+        if let records = try? decoder.decode([ScheduledAlarmRecord].self, from: data) {
+            return records
+        }
+
+        // Migrate older installs that persisted a single managed alarm.
+        if let record = try? decoder.decode(ScheduledAlarmRecord.self, from: data) {
+            return [record]
+        }
+
+        return try decoder.decode([ScheduledAlarmRecord].self, from: data)
     }
 
-    func save(_ record: ScheduledAlarmRecord) throws {
-        let data = try encoder.encode(record)
+    func save(_ records: [ScheduledAlarmRecord]) throws {
+        let data = try encoder.encode(records)
         defaults.set(data, forKey: key)
     }
 

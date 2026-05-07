@@ -33,9 +33,9 @@ final class AppState {
     private let accountStore: AccountStoring
     private let accountService: AccountService
     private let preferencesStore: PreferencesStoring
-    private let wakePlanService: WakePlanService
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
+    private let refreshService: WakePlanRefreshService
     private let openAppSettings: @MainActor () -> Void
     private var hasLoaded = false
     private var refreshGeneration = 0
@@ -53,17 +53,17 @@ final class AppState {
         accountStore: AccountStoring,
         accountService: AccountService,
         preferencesStore: PreferencesStoring,
-        wakePlanService: WakePlanService,
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService,
+        refreshService: WakePlanRefreshService,
         openAppSettings: @escaping @MainActor () -> Void = { AppState.defaultOpenAppSettings() }
     ) {
         self.accountStore = accountStore
         self.accountService = accountService
         self.preferencesStore = preferencesStore
-        self.wakePlanService = wakePlanService
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
+        self.refreshService = refreshService
         self.openAppSettings = openAppSettings
     }
 
@@ -80,7 +80,7 @@ final class AppState {
 
         do {
             preferences = try preferencesStore.load()
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .appOpen)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -94,7 +94,7 @@ final class AppState {
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
             dashboardState = .loading
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -106,7 +106,7 @@ final class AppState {
         settingsAlertMessage = nil
 
         do {
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch is CancellationError {
             dashboardState = previousDashboardState
         } catch {
@@ -123,7 +123,7 @@ final class AppState {
         settingsAlertMessage = nil
 
         do {
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .appOpen)
         } catch is CancellationError {
             dashboardState = previousDashboardState
         } catch {
@@ -177,7 +177,7 @@ final class AppState {
             let requestedState = try await permissionService.requestAlarmAccess()
             await refreshPermissions()
             dashboardState = .loading
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
 
             if requestedState == .notDetermined, permissions.alarm == .notDetermined {
                 noticeMessage = "Alarm access is still pending."
@@ -251,7 +251,7 @@ final class AppState {
 
         do {
             accounts = try await accountService.connectGoogleAccount()
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -296,7 +296,7 @@ final class AppState {
                 ))
             }
             try accountStore.save(stored)
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -321,7 +321,7 @@ final class AppState {
                 return
             }
             try accountStore.save(stored)
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -335,7 +335,7 @@ final class AppState {
             var stored = try accountStore.load()
             stored.removeAll(where: { $0.id == id })
             try accountStore.save(stored)
-            try await refreshDashboard()
+            try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
         }
@@ -345,39 +345,41 @@ final class AppState {
         error.localizedDescription
     }
 
-    private func refreshDashboard() async throws {
+    private func refreshDashboard(reason: RefreshReason) async throws {
         let refreshGeneration = beginRefresh()
         let now = Date()
         let calendar = Calendar.current
-
-        let permissions = await permissionService.currentStatus()
-
-        guard isCurrentRefresh(refreshGeneration) else { return }
-
-        self.permissions = permissions
-
-        let accounts = try await wakePlanService.accounts()
-        let calendars = try await wakePlanService.calendars()
-        let displayPlans = try await wakePlanService.makeDisplayPlans(
-            startingAt: now,
-            count: DashboardViewModel.displayPlanWindowDays,
-            calendar: calendar
-        )
+        let currentPermissions = await permissionService.currentStatus()
 
         guard isCurrentRefresh(refreshGeneration) else { return }
 
-        let plan = Self.primaryDashboardPlan(
-            from: displayPlans,
+        permissions = currentPermissions
+
+        let outcome = try await refreshService.refreshAndSync(
+            reason: reason,
             now: now,
             calendar: calendar
         )
-        let alarmStatus = try await alarmSyncService.sync(plan: plan)
 
         guard isCurrentRefresh(refreshGeneration) else { return }
 
-        self.accounts = accounts
-        self.calendars = calendars
-        upcomingPlans = Array(displayPlans.dropFirst())
+        let snapshot = outcome.snapshot
+        let plan = Self.primaryDashboardPlan(
+            from: snapshot.displayPlans,
+            now: now,
+            calendar: calendar
+        )
+        let alarmStatus = Self.primaryAlarmStatus(
+            for: plan,
+            syncResult: snapshot.syncResult
+        )
+
+        guard isCurrentRefresh(refreshGeneration) else { return }
+
+        permissions = snapshot.permissions
+        accounts = snapshot.accounts
+        calendars = snapshot.calendars
+        upcomingPlans = Array(snapshot.displayPlans.dropFirst().prefix(AppConfiguration.dashboardUpcomingDisplayCount))
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 
         if alarmStatus == .needsPermission {
@@ -449,5 +451,23 @@ final class AppState {
             appliedRuleName: nil,
             matchedRuleNames: []
         )
+    }
+
+    static func primaryAlarmStatus(
+        for plan: WakeUpPlan,
+        syncResult: AlarmSyncResult
+    ) -> AlarmScheduleStatus {
+        if let status = syncResult.statusesByPlanID[plan.id] {
+            return status
+        }
+
+        switch plan.reason {
+        case .noSchedule:
+            return .notScheduled
+        case .disabled, .inactiveDay, .systemDisabled:
+            return .disabled
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return .failed("Alarm status unavailable.")
+        }
     }
 }

@@ -78,8 +78,56 @@ final class AlarmSyncServiceTests: XCTestCase {
         }
         XCTAssertEqual(alarmScheduler.canceledIDs, ["old-native-id"])
         XCTAssertEqual(alarmScheduler.scheduledPlans.count, 1)
-        XCTAssertEqual(alarmStore.clearCallCount, 1)
+        XCTAssertEqual(alarmStore.clearCallCount, 0)
         XCTAssertNotNil(alarmStore.record)
+    }
+
+    func testSyncPlansKeepsMatchingRecordsAndSchedulesOnlyMissingOnes() async throws {
+        let existingPlan = makeManagedEventPlan(
+            id: "existing-plan",
+            wakeOffset: 3_600,
+            eventStartOffset: 5_400
+        )
+        let missingPlan = makeManagedEventPlan(
+            id: "missing-plan",
+            wakeOffset: 7_200,
+            eventStartOffset: 9_000
+        )
+        let alarmStore = FakeScheduledAlarmStore()
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmStore.records = [
+            ScheduledAlarmRecord(
+                planID: existingPlan.id,
+                nativeAlarmID: "existing-native-id",
+                scheduledWakeTime: existingPlan.calculatedWakeTime,
+                targetEventID: existingPlan.targetEvent?.id,
+                createdAt: Date(),
+                updatedAt: Date()
+            )
+        ]
+
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        let result = try await service.sync(plans: [existingPlan, missingPlan])
+
+        XCTAssertEqual(result.scheduledCount, 1)
+        XCTAssertEqual(result.canceledCount, 0)
+        XCTAssertEqual(result.failedCount, 0)
+        XCTAssertEqual(alarmScheduler.scheduledPlans.map(\.id), [missingPlan.id])
+        XCTAssertEqual(alarmStore.records.map(\.planID), [existingPlan.id, missingPlan.id])
+
+        guard case .scheduled(let existingRecord) = result.status(for: existingPlan) else {
+            return XCTFail("Expected existing plan to remain scheduled")
+        }
+        XCTAssertEqual(existingRecord.nativeAlarmID, "existing-native-id")
+
+        guard case .scheduled(let missingRecord) = result.status(for: missingPlan) else {
+            return XCTFail("Expected missing plan to be newly scheduled")
+        }
+        XCTAssertEqual(missingRecord.planID, missingPlan.id)
     }
 
     func testConcurrentPlanUpdatesReplaceEarlierAlarm() async throws {
@@ -520,19 +568,30 @@ private final class FakeAlarmScheduler: AlarmScheduling {
 }
 
 private final class FakeScheduledAlarmStore: ScheduledAlarmStoring {
-    var record: ScheduledAlarmRecord?
+    var records: [ScheduledAlarmRecord] = []
     var clearCallCount = 0
 
-    func load() throws -> ScheduledAlarmRecord? {
-        record
+    var record: ScheduledAlarmRecord? {
+        get { records.first }
+        set {
+            if let newValue {
+                records = [newValue]
+            } else {
+                records = []
+            }
+        }
     }
 
-    func save(_ record: ScheduledAlarmRecord) throws {
-        self.record = record
+    func load() throws -> [ScheduledAlarmRecord] {
+        records
+    }
+
+    func save(_ records: [ScheduledAlarmRecord]) throws {
+        self.records = records
     }
 
     func clear() throws {
         clearCallCount += 1
-        record = nil
+        records = []
     }
 }

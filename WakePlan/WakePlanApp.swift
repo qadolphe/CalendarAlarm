@@ -6,56 +6,25 @@ struct WakePlanApp: App {
     private static let onboardingStorageKey = "hasCompletedOnboarding"
 
     @State private var appState: AppState
+    private let backgroundRefreshService: BackgroundAlarmRefreshService
 
     init() {
         let launchArguments = ProcessInfo.processInfo.arguments
-        let accountStore = UserDefaultsAccountStore()
-        let googleAuthenticator = GoogleSignInAuthenticator()
-        let accountService = AccountService(
-            accountStore: accountStore,
-            googleAuthenticator: googleAuthenticator
-        )
-        let preferencesStore = UserDefaultsPreferencesStore()
-        let alarmStore = UserDefaultsScheduledAlarmStore()
-        let calendarReader = EventKitCalendarReader()
-        let calendarProvider = CompositeCalendarProvider(
-            providers: [
-                AppleCalendarProvider(calendarReader: calendarReader, accountStore: accountStore),
-                GoogleCalendarProvider(accountStore: accountStore)
-            ]
-        )
-        let alarmScheduler = AlarmKitScheduler()
-        let wakePlanService = WakePlanService(
-            calendarProvider: calendarProvider,
-            preferencesStore: preferencesStore
-        )
-        let permissionService = PermissionService(
-            calendarReader: calendarReader,
-            alarmScheduler: alarmScheduler
-        )
-        let alarmSyncService = AlarmSyncService(
-            alarmScheduler: alarmScheduler,
-            alarmStore: alarmStore
-        )
+        let environment = WakePlanEnvironment.live()
 
         if launchArguments.contains(LaunchArguments.resetAppData) {
             Self.resetPersistedAppState(
-                accountStore: accountStore,
-                preferencesStore: preferencesStore,
-                alarmStore: alarmStore,
-                alarmScheduler: alarmScheduler
+                accountStore: environment.accountStore,
+                preferencesStore: environment.preferencesStore,
+                alarmStore: environment.alarmStore,
+                refreshResultStore: environment.refreshResultStore,
+                alarmScheduler: environment.alarmScheduler
             )
         }
 
+        backgroundRefreshService = environment.backgroundRefreshService
         _appState = State(
-            initialValue: AppState(
-                accountStore: accountStore,
-                accountService: accountService,
-                preferencesStore: preferencesStore,
-                wakePlanService: wakePlanService,
-                permissionService: permissionService,
-                alarmSyncService: alarmSyncService
-            )
+            initialValue: environment.makeAppState()
         )
     }
 
@@ -66,24 +35,36 @@ struct WakePlanApp: App {
                     GIDSignIn.sharedInstance.handle(url)
                 }
         }
+        .backgroundTask(.appRefresh(AppConfiguration.backgroundRefreshTaskIdentifier)) {
+            await backgroundRefreshService.handleAppRefresh()
+        }
     }
 
     private static func resetPersistedAppState(
         accountStore: UserDefaultsAccountStore,
         preferencesStore: UserDefaultsPreferencesStore,
         alarmStore: UserDefaultsScheduledAlarmStore,
+        refreshResultStore: UserDefaultsWakePlanRefreshResultStore,
         alarmScheduler: AlarmKitScheduler
     ) {
-        if let existingRecord = try? alarmStore.load() {
+        let existingRecords = (try? alarmStore.load()) ?? []
+
+        if !existingRecords.isEmpty {
             Task {
-                try? await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+                for record in existingRecords {
+                    try? await alarmScheduler.cancel(nativeAlarmID: record.nativeAlarmID)
+                }
             }
         }
 
         preferencesStore.clear()
         accountStore.clear()
         try? alarmStore.clear()
+        try? refreshResultStore.clear()
         UserDefaults.standard.removeObject(forKey: Self.onboardingStorageKey)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [AppConfiguration.staleSyncReminderIdentifier]
+        )
         GIDSignIn.sharedInstance.signOut()
     }
 }

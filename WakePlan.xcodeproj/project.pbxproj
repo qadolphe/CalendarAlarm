@@ -70,10 +70,12 @@
 		AA000000000000000000023E /* Resources/AlarmSounds/Ping.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013E /* Resources/AlarmSounds/Ping.aiff */; };
 		AA000000000000000000023F /* Resources/AlarmSounds/Pop.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013F /* Resources/AlarmSounds/Pop.aiff */; };
 		AA0000000000000000000240 /* Resources/AlarmSounds/Purr.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000140 /* Resources/AlarmSounds/Purr.aiff */; };
-		AA0000000000000000000241 /* Resources/AlarmSounds/Sosumi.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */; };
-		AA0000000000000000000242 /* Resources/AlarmSounds/Submarine.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */; };
-		AA0000000000000000000243 /* Resources/AlarmSounds/Tink.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */; };
-		AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
+			AA0000000000000000000241 /* Resources/AlarmSounds/Sosumi.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */; };
+			AA0000000000000000000242 /* Resources/AlarmSounds/Submarine.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */; };
+			AA0000000000000000000243 /* Resources/AlarmSounds/Tink.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */; };
+			AA0000000000000000000244 /* Application/WakePlanRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000144 /* Application/WakePlanRefreshService.swift */; };
+			AA0000000000000000000245 /* Application/WakePlanEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000145 /* Application/WakePlanEnvironment.swift */; };
+			AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
 		AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000301 /* Domain/EventFilterTests.swift */; };
 		AA0000000000000000000402 /* Domain/WakePlanCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000302 /* Domain/WakePlanCalculatorTests.swift */; };
 		AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */; };
@@ -156,10 +158,12 @@
 		AA000000000000000000013E /* Resources/AlarmSounds/Ping.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Ping.aiff; sourceTree = "<group>"; };
 		AA000000000000000000013F /* Resources/AlarmSounds/Pop.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Pop.aiff; sourceTree = "<group>"; };
 		AA0000000000000000000140 /* Resources/AlarmSounds/Purr.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Purr.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Sosumi.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Submarine.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Tink.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
+			AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Sosumi.aiff; sourceTree = "<group>"; };
+			AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Submarine.aiff; sourceTree = "<group>"; };
+			AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Tink.aiff; sourceTree = "<group>"; };
+			AA0000000000000000000144 /* Application/WakePlanRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/WakePlanRefreshService.swift; sourceTree = "<group>"; };
+			AA0000000000000000000145 /* Application/WakePlanEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/WakePlanEnvironment.swift; sourceTree = "<group>"; };
+			AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000301 /* Domain/EventFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EventFilterTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000302 /* Domain/WakePlanCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/WakePlanCalculatorTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AlarmSyncServiceTests.swift; sourceTree = "<group>"; };
@@ -237,16 +241,18 @@
 			path = WakePlanTests;
 			sourceTree = "<group>";
 		};
-		AA0000000000000000000500 /* Application */ = {
-			isa = PBXGroup;
-			children = (
-				AA0000000000000000000131 /* Application/AccountService.swift */,
-				AA0000000000000000000100 /* Application/AlarmSyncService.swift */,
-				AA0000000000000000000101 /* Application/AppState.swift */,
-				AA0000000000000000000102 /* Application/PermissionService.swift */,
-				AA0000000000000000000506 /* Ports */,
-				AA0000000000000000000103 /* Application/WakePlanService.swift */,
-			);
+			AA0000000000000000000500 /* Application */ = {
+				isa = PBXGroup;
+				children = (
+					AA0000000000000000000131 /* Application/AccountService.swift */,
+					AA0000000000000000000100 /* Application/AlarmSyncService.swift */,
+					AA0000000000000000000101 /* Application/AppState.swift */,
+					AA0000000000000000000145 /* Application/WakePlanEnvironment.swift */,
+					AA0000000000000000000102 /* Application/PermissionService.swift */,
+					AA0000000000000000000506 /* Ports */,
+					AA0000000000000000000144 /* Application/WakePlanRefreshService.swift */,
+					AA0000000000000000000103 /* Application/WakePlanService.swift */,
+				);
 			name = Application;
 			sourceTree = "<group>";
 		};
@@ -598,10 +604,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000231 /* Application/AccountService.swift in Sources */,
-				AA0000000000000000000200 /* Application/AlarmSyncService.swift in Sources */,
-				AA0000000000000000000201 /* Application/AppState.swift in Sources */,
-				AA0000000000000000000202 /* Application/PermissionService.swift in Sources */,
-				AA0000000000000000000203 /* Application/WakePlanService.swift in Sources */,
+					AA0000000000000000000200 /* Application/AlarmSyncService.swift in Sources */,
+					AA0000000000000000000201 /* Application/AppState.swift in Sources */,
+					AA0000000000000000000245 /* Application/WakePlanEnvironment.swift in Sources */,
+					AA0000000000000000000202 /* Application/PermissionService.swift in Sources */,
+					AA0000000000000000000244 /* Application/WakePlanRefreshService.swift in Sources */,
+					AA0000000000000000000203 /* Application/WakePlanService.swift in Sources */,
 				AA0000000000000000000204 /* Configuration/AppConfiguration.swift in Sources */,
 				AA0000000000000000000205 /* Domain/Models/AlarmPreferences.swift in Sources */,
 				AA0000000000000000000230 /* Domain/Models/AlarmRule.swift in Sources */,

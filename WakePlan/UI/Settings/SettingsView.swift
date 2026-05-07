@@ -15,6 +15,7 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     systemToggleCard
+                    refreshReliabilityCard
 
                     VStack(alignment: .leading, spacing: 0) {
                         appSettingsLinks
@@ -88,6 +89,23 @@ struct SettingsView: View {
                     .tint(WPStyles.primaryOrange)
             }
             Text(appState.preferences.isSystemEnabled ? "EarlyOtter will schedule alarms based on your rules." : "EarlyOtter is completely disabled. No alarms will run.")
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+        }
+        .cardStyle()
+    }
+
+    private var refreshReliabilityCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Refresh Reliability")
+                .font(.headline)
+                .foregroundStyle(WPStyles.primaryText)
+
+            Text(AppConfiguration.refreshReliabilityExplanation)
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+
+            Text(AppConfiguration.shortcutsExplanation)
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
         }

@@ -1,11 +1,23 @@
 import Foundation
 
-enum AlarmScheduleStatus: Equatable {
+enum AlarmScheduleStatus: Equatable, Sendable {
     case notScheduled
     case scheduled(ScheduledAlarmRecord)
     case needsPermission
     case disabled
     case failed(String)
+}
+
+struct AlarmSyncResult: Equatable, Sendable {
+    let records: [ScheduledAlarmRecord]
+    let statusesByPlanID: [WakePlanID: AlarmScheduleStatus]
+    let scheduledCount: Int
+    let canceledCount: Int
+    let failedCount: Int
+
+    func status(for plan: WakeUpPlan) -> AlarmScheduleStatus {
+        statusesByPlanID[plan.id] ?? .notScheduled
+    }
 }
 
 actor AlarmSyncService {
@@ -22,52 +34,119 @@ actor AlarmSyncService {
     }
 
     func sync(plan: WakeUpPlan) async throws -> AlarmScheduleStatus {
+        let result = try await sync(plans: [plan])
+        return result.status(for: plan)
+    }
+
+    func sync(plans: [WakeUpPlan]) async throws -> AlarmSyncResult {
         await syncLock.acquire()
         defer { syncLock.release() }
 
-        return try await performSync(plan: plan)
+        return try await performSync(plans: plans)
     }
 
-    private func performSync(plan: WakeUpPlan) async throws -> AlarmScheduleStatus {
-        let existingRecord: ScheduledAlarmRecord?
+    private func performSync(plans: [WakeUpPlan]) async throws -> AlarmSyncResult {
+        let existingRecords: [ScheduledAlarmRecord]
 
         do {
-            existingRecord = try loadActiveRecord(now: Date())
+            existingRecords = try loadActiveRecords(now: Date())
         } catch {
-            return .failed(error.localizedDescription)
+            let statuses = Dictionary(
+                uniqueKeysWithValues: plans.map {
+                    ($0.id, AlarmScheduleStatus.failed(error.localizedDescription))
+                }
+            )
+            return AlarmSyncResult(
+                records: [],
+                statusesByPlanID: statuses,
+                scheduledCount: 0,
+                canceledCount: 0,
+                failedCount: plans.isEmpty ? 1 : plans.count
+            )
         }
 
-        if let unscheduledStatus = statusForPlanWithoutManagedAlarm(plan) {
-            return await removeManagedAlarmIfNeeded(
-                existingRecord,
-                resultingStatus: unscheduledStatus,
-                failurePrefix: "Couldn't remove previous alarm."
-            ) ?? unscheduledStatus
+        var statusesByPlanID: [WakePlanID: AlarmScheduleStatus] = [:]
+        var desiredManagedPlans: [WakeUpPlan] = []
+
+        for plan in plans {
+            if let unscheduledStatus = statusForPlanWithoutManagedAlarm(plan) {
+                statusesByPlanID[plan.id] = unscheduledStatus
+            } else {
+                desiredManagedPlans.append(plan)
+            }
         }
 
-        if let existingRecord, existingRecord.planID == plan.id {
-            return .scheduled(existingRecord)
+        let existingByPlanID = Dictionary(uniqueKeysWithValues: existingRecords.map { ($0.planID, $0) })
+        let desiredPlanIDs = Set(desiredManagedPlans.map(\.id))
+        var retainedRecords = existingByPlanID.filter { desiredPlanIDs.contains($0.key) }
+        var scheduledCount = 0
+        var canceledCount = 0
+        var failedCount = 0
+        var obsoleteRemovalErrors: [String] = []
+
+        for record in existingRecords where !desiredPlanIDs.contains(record.planID) {
+            do {
+                try await alarmScheduler.cancel(nativeAlarmID: record.nativeAlarmID)
+                canceledCount += 1
+            } catch {
+                failedCount += 1
+                obsoleteRemovalErrors.append(error.localizedDescription)
+            }
         }
 
-        if let replacementFailure = await removeManagedAlarmIfNeeded(
-            existingRecord,
-            resultingStatus: nil,
-            failurePrefix: "Couldn't replace previous alarm."
-        ) {
-            return replacementFailure
+        if !obsoleteRemovalErrors.isEmpty {
+            let failureMessage = "Couldn't replace previous alarms. \(obsoleteRemovalErrors.joined(separator: " "))"
+
+            for plan in desiredManagedPlans where retainedRecords[plan.id] == nil {
+                statusesByPlanID[plan.id] = .failed(failureMessage)
+            }
+
+            let activeRecords = retainedRecords.values.sorted(by: Self.sortRecords)
+            try saveRecords(activeRecords)
+
+            return AlarmSyncResult(
+                records: activeRecords,
+                statusesByPlanID: statusesByPlanID,
+                scheduledCount: scheduledCount,
+                canceledCount: canceledCount,
+                failedCount: failedCount
+            )
         }
 
-        guard await alarmScheduler.authorizationState() == .authorized else {
-            return .needsPermission
+        let authorizationState = await alarmScheduler.authorizationState()
+
+        for plan in desiredManagedPlans {
+            if let existingRecord = retainedRecords[plan.id] {
+                statusesByPlanID[plan.id] = .scheduled(existingRecord)
+                continue
+            }
+
+            guard authorizationState == .authorized else {
+                statusesByPlanID[plan.id] = .needsPermission
+                continue
+            }
+
+            do {
+                let record = try await alarmScheduler.schedule(plan: plan)
+                retainedRecords[plan.id] = record
+                statusesByPlanID[plan.id] = .scheduled(record)
+                scheduledCount += 1
+            } catch {
+                statusesByPlanID[plan.id] = .failed(error.localizedDescription)
+                failedCount += 1
+            }
         }
 
-        do {
-            let record = try await alarmScheduler.schedule(plan: plan)
-            try alarmStore.save(record)
-            return .scheduled(record)
-        } catch {
-            return .failed(error.localizedDescription)
-        }
+        let activeRecords = retainedRecords.values.sorted(by: Self.sortRecords)
+        try saveRecords(activeRecords)
+
+        return AlarmSyncResult(
+            records: activeRecords,
+            statusesByPlanID: statusesByPlanID,
+            scheduledCount: scheduledCount,
+            canceledCount: canceledCount,
+            failedCount: failedCount
+        )
     }
 
 #if DEBUG
@@ -127,38 +206,41 @@ actor AlarmSyncService {
 }
 
 private extension AlarmSyncService {
-    func loadActiveRecord(now: Date) throws -> ScheduledAlarmRecord? {
-        guard let record = try alarmStore.load() else {
-            return nil
+    static func sortRecords(_ lhs: ScheduledAlarmRecord, _ rhs: ScheduledAlarmRecord) -> Bool {
+        if lhs.scheduledWakeTime != rhs.scheduledWakeTime {
+            return lhs.scheduledWakeTime < rhs.scheduledWakeTime
         }
 
-        guard record.isExpired(at: now) else {
-            return record
+        return lhs.planID.rawValue < rhs.planID.rawValue
+    }
+
+    func loadActiveRecords(now: Date) throws -> [ScheduledAlarmRecord] {
+        let records = try alarmStore.load()
+        let activeRecords = records
+            .filter { !$0.isExpired(at: now) }
+            .sorted(by: Self.sortRecords)
+
+        guard activeRecords.count != records.count else {
+            return activeRecords
         }
 
         do {
-            try alarmStore.clear()
-            return nil
+            if activeRecords.isEmpty {
+                try alarmStore.clear()
+            } else {
+                try alarmStore.save(activeRecords)
+            }
+            return activeRecords
         } catch {
             throw AlarmSyncFailure.clearStaleRecord(error)
         }
     }
 
-    func removeManagedAlarmIfNeeded(
-        _ existingRecord: ScheduledAlarmRecord?,
-        resultingStatus: AlarmScheduleStatus?,
-        failurePrefix: String
-    ) async -> AlarmScheduleStatus? {
-        guard let existingRecord else {
-            return resultingStatus
-        }
-
-        do {
-            try await alarmScheduler.cancel(nativeAlarmID: existingRecord.nativeAlarmID)
+    func saveRecords(_ records: [ScheduledAlarmRecord]) throws {
+        if records.isEmpty {
             try alarmStore.clear()
-            return resultingStatus
-        } catch {
-            return .failed("\(failurePrefix) \(error.localizedDescription)")
+        } else {
+            try alarmStore.save(records)
         }
     }
 
