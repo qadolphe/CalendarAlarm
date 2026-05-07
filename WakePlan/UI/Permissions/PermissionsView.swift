@@ -25,25 +25,42 @@ struct PermissionsView: View {
                         statusBanner(noticeMessage, tint: WPStyles.primaryOrange)
                     }
 
-                    permissionCard(
-                        title: "Calendar",
-                        description: AppConfiguration.calendarPermissionExplanation,
-                        status: viewModel.calendarStatus,
-                        icon: "calendar",
-                        isAuthorized: appState.permissions.calendar == .authorized,
-                        actionTitle: "Allow Calendar Access",
-                        action: { Task { await appState.requestCalendarAccess() } }
-                    )
+                    VStack(spacing: 0) {
+                        permissionRow(
+                            title: "Calendar",
+                            description: "Needed to view your upcoming events.",
+                            status: viewModel.calendarStatus,
+                            icon: "calendar",
+                            isAuthorized: appState.permissions.calendar == .authorized,
+                            actionTitle: "Allow",
+                            action: { Task { await appState.requestCalendarAccess() } }
+                        )
 
-                    permissionCard(
-                        title: "Alarm Access",
-                        description: AppConfiguration.alarmPermissionExplanation,
-                        status: viewModel.alarmStatus,
-                        icon: "alarm",
-                        isAuthorized: appState.permissions.alarm == .authorized,
-                        actionTitle: "Allow Alarm Access",
-                        action: { Task { await appState.requestAlarmAccess() } }
-                    )
+                        Divider().overlay(WPStyles.cardBorder).padding(.leading, 48)
+
+                        permissionRow(
+                            title: "Alarms",
+                            description: "Needed to schedule wake-up routines.",
+                            status: viewModel.alarmStatus,
+                            icon: "alarm.fill",
+                            isAuthorized: appState.permissions.alarm == .authorized,
+                            actionTitle: "Allow",
+                            action: { Task { await appState.requestAlarmAccess() } }
+                        )
+
+                        Divider().overlay(WPStyles.cardBorder).padding(.leading, 48)
+
+                        permissionRow(
+                            title: "Notifications",
+                            description: "Needed to alert you when alarms sync or fail.",
+                            status: viewModel.notificationStatus,
+                            icon: "bell.fill",
+                            isAuthorized: appState.permissions.notification == .authorized,
+                            actionTitle: "Allow",
+                            action: { Task { await appState.requestNotificationAccess() } }
+                        )
+                    }
+                    .cardStyle()
                 }
                 .padding(24)
             }
@@ -55,7 +72,7 @@ struct PermissionsView: View {
         }
     }
 
-    private func permissionCard(
+    private func permissionRow(
         title: String,
         description: String,
         status: String,
@@ -64,47 +81,45 @@ struct PermissionsView: View {
         actionTitle: String,
         action: @escaping () -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundStyle(WPStyles.primaryOrange)
-                    .frame(width: 32)
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(WPStyles.primaryOrange)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundStyle(WPStyles.primaryText)
-                    Text(description)
-                        .font(.body)
-                        .foregroundStyle(WPStyles.secondaryText)
-                }
-                Spacer()
-            }
-
-            HStack {
-                Text(status)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isAuthorized ? WPStyles.successGreen : WPStyles.secondaryText)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background((isAuthorized ? WPStyles.successGreen : WPStyles.surfaceRaised).opacity(0.18))
-                    .clipShape(Capsule())
-
-                Spacer()
-
-                if !isAuthorized {
-                    Button(actionTitle) {
-                        action()
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                HStack {
+                    Text(status)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(isAuthorized ? WPStyles.successGreen : WPStyles.secondaryText)
+                        
+                    Spacer()
+                    
+                    if !isAuthorized {
+                        Button(actionTitle) {
+                            action()
+                        }
+                        .font(.caption.weight(.bold))
+                        .buttonStyle(.bordered)
+                        .tint(WPStyles.primaryOrange)
+                        .controlSize(.small)
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .buttonStyle(.bordered)
-                    .tint(WPStyles.primaryOrange)
                 }
+                .padding(.top, 2)
             }
-            .padding(.top, 4)
         }
-        .cardStyle()
+        .padding(.vertical, 16)
+        .padding(.horizontal, 16)
     }
 
     private func statusBanner(_ text: String, tint: Color) -> some View {

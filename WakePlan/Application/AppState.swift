@@ -189,6 +189,32 @@ final class AppState {
         }
     }
 
+    func requestNotificationAccess() async {
+        noticeMessage = nil
+        settingsAlertMessage = nil
+
+        do {
+            let currentPermissions = await permissionService.currentStatus()
+            permissions = currentPermissions
+
+            if currentPermissions.notification == .denied {
+                showSettingsNotice("Notification access was previously denied. Enable it in Settings.")
+                return
+            }
+
+            let requestedState = try await permissionService.requestNotificationAccess()
+            await refreshPermissions()
+
+            if requestedState == .notDetermined, permissions.notification == .notDetermined {
+                noticeMessage = "Notification access is still pending."
+            } else if requestedState == .denied {
+                noticeMessage = "Notification access is still needed."
+            }
+        } catch {
+            dashboardState = .error(format(error))
+        }
+    }
+
 #if DEBUG
     func scheduleTestAlarm() async {
         noticeMessage = nil

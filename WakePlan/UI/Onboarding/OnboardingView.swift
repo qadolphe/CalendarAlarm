@@ -84,7 +84,7 @@ struct OnboardingView: View {
     private var permissionsStep: some View {
         onboardingPage {
             VStack(spacing: 12) {
-                Text("Wake-Up Alarms")
+                Text("Grant Permissions")
                     .font(.system(.title, design: .rounded).weight(.bold))
                     .foregroundStyle(WPStyles.primaryText)
                     .multilineTextAlignment(.center)
@@ -112,12 +112,20 @@ struct OnboardingView: View {
                     actionTitle: "Allow",
                     action: { Task { await appState.requestAlarmAccess() } }
                 )
+                
+                permissionRow(
+                    title: "Notifications",
+                    icon: "bell.fill",
+                    isGranted: appState.permissions.notification == .authorized,
+                    actionTitle: "Allow",
+                    action: { Task { await appState.requestNotificationAccess() } }
+                )
             }
             .cardStyle()
         } footer: {
-            let alarmGranted = appState.permissions.alarm == .authorized
+            let allGranted = appState.permissions.alarm == .authorized && appState.permissions.notification == .authorized
             
-            nextButton(title: alarmGranted ? "Next" : "Continue for Now") {
+            nextButton(title: allGranted ? "Next" : "Continue for Now") {
                 withAnimation { currentStep += 1 }
             }
         }

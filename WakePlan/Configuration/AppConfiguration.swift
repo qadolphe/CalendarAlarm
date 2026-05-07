@@ -20,7 +20,7 @@ enum AppConfiguration {
         "Alarm access lets \(appName) schedule real wake-up alarms for your calendar events. You can enable it later in Settings."
 
     static let onboardingAlarmPermissionExplanation =
-        "Alarm access is optional during setup. Enable it now to let \(appName) schedule wake-up alarms automatically, or continue and turn it on later in Settings."
+        "These are optional during setup. Enable them now to let \(appName) schedule alarms and notify you on updates automatically."
 
     static let refreshReliabilityExplanation =
         "\(appName) keeps alarms updated when you open the app and can refresh automatically in the background when iOS allows."
