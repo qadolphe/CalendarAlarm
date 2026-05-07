@@ -111,6 +111,90 @@ final class AppStateTests: XCTestCase {
         )
     }
 
+    func testRequestCalendarAccessOpensSettingsWhenPermissionWasPreviouslyDenied() async {
+        let accountStore = StubAccountStore()
+        let preferencesStore = StubPreferencesStore()
+        let calendarReader = StubCalendarReader(state: .denied)
+        let alarmScheduler = StubAlarmScheduler(state: .authorized)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let wakePlanService = WakePlanService(
+            calendarProvider: CompositeCalendarProvider(providers: []),
+            preferencesStore: preferencesStore
+        )
+        var openedSettings = false
+        let appState = AppState(
+            accountStore: accountStore,
+            accountService: AccountService(
+                accountStore: accountStore,
+                googleAuthenticator: StubGoogleAuthenticator()
+            ),
+            preferencesStore: preferencesStore,
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            ),
+            openAppSettings: {
+                openedSettings = true
+            }
+        )
+
+        await appState.requestCalendarAccess()
+
+        XCTAssertTrue(openedSettings)
+        XCTAssertEqual(calendarReader.requestAuthorizationCallCount, 0)
+        XCTAssertEqual(
+            appState.noticeMessage,
+            "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar."
+        )
+    }
+
+    func testRequestAlarmAccessOpensSettingsWhenPermissionWasPreviouslyDenied() async {
+        let accountStore = StubAccountStore()
+        let preferencesStore = StubPreferencesStore()
+        let calendarReader = StubCalendarReader(state: .authorized)
+        let alarmScheduler = StubAlarmScheduler(state: .denied)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let wakePlanService = WakePlanService(
+            calendarProvider: CompositeCalendarProvider(providers: []),
+            preferencesStore: preferencesStore
+        )
+        var openedSettings = false
+        let appState = AppState(
+            accountStore: accountStore,
+            accountService: AccountService(
+                accountStore: accountStore,
+                googleAuthenticator: StubGoogleAuthenticator()
+            ),
+            preferencesStore: preferencesStore,
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            ),
+            openAppSettings: {
+                openedSettings = true
+            }
+        )
+
+        await appState.requestAlarmAccess()
+
+        XCTAssertTrue(openedSettings)
+        XCTAssertEqual(alarmScheduler.requestAuthorizationCallCount, 0)
+        XCTAssertEqual(
+            appState.noticeMessage,
+            "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms."
+        )
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -284,6 +368,7 @@ private struct StubCalendarProvider: CalendarEventProviding {
 
 private final class StubCalendarReader: CalendarReading {
     let state: CalendarAuthorizationState
+    private(set) var requestAuthorizationCallCount = 0
 
     init(state: CalendarAuthorizationState) {
         self.state = state
@@ -294,12 +379,14 @@ private final class StubCalendarReader: CalendarReading {
     }
 
     func requestAuthorization() async throws -> CalendarAuthorizationState {
-        state
+        requestAuthorizationCallCount += 1
+        return state
     }
 }
 
 private final class StubAlarmScheduler: AlarmScheduling {
     let state: AlarmAuthorizationState
+    private(set) var requestAuthorizationCallCount = 0
 
     init(state: AlarmAuthorizationState) {
         self.state = state
@@ -310,7 +397,8 @@ private final class StubAlarmScheduler: AlarmScheduling {
     }
 
     func requestAuthorization() async throws -> AlarmAuthorizationState {
-        state
+        requestAuthorizationCallCount += 1
+        return state
     }
 
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord {

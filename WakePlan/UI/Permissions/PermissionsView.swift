@@ -12,17 +12,17 @@ struct PermissionsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Permissions")
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(WPStyles.primaryText)
-                        .padding(.top, 20)
-
                     Text("EarlyOtter keeps your alarm plan on-device and only requests the access it needs.")
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
+                        .padding(.top, 20)
 
                     if let errorMessage = appState.errorMessage {
                         statusBanner(errorMessage, tint: .red)
+                    }
+
+                    if let noticeMessage = appState.noticeMessage {
+                        statusBanner(noticeMessage, tint: WPStyles.primaryOrange)
                     }
 
                     permissionCard(

@@ -1,5 +1,8 @@
 import Foundation
 import Observation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct WakePlanViewState: Equatable {
     let plan: WakeUpPlan
@@ -32,6 +35,7 @@ final class AppState {
     private let wakePlanService: WakePlanService
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
+    private let openAppSettings: @MainActor () -> Void
     private var hasLoaded = false
     private var refreshGeneration = 0
 
@@ -50,7 +54,8 @@ final class AppState {
         preferencesStore: PreferencesStoring,
         wakePlanService: WakePlanService,
         permissionService: PermissionService,
-        alarmSyncService: AlarmSyncService
+        alarmSyncService: AlarmSyncService,
+        openAppSettings: @escaping @MainActor () -> Void = { AppState.defaultOpenAppSettings() }
     ) {
         self.accountStore = accountStore
         self.accountService = accountService
@@ -58,6 +63,7 @@ final class AppState {
         self.wakePlanService = wakePlanService
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
+        self.openAppSettings = openAppSettings
     }
 
     func loadIfNeeded() async {
@@ -128,7 +134,21 @@ final class AppState {
         noticeMessage = nil
 
         do {
-            _ = try await permissionService.requestCalendarAccess()
+            let currentPermissions = await permissionService.currentStatus()
+            permissions = currentPermissions
+
+            if currentPermissions.calendar == .denied || currentPermissions.calendar == .restricted {
+                showSettingsNotice("Calendar access was previously denied. Enable it in Settings to connect Apple Calendar.")
+                return
+            }
+
+            let requestedState = try await permissionService.requestCalendarAccess()
+            await refreshPermissions()
+
+            if requestedState != .authorized {
+                noticeMessage = "Calendar access is still needed to use Apple Calendar."
+            }
+
             await load()
         } catch {
             dashboardState = .error(format(error))
@@ -139,12 +159,23 @@ final class AppState {
         noticeMessage = nil
 
         do {
+            let currentPermissions = await permissionService.currentStatus()
+            permissions = currentPermissions
+
+            if currentPermissions.alarm == .denied {
+                showSettingsNotice("Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms.")
+                return
+            }
+
             let requestedState = try await permissionService.requestAlarmAccess()
+            await refreshPermissions()
             dashboardState = .loading
             try await refreshDashboard()
 
             if requestedState == .notDetermined, permissions.alarm == .notDetermined {
                 noticeMessage = "Alarm access is still pending."
+            } else if requestedState == .denied {
+                noticeMessage = "Alarm access is still needed to schedule wake-up alarms."
             }
         } catch {
             dashboardState = .error(format(error))
@@ -221,14 +252,24 @@ final class AppState {
         noticeMessage = nil
 
         do {
+            let currentPermissions = await permissionService.currentStatus()
+            permissions = currentPermissions
+
             let authorizationState: CalendarAuthorizationState
-            if permissions.calendar == .authorized {
+            if currentPermissions.calendar == .authorized {
                 authorizationState = .authorized
+            } else if currentPermissions.calendar == .denied || currentPermissions.calendar == .restricted {
+                showSettingsNotice("Calendar access was previously denied. Enable it in Settings to connect Apple Calendar.")
+                return
             } else {
                 authorizationState = try await permissionService.requestCalendarAccess()
+                await refreshPermissions()
             }
 
             guard authorizationState == .authorized else {
+                if authorizationState == .denied {
+                    noticeMessage = "Calendar access is still needed to use Apple Calendar."
+                }
                 await load()
                 return
             }
@@ -351,6 +392,22 @@ final class AppState {
 
     private func isCurrentRefresh(_ generation: Int) -> Bool {
         generation == refreshGeneration
+    }
+
+    private func showSettingsNotice(_ message: String) {
+        noticeMessage = message
+        openAppSettings()
+    }
+
+    private static func defaultOpenAppSettings() {
+#if canImport(UIKit)
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else {
+            return
+        }
+
+        UIApplication.shared.open(url)
+#endif
     }
 
     static func primaryDashboardPlan(
