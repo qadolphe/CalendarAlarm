@@ -28,6 +28,7 @@ final class AppState {
     var dashboardState: DashboardState = .loading
     var upcomingPlans: [WakeUpPlan] = []
     var noticeMessage: String?
+    var settingsAlertMessage: String?
 
     private let accountStore: AccountStoring
     private let accountService: AccountService
@@ -75,6 +76,7 @@ final class AppState {
         hasLoaded = true
         dashboardState = .loading
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             preferences = try preferencesStore.load()
@@ -86,6 +88,7 @@ final class AppState {
 
     func updatePreferences(_ newPreferences: AlarmPreferences) async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             preferences = newPreferences
@@ -100,6 +103,7 @@ final class AppState {
     func refreshPlan() async {
         let previousDashboardState = dashboardState
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             try await refreshDashboard()
@@ -116,6 +120,7 @@ final class AppState {
 
         let previousDashboardState = dashboardState
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             try await refreshDashboard()
@@ -132,6 +137,7 @@ final class AppState {
 
     func requestCalendarAccess() async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             let currentPermissions = await permissionService.currentStatus()
@@ -157,6 +163,7 @@ final class AppState {
 
     func requestAlarmAccess() async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             let currentPermissions = await permissionService.currentStatus()
@@ -185,6 +192,7 @@ final class AppState {
 #if DEBUG
     func scheduleTestAlarm() async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             let status = try await alarmSyncService.scheduleTestAlarm()
@@ -239,6 +247,7 @@ final class AppState {
 
     func addGoogleAccount() async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             accounts = try await accountService.connectGoogleAccount()
@@ -250,6 +259,7 @@ final class AppState {
 
     func connectAppleCalendar() async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             let currentPermissions = await permissionService.currentStatus()
@@ -294,6 +304,7 @@ final class AppState {
 
     func setAccountEnabled(id: CalendarAccountID, isEnabled: Bool) async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             var stored = try accountStore.load()
@@ -318,6 +329,7 @@ final class AppState {
 
     func removeAccount(id: CalendarAccountID) async {
         noticeMessage = nil
+        settingsAlertMessage = nil
 
         do {
             var stored = try accountStore.load()
@@ -395,7 +407,10 @@ final class AppState {
     }
 
     private func showSettingsNotice(_ message: String) {
-        noticeMessage = message
+        settingsAlertMessage = message
+    }
+
+    func openSettings() {
         openAppSettings()
     }
 

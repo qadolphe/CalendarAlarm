@@ -45,6 +45,22 @@ struct WakePlanRootView: View {
                 await appState.refreshOnAppOpen()
             }
         }
+        .alert(
+            "Action Required",
+            isPresented: Binding(
+                get: { appState.settingsAlertMessage != nil },
+                set: { if !$0 { appState.settingsAlertMessage = nil } }
+            )
+        ) {
+            Button("Cancel", role: .cancel) {}
+            Button("Open Settings") {
+                appState.openSettings()
+            }
+        } message: {
+            if let message = appState.settingsAlertMessage {
+                Text(message)
+            }
+        }
     }
 
     private var shouldShowOnboarding: Bool {
