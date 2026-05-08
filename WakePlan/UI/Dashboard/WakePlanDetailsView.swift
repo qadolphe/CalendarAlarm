@@ -11,7 +11,7 @@ struct WakePlanDetailsView: View {
         }
 
         if plan.reason == .fallback {
-            return "Fallback"
+            return "Backup"
         }
 
         return nil

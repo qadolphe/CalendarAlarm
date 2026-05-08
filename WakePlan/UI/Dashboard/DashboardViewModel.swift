@@ -44,7 +44,7 @@ struct DashboardViewModel {
             return "For \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))"
         }
 
-        return "Fallback wake time"
+        return "Backup alarm"
     }
 
     var heroContext: String {
@@ -126,7 +126,7 @@ struct DashboardViewModel {
                 return "Auto-Pilot is paused for that day based on your active schedule."
             }
             if plan.reason == .fallback {
-                return "Fallback wake time is scheduled."
+                return "Backup alarm is scheduled."
             }
             return "Alarm scheduled for the next valid event."
         case .needsPermission:
@@ -136,7 +136,7 @@ struct DashboardViewModel {
         case .failed(let message):
             return "Couldn't schedule alarm: \(message)"
         case .notScheduled:
-            return "No scheduled events or fallback."
+            return "No scheduled events or backup alarm."
         }
     }
 
@@ -170,7 +170,7 @@ struct DashboardViewModel {
         case .systemDisabled:
             return "System disabled"
         case .fallback, .authorizationMissing, .manualOverride, .event:
-            return "Fallback wake time"
+            return "Backup alarm"
         }
     }
 
@@ -183,7 +183,7 @@ struct DashboardViewModel {
         case .inactiveDay:
             return "Not scheduled on this weekday"
         case .noSchedule:
-            return "No scheduled events or fallback"
+            return "No scheduled events or backup alarm"
         case .disabled:
             return "Turn Auto-Pilot back on in Schedule"
         case .systemDisabled:

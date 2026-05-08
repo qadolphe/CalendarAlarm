@@ -12,18 +12,18 @@ struct DaySettingsView: View {
 
                 List {
                     Section(header: Text("Auto-Pilot").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
-                        Toggle("Event-Based Wake Up", isOn: activeBinding)
+                        Toggle("Event Alarm", isOn: activeBinding)
                             .tint(WPStyles.primaryOrange)
                             .foregroundStyle(WPStyles.primaryText)
                         
-                        Text("When enabled, EarlyOtter will scan your calendars to dynamically schedule your wake up time based on your events and rules.")
+                        Text("Use calendar events to set this day's alarm.")
                             .font(.caption)
                             .foregroundStyle(WPStyles.secondaryText)
                     }
                     .listRowBackground(WPStyles.surface)
 
-                    Section(header: Text("Fallback Alarm").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
-                        Toggle("Enable Fallback", isOn: fallbackEnabledBinding)
+                    Section(header: Text("Backup Alarm").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
+                        Toggle("Enable Backup", isOn: fallbackEnabledBinding)
                             .tint(WPStyles.primaryOrange)
                             .foregroundStyle(WPStyles.primaryText)
                         
@@ -36,7 +36,7 @@ struct DaySettingsView: View {
                             .foregroundStyle(WPStyles.primaryText)
                         }
                         
-                        Text("If no events are found (or Auto-Pilot is disabled), this guaranteed alarm time will be used.")
+                        Text("Use a fixed alarm when you want a guaranteed wake-up.")
                             .font(.caption)
                             .foregroundStyle(WPStyles.secondaryText)
                     }
@@ -56,7 +56,7 @@ struct DaySettingsView: View {
                     .foregroundStyle(WPStyles.primaryOrange)
                 }
             }
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
     }

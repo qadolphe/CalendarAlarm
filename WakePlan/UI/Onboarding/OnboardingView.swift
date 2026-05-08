@@ -8,6 +8,7 @@ struct OnboardingView: View {
     @State private var currentStep = 0
     @State private var selectedWeekday: WeekdayOption?
     @State private var hasFetchedPlan = false
+    @State private var showCompletionHero = true
     private let totalSteps = 5
     
     var body: some View {
@@ -251,7 +252,13 @@ struct OnboardingView: View {
         onboardingPage {
             VStack(spacing: 24) {
                 if !hasFetchedPlan {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
+                        Text("You're All Set!")
+                            .font(.system(.title, design: .rounded).weight(.bold))
+                            .foregroundStyle(WPStyles.primaryText)
+                            .multilineTextAlignment(.center)
+                            .opacity(showCompletionHero ? 1 : 0)
+
                         ProgressView()
                             .tint(WPStyles.primaryOrange)
                             .scaleEffect(1.5)
@@ -263,17 +270,13 @@ struct OnboardingView: View {
                     }
                     .padding(.top, 40)
                 } else if let plan = finishStepPlan {
-                    VStack(spacing: 8) {
-                        Text("You're All Set!")
-                            .font(.system(.title, design: .rounded).weight(.bold))
-                            .foregroundStyle(WPStyles.primaryText)
-                            .multilineTextAlignment(.center)
-                        
+                    VStack(spacing: 10) {
                         finishStepHeadline(for: plan)
-                            .font(.title3)
+                            .font(.title2)
                             .foregroundStyle(WPStyles.secondaryText)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
+                            .lineLimit(2)
                         
                         if let detail = finishStepDetail(for: plan) {
                             Text(detail)
@@ -286,11 +289,11 @@ struct OnboardingView: View {
                     .transition(.opacity.combined(with: .scale))
                     
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Backup Days")
+                        Text("Backup Alarms")
                             .font(.headline)
                             .foregroundStyle(WPStyles.primaryText)
 
-                        Text("Tap a day to add a backup wake-up.")
+                        Text("Schedule backup alarms for important days.")
                             .font(.subheadline)
                             .foregroundStyle(WPStyles.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -325,6 +328,16 @@ struct OnboardingView: View {
             }
         }
         .onAppear {
+            showCompletionHero = true
+
+            Task {
+                try? await Task.sleep(for: .milliseconds(700))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeOut(duration: 0.35)) {
+                    showCompletionHero = false
+                }
+            }
+
             Task {
                 await appState.refreshPlan()
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -539,9 +552,12 @@ struct OnboardingView: View {
 
         switch plan.reason {
         case .event:
+            if let title = plan.targetEvent?.title, !title.isEmpty {
+                return Text(title)
+            }
             return Text("Tomorrow's alarm is ") + Text(timeString).bold() + Text(".")
         case .fallback, .manualOverride:
-            return Text("Backup alarm: ") + Text(timeString).bold()
+            return Text("Backup alarm at ") + Text(timeString).bold() + Text(".")
         case .authorizationMissing:
             return Text("Alarm access is still off.")
         case .noSchedule, .inactiveDay:
@@ -554,15 +570,15 @@ struct OnboardingView: View {
     private func finishStepDetail(for plan: WakeUpPlan) -> String? {
         switch plan.reason {
         case .event:
-            return nil
+            return "Alarm \(plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened))"
         case .fallback, .manualOverride:
-            return "Backup covers tomorrow."
+            return nil
         case .authorizationMissing:
-            return "You can allow it later in Settings."
+            return nil
         case .noSchedule, .inactiveDay:
-            return "Add an event or tap a day below."
+            return nil
         case .disabled, .systemDisabled:
-            return "Turn them back on in Settings."
+            return nil
         }
     }
 
