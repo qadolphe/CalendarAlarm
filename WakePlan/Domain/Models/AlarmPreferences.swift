@@ -16,7 +16,7 @@ struct ScheduleRules: Codable, Equatable, Sendable {
     static let `default` = ScheduleRules(
         isEnabled: true,
         activeDays: Set(1...7),
-        fallbackEnabledDays: Set(1...7),
+        fallbackEnabledDays: [],
         fallbackWakeTimes: [:]
     )
 }

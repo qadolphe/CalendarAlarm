@@ -26,6 +26,7 @@ final class AppState {
     var accounts: [ConnectedCalendarAccount] = []
     var permissions: PermissionSnapshot = .initial
     var dashboardState: DashboardState = .loading
+    var tomorrowPlanPreview: WakeUpPlan?
     var upcomingPlans: [WakeUpPlan] = []
     var noticeMessage: String?
     var settingsAlertMessage: String?
@@ -75,6 +76,7 @@ final class AppState {
     func load() async {
         hasLoaded = true
         dashboardState = .loading
+        tomorrowPlanPreview = nil
         noticeMessage = nil
         settingsAlertMessage = nil
 
@@ -94,6 +96,7 @@ final class AppState {
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
             dashboardState = .loading
+            tomorrowPlanPreview = nil
             try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
@@ -405,6 +408,7 @@ final class AppState {
         permissions = snapshot.permissions
         accounts = snapshot.accounts
         calendars = snapshot.calendars
+        tomorrowPlanPreview = snapshot.tomorrowPlan
         upcomingPlans = Array(snapshot.displayPlans.dropFirst().prefix(AppConfiguration.dashboardUpcomingDisplayCount))
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 

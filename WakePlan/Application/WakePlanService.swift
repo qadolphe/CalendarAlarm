@@ -15,9 +15,12 @@ final class WakePlanService {
         self.calculator = calculator
     }
 
-    func makePlan(targetDay: TargetDay = .tomorrow()) async throws -> WakeUpPlan {
+    func makePlan(
+        targetDay: TargetDay = .tomorrow(),
+        calendar: Calendar = .current
+    ) async throws -> WakeUpPlan {
         let preferences = try preferencesStore.load()
-        return try await makePlan(targetDay: targetDay, preferences: preferences)
+        return try await makePlan(targetDay: targetDay, preferences: preferences, calendar: calendar)
     }
 
     func makeUpcomingPlans(

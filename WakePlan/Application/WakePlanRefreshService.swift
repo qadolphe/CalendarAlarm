@@ -19,6 +19,7 @@ struct WakePlanRefreshSnapshot: Equatable, Sendable {
     let permissions: PermissionSnapshot
     let accounts: [ConnectedCalendarAccount]
     let calendars: [CalendarSource]
+    let tomorrowPlan: WakeUpPlan
     let displayPlans: [WakeUpPlan]
     let syncResult: AlarmSyncResult
 }
@@ -79,6 +80,10 @@ actor WakePlanRefreshService {
         let permissions = await permissionService.currentStatus()
         let accounts = try await wakePlanService.accounts()
         let calendars = try await wakePlanService.calendars()
+        let tomorrowPlan = try await wakePlanService.makePlan(
+            targetDay: TargetDay.tomorrow(from: now, calendar: calendar),
+            calendar: calendar
+        )
         let displayPlans = try await wakePlanService.makeDisplayPlans(
             startingAt: now,
             count: planningWindowCount,
@@ -90,6 +95,7 @@ actor WakePlanRefreshService {
             permissions: permissions,
             accounts: accounts,
             calendars: calendars,
+            tomorrowPlan: tomorrowPlan,
             displayPlans: displayPlans,
             syncResult: syncResult
         )

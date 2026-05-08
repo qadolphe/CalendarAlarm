@@ -6,6 +6,8 @@ struct OnboardingView: View {
     var onFinish: (() -> Void)? = nil
     
     @State private var currentStep = 0
+    @State private var selectedWeekday: WeekdayOption?
+    @State private var hasFetchedPlan = false
     private let totalSteps = 5
     
     var body: some View {
@@ -14,15 +16,20 @@ struct OnboardingView: View {
             
             persistentBackground
             
-            TabView(selection: $currentStep) {
-                welcomeStep.tag(0)
-                permissionsStep.tag(1)
-                calendarStep.tag(2)
-                routineStep.tag(3)
-                finishStep.tag(4)
+            ZStack {
+                currentStepView
+                    .id(currentStep)
+                    .transition(
+                        .asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        )
+                    )
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentStep)
+        }
+        .sheet(item: $selectedWeekday) { option in
+            DaySettingsView(appState: appState, weekdayOption: option)
         }
     }
     
@@ -50,6 +57,22 @@ struct OnboardingView: View {
     }
     
     // MARK: - Steps
+
+    @ViewBuilder
+    private var currentStepView: some View {
+        switch currentStep {
+        case 0:
+            welcomeStep
+        case 1:
+            permissionsStep
+        case 2:
+            calendarStep
+        case 3:
+            routineStep
+        default:
+            finishStep
+        }
+    }
     
     private var welcomeStep: some View {
         onboardingPage {
@@ -76,7 +99,7 @@ struct OnboardingView: View {
             }
         } footer: {
             nextButton(title: "Get Started") {
-                withAnimation { currentStep += 1 }
+                advanceToNextStep()
             }
         }
     }
@@ -123,10 +146,17 @@ struct OnboardingView: View {
             }
             .cardStyle()
         } footer: {
-            let allGranted = appState.permissions.alarm == .authorized && appState.permissions.notification == .authorized
-            
-            nextButton(title: allGranted ? "Next" : "Continue for Now") {
-                withAnimation { currentStep += 1 }
+            let alarmGranted = appState.permissions.alarm == .authorized
+
+            nextButton(
+                title: alarmGranted ? "Next" : "Allow Alarms to Continue",
+                color: alarmGranted ? WPStyles.primaryOrange : .black
+            ) {
+                if alarmGranted {
+                    advanceToNextStep()
+                } else {
+                    Task { await appState.requestAlarmAccess() }
+                }
             }
         }
     }
@@ -168,7 +198,7 @@ struct OnboardingView: View {
             .cardStyle()
         } footer: {
             nextButton(title: hasAnyCalendarSource ? "Next" : "Add a Calendar to Continue") {
-                withAnimation { currentStep += 1 }
+                advanceToNextStep()
             }
             .disabled(!hasAnyCalendarSource)
             .opacity(hasAnyCalendarSource ? 1.0 : 0.5)
@@ -192,7 +222,7 @@ struct OnboardingView: View {
             
             VStack(spacing: 0) {
                 routineRow(
-                    title: "Prep Time",
+                    title: "Prep",
                     icon: "cup.and.saucer.fill",
                     value: appState.preferences.defaultAlarmRule.prepTime.rawValue,
                     binding: prepTimeBinding
@@ -201,7 +231,7 @@ struct OnboardingView: View {
                 Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
                 
                 routineRow(
-                    title: "Commute Time",
+                    title: "Commute",
                     icon: "car.fill",
                     value: appState.preferences.defaultAlarmRule.commuteTime.rawValue,
                     binding: commuteTimeBinding
@@ -212,44 +242,134 @@ struct OnboardingView: View {
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         } footer: {
             nextButton(title: "Next") {
-                withAnimation { currentStep += 1 }
+                advanceToNextStep()
             }
         }
     }
     
     private var finishStep: some View {
         onboardingPage {
-            ZStack {
-                Circle()
-                    .fill(WPStyles.primaryOrange.opacity(0.15))
-                    .frame(width: 132, height: 132)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 62, weight: .bold))
-                    .foregroundStyle(WPStyles.primaryOrange)
-            }
-            
-            VStack(spacing: 12) {
-                Text("You're All Set!")
-                    .font(.system(.title, design: .rounded).weight(.bold))
-                    .foregroundStyle(WPStyles.primaryText)
-                    .multilineTextAlignment(.center)
-                
-                Text("We are analyzing your calendar and scheduling your first smart alarm.")
-                    .font(.body)
-                    .foregroundStyle(WPStyles.secondaryText)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 24) {
+                if !hasFetchedPlan {
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .tint(WPStyles.primaryOrange)
+                            .scaleEffect(1.5)
+                        
+                        Text("Checking tomorrow...")
+                            .font(.body)
+                            .foregroundStyle(WPStyles.secondaryText)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 40)
+                } else if let plan = finishStepPlan {
+                    VStack(spacing: 8) {
+                        Text("You're All Set!")
+                            .font(.system(.title, design: .rounded).weight(.bold))
+                            .foregroundStyle(WPStyles.primaryText)
+                            .multilineTextAlignment(.center)
+                        
+                        finishStepHeadline(for: plan)
+                            .font(.title3)
+                            .foregroundStyle(WPStyles.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        if let detail = finishStepDetail(for: plan) {
+                            Text(detail)
+                                .font(.body)
+                                .foregroundStyle(WPStyles.tertiaryText)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .transition(.opacity.combined(with: .scale))
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Backup Days")
+                            .font(.headline)
+                            .foregroundStyle(WPStyles.primaryText)
+
+                        Text("Tap a day to add a backup wake-up.")
+                            .font(.subheadline)
+                            .foregroundStyle(WPStyles.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        scheduleCard
+                    }
+                    .cardStyle()
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                } else {
+                    VStack(spacing: 12) {
+                        Text("You're All Set!")
+                            .font(.system(.title, design: .rounded).weight(.bold))
+                            .foregroundStyle(WPStyles.primaryText)
+                            .multilineTextAlignment(.center)
+
+                        Text("We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard.")
+                            .font(.body)
+                            .foregroundStyle(WPStyles.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .transition(.opacity)
+                }
             }
         } footer: {
-            EmptyView()
+            if hasFetchedPlan {
+                nextButton(title: "Finish & Go to Dashboard") {
+                    finish()
+                }
+            } else {
+                EmptyView()
+            }
         }
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                finish()
+            Task {
+                await appState.refreshPlan()
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    hasFetchedPlan = true
+                }
             }
         }
     }
     
+    private var scheduleCard: some View {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7),
+            spacing: 8
+        ) {
+            ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+                weekdayCell(option)
+            }
+        }
+    }
+    
+    private func weekdayCell(_ option: WeekdayOption) -> some View {
+        let isEnabled = appState.preferences.fallbackEnabledDays.contains(option.weekday)
+
+        return Button { selectedWeekday = option } label: {
+            VStack(spacing: 8) {
+                Text(option.shortLabel).font(.system(size: 9, weight: .bold))
+                Circle()
+                    .fill(isEnabled ? WPStyles.primaryOrange : Color.clear)
+                    .frame(width: 6, height: 6)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isEnabled ? WPStyles.surfaceRaised : WPStyles.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isEnabled ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
+            )
+            .foregroundStyle(isEnabled ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Components & Bindings
     
     private func onboardingPage<Content: View, Footer: View>(
@@ -299,16 +419,16 @@ struct OnboardingView: View {
         }
     }
     
-    private func nextButton(title: String, action: @escaping () -> Void) -> some View {
+    private func nextButton(title: String, color: Color = WPStyles.primaryOrange, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(WPStyles.primaryOrange)
+                .background(color)
                 .clipShape(Capsule())
-                .shadow(color: WPStyles.primaryOrange.opacity(0.2), radius: 8, x: 0, y: 4)
+                .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .padding(.bottom, 24)
     }
@@ -410,6 +530,42 @@ struct OnboardingView: View {
         min(max(screenHeight * 0.3, 260), 340)
     }
 
+    private var finishStepPlan: WakeUpPlan? {
+        appState.tomorrowPlanPreview
+    }
+
+    private func finishStepHeadline(for plan: WakeUpPlan) -> Text {
+        let timeString = plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened)
+
+        switch plan.reason {
+        case .event:
+            return Text("Tomorrow's alarm is ") + Text(timeString).bold() + Text(".")
+        case .fallback, .manualOverride:
+            return Text("Backup alarm: ") + Text(timeString).bold()
+        case .authorizationMissing:
+            return Text("Alarm access is still off.")
+        case .noSchedule, .inactiveDay:
+            return Text("No alarm for tomorrow.")
+        case .disabled, .systemDisabled:
+            return Text("Automatic alarms are currently paused.")
+        }
+    }
+
+    private func finishStepDetail(for plan: WakeUpPlan) -> String? {
+        switch plan.reason {
+        case .event:
+            return nil
+        case .fallback, .manualOverride:
+            return "Backup covers tomorrow."
+        case .authorizationMissing:
+            return "You can allow it later in Settings."
+        case .noSchedule, .inactiveDay:
+            return "Add an event or tap a day below."
+        case .disabled, .systemDisabled:
+            return "Turn them back on in Settings."
+        }
+    }
+
     private func statusBanner(_ text: String, tint: Color, icon: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -465,10 +621,12 @@ struct OnboardingView: View {
                 .foregroundStyle(WPStyles.primaryOrange)
                 .frame(width: 24)
             Text(title)
+                .font(.body)
                 .foregroundStyle(WPStyles.primaryText)
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+            
+            Spacer()
             
             Stepper(
                 "",
@@ -522,6 +680,13 @@ struct OnboardingView: View {
             onFinish()
         } else {
             dismiss()
+        }
+    }
+
+    private func advanceToNextStep() {
+        let nextStep = min(currentStep + 1, totalSteps - 1)
+        withAnimation {
+            currentStep = nextStep
         }
     }
 }
