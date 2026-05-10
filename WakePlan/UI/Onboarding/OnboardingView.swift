@@ -7,8 +7,7 @@ struct OnboardingView: View {
     
     @State private var currentStep = 0
     @State private var selectedWeekday: WeekdayOption?
-    @State private var hasFetchedPlan = false
-    @State private var showCompletionHero = true
+    @State private var finishPhase = 0
     private let totalSteps = 5
     
     var body: some View {
@@ -250,98 +249,188 @@ struct OnboardingView: View {
     
     private var finishStep: some View {
         onboardingPage {
-            VStack(spacing: 24) {
-                if !hasFetchedPlan {
-                    VStack(spacing: 16) {
+            VStack(spacing: 32) {
+                if finishPhase == 1 {
+                    VStack(spacing: 24) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 80))
+                            .foregroundStyle(WPStyles.successGreen)
+                        
                         Text("You're All Set!")
                             .font(.system(.title, design: .rounded).weight(.bold))
                             .foregroundStyle(WPStyles.primaryText)
                             .multilineTextAlignment(.center)
-                            .opacity(showCompletionHero ? 1 : 0)
-
+                    }
+                    .transition(.opacity.combined(with: .scale))
+                } else if finishPhase == 2 {
+                    VStack(spacing: 24) {
                         ProgressView()
                             .tint(WPStyles.primaryOrange)
-                            .scaleEffect(1.5)
+                            .scaleEffect(1.8)
                         
-                        Text("Checking tomorrow...")
-                            .font(.body)
+                        Text("Generating alarms...")
+                            .font(.title3.weight(.medium))
                             .foregroundStyle(WPStyles.secondaryText)
                             .multilineTextAlignment(.center)
                     }
-                    .padding(.top, 40)
-                } else if let plan = finishStepPlan {
-                    VStack(spacing: 10) {
-                        finishStepHeadline(for: plan)
-                            .font(.title2)
-                            .foregroundStyle(WPStyles.secondaryText)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineLimit(2)
-                        
-                        if let detail = finishStepDetail(for: plan) {
-                            Text(detail)
+                    .transition(.opacity.combined(with: .scale))
+                } else if finishPhase == 3 {
+                    if let plan = finishStepPlan {
+                        VStack(spacing: 24) {
+                            Text(plan.reason == .event ? "Your First Smart Alarm" : "No Events Tomorrow!")
+                                .font(.system(.title2, design: .rounded).weight(.bold))
+                                .foregroundStyle(WPStyles.primaryText)
+                                .multilineTextAlignment(.center)
+                            
+                            VStack(spacing: 12) {
+                                if plan.reason == .event {
+                                    if let title = plan.targetEvent?.title, !title.isEmpty {
+                                        Text(title)
+                                            .font(.headline)
+                                            .foregroundStyle(WPStyles.primaryText)
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(2)
+                                    }
+                                    
+                                    let isTomorrow = Calendar.current.isDateInTomorrow(plan.calculatedWakeTime)
+                                    let isToday = Calendar.current.isDateInToday(plan.calculatedWakeTime)
+                                    
+                                    Text(isToday ? "Today" : (isTomorrow ? "Tomorrow" : plan.calculatedWakeTime.formatted(.dateTime.weekday(.wide))))
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(WPStyles.secondaryText)
+                                        .textCase(.uppercase)
+                                        .padding(.bottom, -8)
+                                    
+                                    Text(plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened))
+                                        .font(WPStyles.timeDisplayFont)
+                                        .minimumScaleFactor(0.8)
+                                        .foregroundStyle(WPStyles.primaryOrange)
+                                        .lineLimit(1)
+                                } else {
+                                    Text("Enjoy sleeping in!")
+                                        .font(.headline)
+                                        .foregroundStyle(WPStyles.secondaryText)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .padding(28)
+                            .frame(maxWidth: .infinity)
+                            .background(WPStyles.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+                        }
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .bottom)), removal: .opacity.combined(with: .move(edge: .top))))
+                    } else {
+                        VStack(spacing: 16) {
+                            Text("You're All Set!")
+                                .font(.system(.title, design: .rounded).weight(.bold))
+                                .foregroundStyle(WPStyles.primaryText)
+                                .multilineTextAlignment(.center)
+
+                            Text("We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard.")
                                 .font(.body)
-                                .foregroundStyle(WPStyles.tertiaryText)
+                                .foregroundStyle(WPStyles.secondaryText)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        .transition(.opacity)
                     }
-                    .transition(.opacity.combined(with: .scale))
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Backup Alarms")
-                            .font(.headline)
-                            .foregroundStyle(WPStyles.primaryText)
+                } else if finishPhase >= 4 {
+                    if finishStepPlan != nil {
+                        VStack(spacing: 28) {
+                            (Text("Some days you might not have events.\n").bold() + Text("Setup a backup alarm?"))
+                                .font(.body)
+                                .multilineTextAlignment(finishPhase == 4 ? .center : .leading)
+                                .foregroundStyle(WPStyles.secondaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .scaleEffect(finishPhase == 4 ? 1.08 : 1.0, anchor: finishPhase == 4 ? .center : .leading)
+                                .frame(maxWidth: .infinity, alignment: finishPhase == 4 ? .center : .leading)
+                                .padding(.horizontal, finishPhase == 4 ? 12 : 0)
+                                .padding(.top, finishPhase == 4 ? 40 : 0)
 
-                        Text("Schedule backup alarms for important days.")
-                            .font(.subheadline)
-                            .foregroundStyle(WPStyles.secondaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        scheduleCard
-                    }
-                    .cardStyle()
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                } else {
-                    VStack(spacing: 12) {
-                        Text("You're All Set!")
-                            .font(.system(.title, design: .rounded).weight(.bold))
-                            .foregroundStyle(WPStyles.primaryText)
-                            .multilineTextAlignment(.center)
+                            if finishPhase >= 5 {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Backup Alarms")
+                                        .font(.headline)
+                                        .foregroundStyle(WPStyles.primaryText)
+                                    
+                                    scheduleCard
+                                }
+                                .cardStyle()
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                            }
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    } else {
+                        VStack(spacing: 16) {
+                            Text("You're All Set!")
+                                .font(.system(.title, design: .rounded).weight(.bold))
+                                .foregroundStyle(WPStyles.primaryText)
+                                .multilineTextAlignment(.center)
 
-                        Text("We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard.")
-                            .font(.body)
-                            .foregroundStyle(WPStyles.secondaryText)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
+                            Text("We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard.")
+                                .font(.body)
+                                .foregroundStyle(WPStyles.secondaryText)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .transition(.opacity)
                     }
-                    .transition(.opacity)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .center)
         } footer: {
-            if hasFetchedPlan {
+            if finishPhase >= 5 {
+                nextButton(title: "Finish & Go to Dashboard") {
+                    finish()
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            } else if finishPhase >= 3 && finishStepPlan == nil {
                 nextButton(title: "Finish & Go to Dashboard") {
                     finish()
                 }
             } else {
-                EmptyView()
+                Color.clear.frame(height: 56)
             }
         }
         .onAppear {
-            showCompletionHero = true
-
             Task {
-                try? await Task.sleep(for: .milliseconds(700))
+                try? await Task.sleep(for: .milliseconds(500))
                 guard !Task.isCancelled else { return }
-                withAnimation(.easeOut(duration: 0.35)) {
-                    showCompletionHero = false
-                }
-            }
-
-            Task {
-                await appState.refreshPlan()
+                
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    hasFetchedPlan = true
+                    finishPhase = 1
+                }
+                
+                try? await Task.sleep(for: .milliseconds(1800))
+                guard !Task.isCancelled else { return }
+                
+                withAnimation(.easeOut(duration: 0.4)) {
+                    finishPhase = 2
+                }
+                
+                await appState.refreshPlan()
+                try? await Task.sleep(for: .milliseconds(1500))
+                guard !Task.isCancelled else { return }
+                
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    finishPhase = 3
+                }
+                
+                try? await Task.sleep(for: .milliseconds(2500))
+                guard !Task.isCancelled else { return }
+                
+                if finishStepPlan != nil {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        finishPhase = 4
+                    }
+                    
+                    try? await Task.sleep(for: .milliseconds(2800))
+                    guard !Task.isCancelled else { return }
+                    
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        finishPhase = 5
+                    }
                 }
             }
         }
