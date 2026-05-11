@@ -104,7 +104,6 @@ final class AppState {
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
             dashboardState = .loading
-            tomorrowPlanPreview = nil
             try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))

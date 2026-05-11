@@ -238,6 +238,69 @@ final class AppStateTests: XCTestCase {
         XCTAssertFalse(appState.shouldShowCalendarAccessPrompt)
     }
 
+    func testUpdatePreferencesKeepsPreviousTomorrowPlanPreviewWhileRefreshIsInFlight() async throws {
+        let preferencesStore = StubPreferencesStore(preferences: .default)
+        let provider = SuspendingCalendarProvider()
+        let calendarReader = StubCalendarReader(state: .authorized)
+        let alarmScheduler = StubAlarmScheduler(state: .authorized)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let wakePlanService = WakePlanService(
+            calendarProvider: provider,
+            preferencesStore: preferencesStore
+        )
+        let alarmSyncService = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: StubScheduledAlarmStore()
+        )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService
+        )
+        let appState = AppState(
+            accountStore: StubAccountStore(),
+            accountService: AccountService(
+                accountStore: StubAccountStore(),
+                googleAuthenticator: StubGoogleAuthenticator()
+            ),
+            preferencesStore: preferencesStore,
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService,
+            refreshService: refreshService
+        )
+
+        await appState.load()
+
+        let originalPlan = try XCTUnwrap(appState.tomorrowPlanPreview)
+        XCTAssertEqual(originalPlan.reason, .noSchedule)
+
+        var updatedPreferences = appState.preferences
+        let tomorrowWeekday = Calendar.current.component(
+            .weekday,
+            from: Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        )
+        updatedPreferences.fallbackEnabledDays.insert(tomorrowWeekday)
+
+        await provider.suspendNextEventsRequest()
+
+        let updateTask = Task {
+            await appState.updatePreferences(updatedPreferences)
+        }
+
+        await provider.waitUntilSuspended()
+
+        XCTAssertEqual(appState.dashboardState, .loading)
+        XCTAssertEqual(appState.tomorrowPlanPreview, originalPlan)
+
+        await provider.resumeSuspendedRequest()
+        await updateTask.value
+
+        XCTAssertEqual(appState.tomorrowPlanPreview?.reason, .fallback)
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -519,11 +582,19 @@ private final class StubAccountStore: AccountStoring {
 }
 
 private final class StubPreferencesStore: PreferencesStoring {
-    func load() throws -> AlarmPreferences {
-        .default
+    private var preferences: AlarmPreferences
+
+    init(preferences: AlarmPreferences = .default) {
+        self.preferences = preferences
     }
 
-    func save(_ preferences: AlarmPreferences) throws {}
+    func load() throws -> AlarmPreferences {
+        preferences
+    }
+
+    func save(_ preferences: AlarmPreferences) throws {
+        self.preferences = preferences
+    }
 }
 
 private final class StubScheduledAlarmStore: ScheduledAlarmStoring {
@@ -543,5 +614,57 @@ private struct StubGoogleAuthenticator: GoogleAccountAuthenticating {
             displayName: "Test Google",
             email: "test@example.com"
         )
+    }
+}
+
+private actor SuspendingCalendarProvider: CalendarEventProviding {
+    private var shouldSuspendNextEventsRequest = false
+    private var hasSuspendedRequest = false
+    private var suspensionObservedContinuation: CheckedContinuation<Void, Never>?
+    private var resumeSuspendedRequestContinuation: CheckedContinuation<Void, Never>?
+
+    func suspendNextEventsRequest() {
+        shouldSuspendNextEventsRequest = true
+        hasSuspendedRequest = false
+    }
+
+    func waitUntilSuspended() async {
+        if hasSuspendedRequest {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            suspensionObservedContinuation = continuation
+        }
+    }
+
+    func resumeSuspendedRequest() {
+        resumeSuspendedRequestContinuation?.resume()
+        resumeSuspendedRequestContinuation = nil
+    }
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        []
+    }
+
+    func calendars() async throws -> [CalendarSource] {
+        []
+    }
+
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        _ = targetDay
+
+        if shouldSuspendNextEventsRequest {
+            shouldSuspendNextEventsRequest = false
+            hasSuspendedRequest = true
+            suspensionObservedContinuation?.resume()
+            suspensionObservedContinuation = nil
+
+            await withCheckedContinuation { continuation in
+                resumeSuspendedRequestContinuation = continuation
+            }
+        }
+
+        return []
     }
 }
