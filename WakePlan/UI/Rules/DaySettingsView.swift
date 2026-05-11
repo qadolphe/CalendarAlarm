@@ -22,8 +22,8 @@ struct DaySettingsView: View {
                     }
                     .listRowBackground(WPStyles.surface)
 
-                    Section(header: Text("Backup Alarm").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
-                        Toggle("Enable Backup", isOn: fallbackEnabledBinding)
+                    Section(header: Text("Fixed Alarm").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
+                        Toggle("Enable Fixed Alarm", isOn: fallbackEnabledBinding)
                             .tint(WPStyles.primaryOrange)
                             .foregroundStyle(WPStyles.primaryText)
                         

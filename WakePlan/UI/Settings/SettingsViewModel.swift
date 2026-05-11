@@ -42,7 +42,7 @@ enum WakePlanUIConfiguration {
             destination: .timing,
             title: "Timing",
             icon: "clock.badge.checkmark",
-            helperText: "Prep time, commute buffer, and backup wake time."
+            helperText: "Prep time, commute buffer, and fixed alarm time."
         ),
         RuleEditorDescriptor(
             destination: .calendars,
@@ -180,7 +180,7 @@ struct ScheduleViewModel {
             return "EarlyOtter will not calculate or schedule alarms until Auto-Pilot is re-enabled."
         }
 
-        return "EarlyOtter can schedule alarms on \(days) and use a backup time of \(fallback) when no event matches."
+        return "EarlyOtter can schedule alarms on \(days) and use a fixed alarm time of \(fallback) when no event matches."
     }
 
     var activeDaysSummary: String {

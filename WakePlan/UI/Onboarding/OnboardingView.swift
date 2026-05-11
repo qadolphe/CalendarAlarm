@@ -338,8 +338,8 @@ struct OnboardingView: View {
                 } else if finishPhase >= 4 {
                     if finishStepPlan != nil {
                         VStack(spacing: 28) {
-                            (Text("Some days you might not have events.\n").bold() + Text("Setup a backup alarm?"))
-                                .font(.body)
+                            Text("Set a fixed alarm for days without morning events.")
+                                .font(.body.weight(.medium))
                                 .multilineTextAlignment(finishPhase == 4 ? .center : .leading)
                                 .foregroundStyle(WPStyles.secondaryText)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -350,7 +350,7 @@ struct OnboardingView: View {
 
                             if finishPhase >= 5 {
                                 VStack(alignment: .leading, spacing: 16) {
-                                    Text("Backup Alarms")
+                                    Text("Fixed Alarms")
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
                                     
@@ -646,7 +646,7 @@ struct OnboardingView: View {
             }
             return Text("Tomorrow's alarm is ") + Text(timeString).bold() + Text(".")
         case .fallback, .manualOverride:
-            return Text("Backup alarm at ") + Text(timeString).bold() + Text(".")
+            return Text("Fixed alarm at ") + Text(timeString).bold() + Text(".")
         case .authorizationMissing:
             return Text("Alarm access is still off.")
         case .noSchedule, .inactiveDay:
