@@ -301,6 +301,51 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(appState.tomorrowPlanPreview?.reason, .fallback)
     }
 
+    func testRefreshOnAppOpenRunsEvenWhenDashboardIsLoading() async {
+        let accountStore = StubAccountStore()
+        let preferencesStore = StubPreferencesStore()
+        let rangeProvider = RangeRecordingCalendarProvider()
+        let calendarReader = StubCalendarReader(state: .authorized)
+        let alarmScheduler = StubAlarmScheduler(state: .authorized)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let alarmSyncService = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: StubScheduledAlarmStore()
+        )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: WakePlanService(
+                calendarProvider: rangeProvider,
+                preferencesStore: preferencesStore
+            ),
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService
+        )
+        let appState = AppState(
+            accountStore: accountStore,
+            accountService: AccountService(
+                accountStore: accountStore,
+                googleAuthenticator: StubGoogleAuthenticator()
+            ),
+            preferencesStore: preferencesStore,
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService,
+            refreshService: refreshService
+        )
+
+        await appState.load()
+        let initialRangeRequestCount = await rangeProvider.rangeRequestCount
+        XCTAssertEqual(initialRangeRequestCount, 1)
+
+        appState.dashboardState = .loading
+        await appState.refreshOnAppOpen()
+
+        let resumedRangeRequestCount = await rangeProvider.rangeRequestCount
+        XCTAssertEqual(resumedRangeRequestCount, 2)
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!

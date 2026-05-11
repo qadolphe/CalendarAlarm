@@ -205,7 +205,7 @@ private extension UNUserNotificationCenter {
 #if canImport(AppIntents)
 @available(iOS 16.0, *)
 struct RefreshWakePlanAlarmsIntent: AppIntent {
-    static var title: LocalizedStringResource = "Refresh WakePlan Alarms"
+    static var title: LocalizedStringResource = "Refresh Alarms"
     static var description = IntentDescription(
         "Refresh EarlyOtter's rolling wake-up alarms using your latest calendar events."
     )
@@ -233,10 +233,10 @@ struct WakePlanShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: RefreshWakePlanAlarmsIntent(),
             phrases: [
-                "Refresh WakePlan Alarms in \(.applicationName)",
+                "Refresh alarms in \(.applicationName)",
                 "Refresh my alarms in \(.applicationName)"
             ],
-            shortTitle: "Refresh WakePlan Alarms",
+            shortTitle: "Refresh Alarms",
             systemImageName: "alarm"
         )
     }

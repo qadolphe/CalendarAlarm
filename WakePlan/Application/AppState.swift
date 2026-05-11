@@ -126,7 +126,6 @@ final class AppState {
 
     func refreshOnAppOpen() async {
         guard hasLoaded else { return }
-        guard dashboardState != .loading else { return }
 
         let previousDashboardState = dashboardState
         noticeMessage = nil

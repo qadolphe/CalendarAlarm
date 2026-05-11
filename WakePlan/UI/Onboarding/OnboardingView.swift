@@ -453,26 +453,27 @@ struct OnboardingView: View {
     }
     
     private func weekdayCell(_ option: WeekdayOption) -> some View {
-        let isEnabled = appState.preferences.fallbackEnabledDays.contains(option.weekday)
+        let isAutoPilot = appState.preferences.activeDays.contains(option.weekday)
+        let isFallback = appState.preferences.fallbackEnabledDays.contains(option.weekday)
 
         return Button { selectedWeekday = option } label: {
             VStack(spacing: 8) {
                 Text(option.shortLabel).font(.system(size: 9, weight: .bold))
                 Circle()
-                    .fill(isEnabled ? WPStyles.primaryOrange : Color.clear)
+                    .fill(isFallback ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
                     .frame(width: 6, height: 6)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isEnabled ? WPStyles.surfaceRaised : WPStyles.surface)
+                    .fill(isAutoPilot || isFallback ? WPStyles.surfaceRaised : WPStyles.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isEnabled ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(isAutoPilot ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
             )
-            .foregroundStyle(isEnabled ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
+            .foregroundStyle(isAutoPilot || isFallback ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
         }
         .buttonStyle(.plain)
     }

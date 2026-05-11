@@ -26,9 +26,6 @@ struct WakePlanRootView: View {
                     onFinish: {
                         hasCompletedOnboarding = true
                         forceOnboardingThisLaunch = false
-                        Task {
-                            await appState.load()
-                        }
                     }
                 )
             } else {
@@ -40,6 +37,8 @@ struct WakePlanRootView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
+            guard appState.hasLoadedInitialState else { return }
+            guard !shouldShowOnboarding else { return }
 
             Task {
                 await appState.refreshOnAppOpen()

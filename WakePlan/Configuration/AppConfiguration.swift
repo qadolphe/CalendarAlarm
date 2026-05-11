@@ -26,7 +26,7 @@ enum AppConfiguration {
         "\(appName) keeps alarms updated when you open the app and can refresh automatically in the background when iOS allows."
 
     static let shortcutsExplanation =
-        "Add \"Refresh WakePlan Alarms\" to a Siri Shortcut or automation to keep your alarms synced on your schedule."
+        "Add \"Refresh Alarms\" to a Siri Shortcut or automation to keep your alarms synced on your schedule."
 
     static let staleSyncReminderTitle = "\(appName) may need to refresh your alarms"
     static let staleSyncReminderBody =
