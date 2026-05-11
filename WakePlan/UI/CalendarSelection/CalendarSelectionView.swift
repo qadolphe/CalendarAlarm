@@ -21,7 +21,7 @@ struct CalendarSelectionView: View {
                         .font(.body)
                         .foregroundStyle(WPStyles.secondaryText)
 
-                    if appState.permissions.calendar != .authorized {
+                    if appState.shouldShowCalendarAccessPrompt {
                         permissionCard
                     } else if appState.calendars.isEmpty {
                         emptyState
@@ -64,7 +64,7 @@ struct CalendarSelectionView: View {
                 .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)
             
-            Text("Make sure EarlyOtter has permission to read your calendars.")
+            Text("Connect a calendar source, enable an account, or make sure EarlyOtter still has access to one of your calendars.")
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
                 .multilineTextAlignment(.center)

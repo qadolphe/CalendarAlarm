@@ -109,10 +109,8 @@ final class AppStateTests: XCTestCase {
 
         await appState.load()
 
-        XCTAssertEqual(
-            appState.permissions,
-            PermissionSnapshot(calendar: .authorized, alarm: .authorized)
-        )
+        XCTAssertEqual(appState.permissions.calendar, .authorized)
+        XCTAssertEqual(appState.permissions.alarm, .authorized)
         XCTAssertEqual(
             appState.errorMessage,
             StubCalendarProviderError.googleExpired.localizedDescription
@@ -219,6 +217,27 @@ final class AppStateTests: XCTestCase {
         )
     }
 
+    func testShouldShowCalendarAccessPromptWhenNoAccessibleCalendarsExist() {
+        let appState = makeAppState(calendarPermission: .denied)
+
+        XCTAssertTrue(appState.shouldShowCalendarAccessPrompt)
+    }
+
+    func testShouldNotShowCalendarAccessPromptWhenGoogleCalendarsAreAvailable() {
+        let appState = makeAppState(calendarPermission: .denied)
+        appState.calendars = [
+            CalendarSource(
+                id: "google:primary",
+                title: "Primary",
+                isSelected: true,
+                accountID: "google-account",
+                provider: .google
+            )
+        ]
+
+        XCTAssertFalse(appState.shouldShowCalendarAccessPrompt)
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!
@@ -244,6 +263,50 @@ final class AppStateTests: XCTestCase {
         )
 
         return calendar.date(from: components)!
+    }
+
+    private func makeAppState(
+        calendarPermission: CalendarAuthorizationState,
+        alarmPermission: AlarmAuthorizationState = .authorized
+    ) -> AppState {
+        let accountStore = StubAccountStore()
+        let preferencesStore = StubPreferencesStore()
+        let calendarReader = StubCalendarReader(state: calendarPermission)
+        let alarmScheduler = StubAlarmScheduler(state: alarmPermission)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let wakePlanService = WakePlanService(
+            calendarProvider: CompositeCalendarProvider(providers: []),
+            preferencesStore: preferencesStore
+        )
+        let alarmSyncService = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: StubScheduledAlarmStore()
+        )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService
+        )
+        let appState = AppState(
+            accountStore: accountStore,
+            accountService: AccountService(
+                accountStore: accountStore,
+                googleAuthenticator: StubGoogleAuthenticator()
+            ),
+            preferencesStore: preferencesStore,
+            permissionService: permissionService,
+            alarmSyncService: alarmSyncService,
+            refreshService: refreshService
+        )
+        appState.permissions = PermissionSnapshot(
+            calendar: calendarPermission,
+            alarm: alarmPermission,
+            notification: .notDetermined
+        )
+        return appState
     }
 }
 

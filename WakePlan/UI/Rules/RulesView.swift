@@ -412,7 +412,7 @@ struct RuleEditorView: View {
                 }
             }
 
-            if appState.permissions.calendar != .authorized {
+            if appState.shouldShowCalendarAccessPrompt {
                 Button("Allow Calendar Access") {
                     Task { await appState.requestCalendarAccess() }
                 }

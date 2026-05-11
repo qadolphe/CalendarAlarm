@@ -45,6 +45,14 @@ final class AppState {
         hasLoaded
     }
 
+    var hasAccessibleCalendars: Bool {
+        !calendars.isEmpty
+    }
+
+    var shouldShowCalendarAccessPrompt: Bool {
+        !hasAccessibleCalendars && permissions.calendar != .authorized
+    }
+
     var errorMessage: String? {
         guard case let .error(message) = dashboardState else { return nil }
         return message
