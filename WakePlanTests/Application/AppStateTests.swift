@@ -436,6 +436,80 @@ final class CompositeCalendarProviderTests: XCTestCase {
     }
 }
 
+final class WakePlanRefreshServiceTests: XCTestCase {
+    func testRefreshAndSyncBatchesPlanningWindowEventFetches() async throws {
+        let calendar = configuredCalendar()
+        let now = makeDate(
+            year: 2026,
+            month: 5,
+            day: 4,
+            hour: 9,
+            minute: 0,
+            calendar: calendar
+        )
+        let rangeProvider = RangeRecordingCalendarProvider()
+        let preferencesStore = StubPreferencesStore()
+        let calendarReader = StubCalendarReader(state: .authorized)
+        let alarmScheduler = StubAlarmScheduler(state: .authorized)
+        let permissionService = PermissionService(
+            calendarReader: calendarReader,
+            alarmScheduler: alarmScheduler
+        )
+        let wakePlanService = WakePlanService(
+            calendarProvider: rangeProvider,
+            preferencesStore: preferencesStore
+        )
+        let refreshService = WakePlanRefreshService(
+            wakePlanService: wakePlanService,
+            permissionService: permissionService,
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: StubScheduledAlarmStore()
+            ),
+            planningWindowCount: 4
+        )
+
+        _ = try await refreshService.refreshAndSync(
+            reason: .manual,
+            now: now,
+            calendar: calendar
+        )
+
+        let rangeRequestCount = await rangeProvider.rangeRequestCount
+        let dayRequestCount = await rangeProvider.dayRequestCount
+
+        XCTAssertEqual(rangeRequestCount, 1)
+        XCTAssertEqual(dayRequestCount, 0)
+    }
+
+    private func configuredCalendar() -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Detroit")!
+        return calendar
+    }
+
+    private func makeDate(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        calendar: Calendar
+    ) -> Date {
+        let components = DateComponents(
+            calendar: calendar,
+            timeZone: calendar.timeZone,
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute
+        )
+
+        return calendar.date(from: components)!
+    }
+}
+
 final class AppleCalendarProviderTests: XCTestCase {
     func testAccountsIsEmptyWhenAppleCalendarWasNeverConnected() async throws {
         let provider = AppleCalendarProvider(
@@ -531,6 +605,31 @@ private final class StubCalendarReader: CalendarReading {
     func requestAuthorization() async throws -> CalendarAuthorizationState {
         requestAuthorizationCallCount += 1
         return state
+    }
+}
+
+private actor RangeRecordingCalendarProvider: CalendarEventProviding {
+    private(set) var dayRequestCount = 0
+    private(set) var rangeRequestCount = 0
+
+    func accounts() async throws -> [ConnectedCalendarAccount] {
+        []
+    }
+
+    func calendars() async throws -> [CalendarSource] {
+        []
+    }
+
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        dayRequestCount += 1
+        return []
+    }
+
+    func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] {
+        _ = interval
+        _ = calendar
+        rangeRequestCount += 1
+        return []
     }
 }
 

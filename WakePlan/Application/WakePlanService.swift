@@ -20,7 +20,11 @@ final class WakePlanService {
         calendar: Calendar = .current
     ) async throws -> WakeUpPlan {
         let preferences = try preferencesStore.load()
-        return try await makePlan(targetDay: targetDay, preferences: preferences, calendar: calendar)
+        return try await makePlan(
+            targetDay: targetDay,
+            preferences: preferences,
+            calendar: calendar
+        )
     }
 
     func makeUpcomingPlans(
@@ -31,20 +35,19 @@ final class WakePlanService {
         guard count > 0 else { return [] }
 
         let preferences = try preferencesStore.load()
-        var plans: [WakeUpPlan] = []
-        plans.reserveCapacity(count)
-
-        for offset in 1...count {
+        let targetDays = (1...count).map { offset in
             let date = calendar.date(byAdding: .day, value: offset, to: targetDay.date) ?? targetDay.date
-            let day = TargetDay(date: date, calendar: calendar)
-            let plan = try await makePlan(targetDay: day, preferences: preferences, calendar: calendar)
-            plans.append(plan)
+            return TargetDay(date: date, calendar: calendar)
         }
 
-        return plans
+        return try await makePlans(
+            for: targetDays,
+            preferences: preferences,
+            calendar: calendar
+        )
     }
 
-    func makeDisplayPlans(
+    func makeDailyPlans(
         startingAt now: Date = Date(),
         count: Int,
         calendar: Calendar = .current
@@ -52,24 +55,44 @@ final class WakePlanService {
         guard count > 0 else { return [] }
 
         let preferences = try preferencesStore.load()
-        var plans: [WakeUpPlan] = []
-        plans.reserveCapacity(count)
+        let targetDays = makeTargetDays(
+            startingAt: now,
+            count: count,
+            calendar: calendar
+        )
 
-        for offset in 0..<count {
-            let date = calendar.date(byAdding: .day, value: offset, to: now) ?? now
-            let day = TargetDay(date: date, calendar: calendar)
-            let plan = try await makePlan(targetDay: day, preferences: preferences, calendar: calendar)
+        return try await makePlans(
+            for: targetDays,
+            preferences: preferences,
+            calendar: calendar
+        )
+    }
 
-            if plan.reason != .disabled,
-               plan.reason != .inactiveDay,
-               plan.reason != .systemDisabled,
-               plan.reason != .noSchedule,
-               plan.calculatedWakeTime > now {
-                plans.append(plan)
-            }
+    func makeDisplayPlans(
+        startingAt now: Date = Date(),
+        count: Int,
+        calendar: Calendar = .current
+    ) async throws -> [WakeUpPlan] {
+        let dailyPlans = try await makeDailyPlans(
+            startingAt: now,
+            count: count,
+            calendar: calendar
+        )
+
+        return displayPlans(from: dailyPlans, now: now)
+    }
+
+    func displayPlans(
+        from dailyPlans: [WakeUpPlan],
+        now: Date = Date()
+    ) -> [WakeUpPlan] {
+        dailyPlans.filter { plan in
+            plan.reason != .disabled
+                && plan.reason != .inactiveDay
+                && plan.reason != .systemDisabled
+                && plan.reason != .noSchedule
+                && plan.calculatedWakeTime > now
         }
-
-        return plans
     }
 
     private func makePlan(
@@ -77,14 +100,72 @@ final class WakePlanService {
         preferences: AlarmPreferences,
         calendar: Calendar = .current
     ) async throws -> WakeUpPlan {
-        let events = try await calendarProvider.events(for: targetDay)
-
-        return calculator.calculate(
-            events: events,
+        let plans = try await makePlans(
+            for: [targetDay],
             preferences: preferences,
-            targetDay: targetDay,
             calendar: calendar
         )
+
+        return plans[0]
+    }
+
+    private func makePlans(
+        for targetDays: [TargetDay],
+        preferences: AlarmPreferences,
+        calendar: Calendar
+    ) async throws -> [WakeUpPlan] {
+        guard !targetDays.isEmpty else { return [] }
+
+        let eventsByDay = try await loadEventsByDay(
+            for: targetDays,
+            calendar: calendar
+        )
+
+        return targetDays.map { targetDay in
+            calculator.calculate(
+                events: eventsByDay[targetDay.date] ?? [],
+                preferences: preferences,
+                targetDay: targetDay,
+                calendar: calendar
+            )
+        }
+    }
+
+    private func loadEventsByDay(
+        for targetDays: [TargetDay],
+        calendar: Calendar
+    ) async throws -> [Date: [ParsedEvent]] {
+        guard let firstDay = targetDays.first,
+              let lastDay = targetDays.last else {
+            return [:]
+        }
+
+        let interval = DateInterval(
+            start: firstDay.interval(calendar: calendar).start,
+            end: lastDay.interval(calendar: calendar).end
+        )
+        let events = try await calendarProvider.events(
+            in: interval,
+            calendar: calendar
+        )
+
+        return Dictionary(grouping: events) { event in
+            calendar.startOfDay(for: event.startDate)
+        }
+        .mapValues { events in
+            events.sorted { $0.startDate < $1.startDate }
+        }
+    }
+
+    private func makeTargetDays(
+        startingAt now: Date,
+        count: Int,
+        calendar: Calendar
+    ) -> [TargetDay] {
+        (0..<count).map { offset in
+            let date = calendar.date(byAdding: .day, value: offset, to: now) ?? now
+            return TargetDay(date: date, calendar: calendar)
+        }
     }
 
     func calendars() async throws -> [CalendarSource] {

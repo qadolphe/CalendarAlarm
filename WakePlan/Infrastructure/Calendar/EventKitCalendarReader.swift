@@ -58,9 +58,11 @@ final class EventKitCalendarReader: CalendarReading {
     }
 
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
-        let calendars = eventStore.calendars(for: .event)
-        let interval = targetDay.interval(calendar: .current)
+        try await events(in: targetDay.interval(calendar: .current))
+    }
 
+    func events(in interval: DateInterval) async throws -> [ParsedEvent] {
+        let calendars = eventStore.calendars(for: .event)
         let predicate = eventStore.predicateForEvents(
             withStart: interval.start,
             end: interval.end,
@@ -98,6 +100,13 @@ struct AppleCalendarProvider: CalendarEventProviding {
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
         guard appleCalendarIsEnabled() else { return [] }
         return try await calendarReader.events(for: targetDay)
+    }
+
+    func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] {
+        _ = calendar
+
+        guard appleCalendarIsEnabled() else { return [] }
+        return try await calendarReader.events(in: interval)
     }
 
     private func appleCalendarIsEnabled() -> Bool {
@@ -149,19 +158,38 @@ struct GoogleCalendarProvider: CalendarEventProviding {
     }
 
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
+        try await events(in: targetDay.interval(calendar: .current), calendar: .current)
+    }
+
+    func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] {
+        _ = calendar
+
         guard let context = try await currentGoogleContext() else { return [] }
         let user = context.user
         let accountID = context.account.id
         let calendarList = try await fetchCalendarList(accessToken: user.accessToken.tokenString)
-        let interval = targetDay.interval(calendar: .current)
 
+        return try await fetchEvents(
+            accessToken: user.accessToken.tokenString,
+            calendars: calendarList.items,
+            interval: interval,
+            accountID: accountID
+        )
+    }
+
+    private func fetchEvents(
+        accessToken: String,
+        calendars: [GoogleCalendarListItem],
+        interval: DateInterval,
+        accountID: CalendarAccountID
+    ) async throws -> [ParsedEvent] {
         var merged: [ParsedEvent] = []
 
         try await withThrowingTaskGroup(of: [ParsedEvent].self) { group in
-            for calendar in calendarList.items {
+            for calendar in calendars {
                 group.addTask {
-                    let events = try await fetchEvents(
-                        accessToken: user.accessToken.tokenString,
+                    let events = try await fetchEventsForCalendar(
+                        accessToken: accessToken,
                         calendar: calendar,
                         interval: interval,
                         accountID: accountID
@@ -259,7 +287,7 @@ struct GoogleCalendarProvider: CalendarEventProviding {
         return try await decode(request, as: GoogleCalendarListResponse.self)
     }
 
-    private func fetchEvents(
+    private func fetchEventsForCalendar(
         accessToken: String,
         calendar: GoogleCalendarListItem,
         interval: DateInterval,
@@ -494,6 +522,12 @@ struct CompositeCalendarProvider: CalendarEventProviding {
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
         try await mergeProviderResults { provider in
             try await provider.events(for: targetDay)
+        }
+    }
+
+    func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] {
+        try await mergeProviderResults { provider in
+            try await provider.events(in: interval, calendar: calendar)
         }
     }
 

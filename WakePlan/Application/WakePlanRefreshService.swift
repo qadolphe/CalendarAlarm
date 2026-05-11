@@ -80,15 +80,23 @@ actor WakePlanRefreshService {
         let permissions = await permissionService.currentStatus()
         let accounts = try await wakePlanService.accounts()
         let calendars = try await wakePlanService.calendars()
-        let tomorrowPlan = try await wakePlanService.makePlan(
-            targetDay: TargetDay.tomorrow(from: now, calendar: calendar),
-            calendar: calendar
-        )
-        let displayPlans = try await wakePlanService.makeDisplayPlans(
+        let dailyPlans = try await wakePlanService.makeDailyPlans(
             startingAt: now,
             count: planningWindowCount,
             calendar: calendar
         )
+        let tomorrowTargetDay = TargetDay.tomorrow(from: now, calendar: calendar)
+        let tomorrowPlan: WakeUpPlan
+
+        if let plannedTomorrow = dailyPlans.first(where: { $0.targetDay == tomorrowTargetDay }) {
+            tomorrowPlan = plannedTomorrow
+        } else {
+            tomorrowPlan = try await wakePlanService.makePlan(
+                targetDay: tomorrowTargetDay,
+                calendar: calendar
+            )
+        }
+        let displayPlans = wakePlanService.displayPlans(from: dailyPlans, now: now)
         let syncResult = try await alarmSyncService.sync(plans: displayPlans)
 
         let snapshot = WakePlanRefreshSnapshot(

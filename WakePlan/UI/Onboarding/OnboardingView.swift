@@ -9,6 +9,11 @@ struct OnboardingView: View {
     @State private var selectedWeekday: WeekdayOption?
     @State private var finishPhase = 0
     private let totalSteps = 5
+    private let finishIntroDelay: Duration = .milliseconds(500)
+    private let finishGeneratingDelay: Duration = .milliseconds(1800)
+    private let finishResultDelay: Duration = .milliseconds(1500)
+    private let finishSchedulePromptDelay: Duration = .milliseconds(2500)
+    private let finishScheduleCardDelay: Duration = .milliseconds(2800)
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -395,42 +400,42 @@ struct OnboardingView: View {
         }
         .onAppear {
             Task {
-                try? await Task.sleep(for: .milliseconds(500))
+                try? await Task.sleep(for: finishIntroDelay)
                 guard !Task.isCancelled else { return }
-                
+
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     finishPhase = 1
                 }
-                
-                try? await Task.sleep(for: .milliseconds(1800))
+
+                try? await Task.sleep(for: finishGeneratingDelay)
                 guard !Task.isCancelled else { return }
-                
-                withAnimation(.easeOut(duration: 0.4)) {
+
+                withAnimation(.easeOut(duration: 0.2)) {
                     finishPhase = 2
                 }
-                
+
                 await appState.refreshPlan()
-                try? await Task.sleep(for: .milliseconds(1500))
+                try? await Task.sleep(for: finishResultDelay)
                 guard !Task.isCancelled else { return }
-                
+
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     finishPhase = 3
                 }
-                
-                try? await Task.sleep(for: .milliseconds(2500))
+
+                guard finishStepPlan != nil else { return }
+
+                try? await Task.sleep(for: finishSchedulePromptDelay)
                 guard !Task.isCancelled else { return }
-                
-                if finishStepPlan != nil {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                        finishPhase = 4
-                    }
-                    
-                    try? await Task.sleep(for: .milliseconds(2800))
-                    guard !Task.isCancelled else { return }
-                    
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                        finishPhase = 5
-                    }
+
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    finishPhase = 4
+                }
+
+                try? await Task.sleep(for: finishScheduleCardDelay)
+                guard !Task.isCancelled else { return }
+
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    finishPhase = 5
                 }
             }
         }
