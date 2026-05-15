@@ -1051,6 +1051,8 @@ struct GlobalEventFiltersView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
+                    addKeyword($newBlockedKeyword, to: $blockedKeywords)
+                    addKeyword($newAllowedKeyword, to: $allowedKeywords)
                     var copy = appState.preferences
                     copy.titleBlocklist = blockedKeywords
                         .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
@@ -1090,16 +1092,24 @@ struct GlobalEventFiltersView: View {
         newKeyword: Binding<String>
     ) -> some View {
         Section {
-            ForEach(Array(keywords.wrappedValue.indices), id: \.self) { idx in
-                TextField("Keyword", text: Binding(
-                    get: { keywords.wrappedValue[idx] },
-                    set: { keywords.wrappedValue[idx] = $0 }
-                ))
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .foregroundStyle(WPStyles.primaryText)
+            if !keywords.wrappedValue.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(keywords.wrappedValue, id: \.self) { value in
+                        HStack(spacing: 4) {
+                            Text(value).font(.subheadline.weight(.medium)).foregroundStyle(WPStyles.primaryText)
+                            Button { keywords.wrappedValue.removeAll(where: { $0 == value }) } label: {
+                                Image(systemName: "xmark.circle.fill").foregroundStyle(WPStyles.tertiaryText)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(WPStyles.surfaceRaised)
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(.vertical, 4)
             }
-            .onDelete { keywords.wrappedValue.remove(atOffsets: $0) }
 
             HStack {
                 TextField("Add keyword", text: newKeyword)
@@ -1121,7 +1131,9 @@ struct GlobalEventFiltersView: View {
     private func addKeyword(_ binding: Binding<String>, to list: Binding<[String]>) {
         let v = binding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !v.isEmpty else { return }
-        list.wrappedValue.append(v)
+        if !list.wrappedValue.contains(v) {
+            list.wrappedValue.append(v)
+        }
         binding.wrappedValue = ""
     }
 }
