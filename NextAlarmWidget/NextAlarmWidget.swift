@@ -83,17 +83,17 @@ private struct NextAlarmWidgetEntryView: View {
     private var smallView: some View {
         VStack(alignment: .leading, spacing: 4) {
             if entry.snapshot.state != .empty {
-                HStack {
-                    Text("Next Alarm")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(WidgetTheme.primaryText)
-                    Spacer()
-                    Image(systemName: "sparkles")
-                        .font(.subheadline)
-                        .foregroundStyle(WidgetTheme.primaryOrange)
-                }
+                Text("Next Alarm")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(WidgetTheme.primaryText)
                 
-                if let detail = entry.snapshot.detailText {
+                if let alarmDate = entry.snapshot.nextAlarmDate {
+                    (Text("In ") + Text(alarmDate, style: .relative))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(WidgetTheme.secondaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                } else if let detail = entry.snapshot.detailText {
                     Text(detail)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(WidgetTheme.secondaryText)
@@ -224,7 +224,7 @@ private struct NextAlarmWidgetEntryView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
         }
-        .clipShape(ContainerRelativeShape())
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var containerBackgroundView: some View {
