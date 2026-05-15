@@ -81,51 +81,76 @@ private struct NextAlarmWidgetEntryView: View {
     }
 
     private var smallView: some View {
-        ZStack(alignment: .center) {
-            Text("🦦")
-                .font(.system(size: 64))
-                .opacity(0.12)
-                .rotationEffect(.degrees(15))
-                .offset(x: 35, y: -10)
-                
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: stateIconName)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(WidgetTheme.primaryOrange)
-                    Text(entry.snapshot.state == .empty ? "EarlyOtter" : "Next Alarm")
-                        .font(.footnote.weight(.semibold))
+        VStack(alignment: .leading, spacing: 4) {
+            if entry.snapshot.state != .empty {
+                HStack {
+                    Text("Next Alarm")
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(WidgetTheme.primaryText)
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.subheadline)
+                        .foregroundStyle(WidgetTheme.primaryOrange)
                 }
-
+                
+                if let detail = entry.snapshot.detailText {
+                    Text(detail)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(WidgetTheme.secondaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                
                 Spacer(minLength: 0)
-
-                alarmValue(font: .system(size: 26, weight: .bold, design: .rounded))
+                
+                if let alarmDate = entry.snapshot.nextAlarmDate {
+                    Text(formattedAlarmTime(for: alarmDate))
+                        .font(.system(size: 58, weight: .heavy, design: .rounded))
+                        .tracking(-2)
+                        .foregroundStyle(WidgetTheme.primaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.3)
+                }
+                
+                Spacer(minLength: 0)
+                
+                if let title = entry.snapshot.eventTitle {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.caption2)
+                            .foregroundStyle(WidgetTheme.primaryOrange)
+                        Text(title)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WidgetTheme.primaryText)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                        if let context = entry.snapshot.context {
+                            Text(context)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(WidgetTheme.secondaryText)
+                                .lineLimit(1)
+                                .layoutPriority(1)
+                        }
+                    }
+                }
+            } else {
+                Text("EarlyOtter")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(WidgetTheme.primaryOrange)
+                Spacer(minLength: 0)
+                Text(stateDescription)
+                    .font(.system(size: 32, weight: .heavy, design: .rounded))
                     .foregroundStyle(WidgetTheme.primaryText)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-
-                if entry.snapshot.state != .empty {
-                    if let title = entry.snapshot.eventTitle {
-                        Text(title)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(WidgetTheme.secondaryText)
-                            .lineLimit(1)
-                    } else if let footer = footerSummary {
-                        Text(footer)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(WidgetTheme.secondaryText)
-                            .lineLimit(1)
-                    }
-                } else if let footer = footerSummary {
-                    Text(footer)
-                        .font(.caption2.weight(.medium))
+                    .minimumScaleFactor(0.4)
+                if let detail = entry.snapshot.detailText {
+                    Text(detail)
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(WidgetTheme.secondaryText)
                         .lineLimit(2)
                 }
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
@@ -199,7 +224,7 @@ private struct NextAlarmWidgetEntryView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(ContainerRelativeShape())
     }
 
     private var containerBackgroundView: some View {
@@ -212,11 +237,6 @@ private struct NextAlarmWidgetEntryView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    Circle()
-                        .fill(WidgetTheme.primaryOrange.opacity(0.14))
-                        .frame(width: 150, height: 150)
-                        .blur(radius: 30)
-                        .offset(x: 40, y: -40)
                 }
             default:
                 EmptyView()
