@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
+
 enum RefreshReason: String, Codable, Sendable {
     case appOpen
     case manual
@@ -48,6 +52,7 @@ actor WakePlanRefreshService {
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
     private let resultStore: WakePlanRefreshResultStoring?
+    private let widgetSnapshotStore: NextAlarmWidgetSnapshotStoring?
     private let backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling?
     private let staleSyncReminderScheduler: StaleSyncReminderScheduling?
     private let planningWindowCount: Int
@@ -57,6 +62,7 @@ actor WakePlanRefreshService {
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService,
         resultStore: WakePlanRefreshResultStoring? = nil,
+        widgetSnapshotStore: NextAlarmWidgetSnapshotStoring? = nil,
         backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling? = nil,
         staleSyncReminderScheduler: StaleSyncReminderScheduling? = nil,
         planningWindowCount: Int = AppConfiguration.managedAlarmPlanningCount
@@ -65,6 +71,7 @@ actor WakePlanRefreshService {
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
         self.resultStore = resultStore
+        self.widgetSnapshotStore = widgetSnapshotStore
         self.backgroundRefreshScheduler = backgroundRefreshScheduler
         self.staleSyncReminderScheduler = staleSyncReminderScheduler
         self.planningWindowCount = planningWindowCount
@@ -77,49 +84,141 @@ actor WakePlanRefreshService {
     ) async throws -> WakePlanRefreshOutcome {
         _ = reason
 
-        let permissions = await permissionService.currentStatus()
-        let accounts = try await wakePlanService.accounts()
-        let calendars = try await wakePlanService.calendars()
-        let dailyPlans = try await wakePlanService.makeDailyPlans(
-            startingAt: now,
-            count: planningWindowCount,
-            calendar: calendar
-        )
-        let tomorrowTargetDay = TargetDay.tomorrow(from: now, calendar: calendar)
-        let tomorrowPlan: WakeUpPlan
-
-        if let plannedTomorrow = dailyPlans.first(where: { $0.targetDay == tomorrowTargetDay }) {
-            tomorrowPlan = plannedTomorrow
-        } else {
-            tomorrowPlan = try await wakePlanService.makePlan(
-                targetDay: tomorrowTargetDay,
+        do {
+            let permissions = await permissionService.currentStatus()
+            let accounts = try await wakePlanService.accounts()
+            let calendars = try await wakePlanService.calendars()
+            let dailyPlans = try await wakePlanService.makeDailyPlans(
+                startingAt: now,
+                count: planningWindowCount,
                 calendar: calendar
             )
+            let tomorrowTargetDay = TargetDay.tomorrow(from: now, calendar: calendar)
+            let tomorrowPlan: WakeUpPlan
+
+            if let plannedTomorrow = dailyPlans.first(where: { $0.targetDay == tomorrowTargetDay }) {
+                tomorrowPlan = plannedTomorrow
+            } else {
+                tomorrowPlan = try await wakePlanService.makePlan(
+                    targetDay: tomorrowTargetDay,
+                    calendar: calendar
+                )
+            }
+            let displayPlans = wakePlanService.displayPlans(from: dailyPlans, now: now)
+            let syncResult = try await alarmSyncService.sync(plans: displayPlans)
+
+            let snapshot = WakePlanRefreshSnapshot(
+                permissions: permissions,
+                accounts: accounts,
+                calendars: calendars,
+                tomorrowPlan: tomorrowPlan,
+                displayPlans: displayPlans,
+                syncResult: syncResult
+            )
+            let result = WakePlanRefreshResult(
+                syncedAt: now,
+                plannedDays: displayPlans.count,
+                scheduledCount: syncResult.scheduledCount,
+                canceledCount: syncResult.canceledCount,
+                failedCount: syncResult.failedCount
+            )
+
+            try? resultStore?.save(result)
+            publishWidgetSnapshot(from: snapshot, syncedAt: now)
+            await staleSyncReminderScheduler?.updateReminder(for: result)
+            await backgroundRefreshScheduler?.scheduleNextRefresh(after: now)
+
+            return WakePlanRefreshOutcome(snapshot: snapshot, result: result)
+        } catch {
+            publishStaleWidgetSnapshot(lastUpdatedAt: now, detailText: error.localizedDescription)
+            throw error
         }
-        let displayPlans = wakePlanService.displayPlans(from: dailyPlans, now: now)
-        let syncResult = try await alarmSyncService.sync(plans: displayPlans)
+    }
+}
 
-        let snapshot = WakePlanRefreshSnapshot(
-            permissions: permissions,
-            accounts: accounts,
-            calendars: calendars,
-            tomorrowPlan: tomorrowPlan,
-            displayPlans: displayPlans,
-            syncResult: syncResult
+private extension WakePlanRefreshService {
+    func publishWidgetSnapshot(
+        from snapshot: WakePlanRefreshSnapshot,
+        syncedAt: Date
+    ) {
+        let widgetSnapshot = makeWidgetSnapshot(from: snapshot, syncedAt: syncedAt)
+        try? widgetSnapshotStore?.save(widgetSnapshot)
+        reloadWidgetTimelines()
+    }
+
+    func publishStaleWidgetSnapshot(
+        lastUpdatedAt: Date,
+        detailText: String
+    ) {
+        guard let widgetSnapshotStore else {
+            return
+        }
+
+        let previousSnapshot = try? widgetSnapshotStore.load()
+        let staleSnapshot = NextAlarmWidgetSnapshot.stale(
+            nextAlarmDate: previousSnapshot?.nextAlarmDate,
+            eventTitle: previousSnapshot?.eventTitle,
+            context: previousSnapshot?.context,
+            detailText: detailText,
+            lastUpdatedAt: lastUpdatedAt
         )
-        let result = WakePlanRefreshResult(
-            syncedAt: now,
-            plannedDays: displayPlans.count,
-            scheduledCount: syncResult.scheduledCount,
-            canceledCount: syncResult.canceledCount,
-            failedCount: syncResult.failedCount
+
+        try? widgetSnapshotStore.save(staleSnapshot)
+        reloadWidgetTimelines()
+    }
+
+    func makeWidgetSnapshot(
+        from snapshot: WakePlanRefreshSnapshot,
+        syncedAt: Date
+    ) -> NextAlarmWidgetSnapshot {
+        let plansByID = Dictionary(uniqueKeysWithValues: snapshot.displayPlans.map { ($0.id, $0) })
+
+        if let nextRecord = snapshot.syncResult.records.first {
+            let plan = plansByID[nextRecord.planID]
+
+            return .scheduled(
+                nextAlarmDate: nextRecord.scheduledWakeTime,
+                eventTitle: plan?.targetEvent?.title,
+                context: widgetContext(for: plan),
+                detailText: nil,
+                lastUpdatedAt: syncedAt
+            )
+        }
+
+        return .empty(
+            detailText: widgetEmptyDetail(for: snapshot.permissions),
+            lastUpdatedAt: syncedAt
         )
+    }
 
-        try? resultStore?.save(result)
-        await staleSyncReminderScheduler?.updateReminder(for: result)
-        await backgroundRefreshScheduler?.scheduleNextRefresh(after: now)
+    func widgetContext(for plan: WakeUpPlan?) -> String? {
+        guard let plan else {
+            return nil
+        }
 
-        return WakePlanRefreshOutcome(snapshot: snapshot, result: result)
+        if let event = plan.targetEvent {
+            return event.startDate.formatted(date: .omitted, time: .shortened)
+        }
+
+        return "Fixed alarm"
+    }
+
+    func widgetEmptyDetail(for permissions: PermissionSnapshot) -> String {
+        if permissions.calendar == .denied || permissions.calendar == .restricted {
+            return AppConfiguration.calendarPermissionExplanation
+        }
+
+        if permissions.alarm == .denied || permissions.alarm == .notDetermined {
+            return AppConfiguration.alarmPermissionExplanation
+        }
+
+        return "No upcoming alarms."
+    }
+
+    func reloadWidgetTimelines() {
+#if canImport(WidgetKit)
+        WidgetCenter.shared.reloadTimelines(ofKind: AppConfiguration.nextAlarmWidgetKind)
+#endif
     }
 }
 

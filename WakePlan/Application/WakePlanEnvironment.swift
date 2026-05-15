@@ -99,6 +99,7 @@ struct WakePlanEnvironment {
     let preferencesStore: UserDefaultsPreferencesStore
     let alarmStore: UserDefaultsScheduledAlarmStore
     let refreshResultStore: UserDefaultsWakePlanRefreshResultStore
+    let widgetSnapshotStore: UserDefaultsNextAlarmWidgetSnapshotStore
     let calendarReader: EventKitCalendarReader
     let alarmScheduler: AlarmKitScheduler
     let wakePlanService: WakePlanService
@@ -119,6 +120,7 @@ struct WakePlanEnvironment {
         let preferencesStore = UserDefaultsPreferencesStore()
         let alarmStore = UserDefaultsScheduledAlarmStore()
         let refreshResultStore = UserDefaultsWakePlanRefreshResultStore()
+        let widgetSnapshotStore = UserDefaultsNextAlarmWidgetSnapshotStore()
         let calendarReader = EventKitCalendarReader()
         let calendarProvider = CompositeCalendarProvider(
             providers: [
@@ -148,6 +150,7 @@ struct WakePlanEnvironment {
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             resultStore: refreshResultStore,
+            widgetSnapshotStore: widgetSnapshotStore,
             backgroundRefreshScheduler: backgroundRefreshService,
             staleSyncReminderScheduler: staleSyncReminderService
         )
@@ -158,6 +161,7 @@ struct WakePlanEnvironment {
             preferencesStore: preferencesStore,
             alarmStore: alarmStore,
             refreshResultStore: refreshResultStore,
+            widgetSnapshotStore: widgetSnapshotStore,
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler,
             wakePlanService: wakePlanService,

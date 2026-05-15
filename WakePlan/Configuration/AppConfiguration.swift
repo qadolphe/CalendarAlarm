@@ -2,6 +2,8 @@ import Foundation
 
 enum AppConfiguration {
     static let appName = "EarlyOtter"
+    static let nextAlarmWidgetKind = "com.quentinadolphe.wakeplan.nextAlarmWidget"
+    static let widgetAppGroupIdentifier = "group.com.quentinadolphe.wakeplan.widget"
     static let genericAlarmTitle = "Wake up"
     static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
     static let testAlarmDescription =
