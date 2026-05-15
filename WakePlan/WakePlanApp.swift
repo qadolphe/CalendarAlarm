@@ -1,6 +1,10 @@
 import GoogleSignIn
 import SwiftUI
 
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
+
 @main
 struct WakePlanApp: App {
     private static let onboardingStorageKey = "hasCompletedOnboarding"
@@ -18,6 +22,7 @@ struct WakePlanApp: App {
                 preferencesStore: environment.preferencesStore,
                 alarmStore: environment.alarmStore,
                 refreshResultStore: environment.refreshResultStore,
+                widgetSnapshotStore: environment.widgetSnapshotStore,
                 alarmScheduler: environment.alarmScheduler
             )
         }
@@ -45,6 +50,7 @@ struct WakePlanApp: App {
         preferencesStore: UserDefaultsPreferencesStore,
         alarmStore: UserDefaultsScheduledAlarmStore,
         refreshResultStore: UserDefaultsWakePlanRefreshResultStore,
+        widgetSnapshotStore: UserDefaultsNextAlarmWidgetSnapshotStore,
         alarmScheduler: AlarmKitScheduler
     ) {
         let existingRecords = (try? alarmStore.load()) ?? []
@@ -61,10 +67,15 @@ struct WakePlanApp: App {
         accountStore.clear()
         try? alarmStore.clear()
         try? refreshResultStore.clear()
+        try? widgetSnapshotStore.clear()
         UserDefaults.standard.removeObject(forKey: Self.onboardingStorageKey)
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: [AppConfiguration.staleSyncReminderIdentifier]
         )
         GIDSignIn.sharedInstance.signOut()
+
+    #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadTimelines(ofKind: AppConfiguration.nextAlarmWidgetKind)
+    #endif
     }
 }
