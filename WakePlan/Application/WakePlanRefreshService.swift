@@ -205,11 +205,11 @@ private extension WakePlanRefreshService {
 
     func widgetEmptyDetail(for permissions: PermissionSnapshot) -> String {
         if permissions.calendar == .denied || permissions.calendar == .restricted {
-            return AppConfiguration.calendarPermissionExplanation
+            return "Calendar access needed"
         }
 
         if permissions.alarm == .denied || permissions.alarm == .notDetermined {
-            return AppConfiguration.alarmPermissionExplanation
+            return "Alarm access needed"
         }
 
         return "No upcoming alarms."

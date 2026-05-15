@@ -1,93 +1,57 @@
-import AppIntents
 import SwiftUI
 import WidgetKit
 
-enum NextAlarmWidgetDisplayMode: String, AppEnum {
-    case nextAlarmTime
-    case timeRemaining
-
-    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Display")
-
-    static var caseDisplayRepresentations: [NextAlarmWidgetDisplayMode: DisplayRepresentation] = [
-        .nextAlarmTime: DisplayRepresentation(title: "Next alarm time"),
-        .timeRemaining: DisplayRepresentation(title: "Time remaining")
-    ]
-}
-
-struct NextAlarmWidgetConfigurationIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource = "Next Alarm"
-    static var description = IntentDescription(
-        "Show the time of your next wake-up alarm or how long remains until it rings."
-    )
-
-    @Parameter(title: "Display")
-    var displayMode: NextAlarmWidgetDisplayMode?
-
-    init() {
-        displayMode = .nextAlarmTime
-    }
-}
-
 struct NextAlarmWidgetEntry: TimelineEntry {
     let date: Date
-    let configuration: NextAlarmWidgetConfigurationIntent
     let snapshot: NextAlarmWidgetSnapshot
 }
 
-struct NextAlarmWidgetProvider: AppIntentTimelineProvider {
-    typealias Entry = NextAlarmWidgetEntry
-    typealias Intent = NextAlarmWidgetConfigurationIntent
-
+struct NextAlarmWidgetProvider: TimelineProvider {
     private let snapshotStore = UserDefaultsNextAlarmWidgetSnapshotStore()
 
-    func placeholder(in context: Context) -> Entry {
+    func placeholder(in context: Context) -> NextAlarmWidgetEntry {
         makeEntry(
-            configuration: NextAlarmWidgetConfigurationIntent(),
             snapshot: Self.previewSnapshot,
             now: Date()
         )
     }
 
-    func snapshot(
-        for configuration: NextAlarmWidgetConfigurationIntent,
-        in context: Context
-    ) async -> NextAlarmWidgetEntry {
+    func getSnapshot(
+        in context: Context,
+        completion: @escaping (NextAlarmWidgetEntry) -> Void
+    ) {
         let now = Date()
         let snapshot = context.isPreview ? Self.previewSnapshot : loadSnapshot(now: now)
 
-        return makeEntry(
-            configuration: configuration,
+        completion(makeEntry(
             snapshot: snapshot,
             now: now
-        )
+        ))
     }
 
-    func timeline(
-        for configuration: NextAlarmWidgetConfigurationIntent,
-        in context: Context
-    ) async -> Timeline<NextAlarmWidgetEntry> {
+    func getTimeline(
+        in context: Context,
+        completion: @escaping (Timeline<NextAlarmWidgetEntry>) -> Void
+    ) {
         let now = Date()
         let snapshot = loadSnapshot(now: now)
         let entry = makeEntry(
-            configuration: configuration,
             snapshot: snapshot,
             now: now
         )
 
-        return Timeline(
+        completion(Timeline(
             entries: [entry],
             policy: .after(nextRefreshDate(for: snapshot, from: now))
-        )
+        ))
     }
 
     private func makeEntry(
-        configuration: NextAlarmWidgetConfigurationIntent,
         snapshot: NextAlarmWidgetSnapshot,
         now: Date
     ) -> NextAlarmWidgetEntry {
         NextAlarmWidgetEntry(
             date: now,
-            configuration: configuration,
             snapshot: snapshot
         )
     }
@@ -122,9 +86,8 @@ struct NextAlarmWidgetProvider: AppIntentTimelineProvider {
 
 struct NextAlarmWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(
+        StaticConfiguration(
             kind: AppConfiguration.nextAlarmWidgetKind,
-            intent: NextAlarmWidgetConfigurationIntent.self,
             provider: NextAlarmWidgetProvider()
         ) { entry in
             NextAlarmWidgetEntryView(entry: entry)
@@ -133,7 +96,6 @@ struct NextAlarmWidget: Widget {
         .description("Keep your next wake-up alarm visible on Home, Lock Screen, and StandBy.")
         .supportedFamilies([
             .systemSmall,
-            .systemMedium,
             .accessoryInline,
             .accessoryCircular,
             .accessoryRectangular
@@ -147,75 +109,53 @@ private struct NextAlarmWidgetEntryView: View {
     let entry: NextAlarmWidgetEntry
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        case .accessoryInline:
-            inlineView
-        case .accessoryCircular:
-            circularView
-        case .accessoryRectangular:
-            rectangularView
-        default:
-            smallView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+            case .accessoryInline:
+                inlineView
+            case .accessoryCircular:
+                circularView
+            case .accessoryRectangular:
+                rectangularView
+            default:
+                smallView
+            }
+        }
+        .containerBackground(for: .widget) {
+            containerBackgroundView
         }
     }
 
     private var smallView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            titleLabel
-            alarmValue(font: .system(size: 26, weight: .bold, design: .rounded))
+            HStack(spacing: 6) {
+                Image(systemName: stateIconName)
+                    .font(.caption.weight(.semibold))
+                    .widgetAccentable()
+                titleLabel
+            }
+
+            Spacer(minLength: 0)
+
+            alarmValue(font: .system(size: 28, weight: .bold, design: .rounded))
+
             footerText
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(.fill.tertiary, for: .widget)
-    }
-
-    private var mediumView: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                titleLabel
-                alarmValue(font: .system(size: 28, weight: .bold, design: .rounded))
-                footerText
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: 0)
-
-            VStack(alignment: .trailing, spacing: 6) {
-                if let eventTitle = entry.snapshot.eventTitle, !eventTitle.isEmpty {
-                    Text(eventTitle)
-                        .font(.headline)
-                        .multilineTextAlignment(.trailing)
-                        .lineLimit(2)
-                }
-
-                Text(relativeRefreshText)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.trailing)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .foregroundStyle(.primary)
     }
 
     private var inlineView: some View {
         Group {
             if let alarmDate = entry.snapshot.nextAlarmDate,
                entry.snapshot.state != .empty {
-                if entry.configuration.displayMode == .timeRemaining {
-                    Text("Alarm in \(alarmDate, style: .timer)")
-                } else {
-                    Text("Alarm \(alarmDate, style: .time)")
-                }
+                Text("Alarm \(formattedInlineAlarmTime(for: alarmDate))")
             } else {
                 Text(inlineFallbackText)
             }
@@ -229,42 +169,52 @@ private struct NextAlarmWidgetEntryView: View {
             if let alarmDate = entry.snapshot.nextAlarmDate,
                entry.snapshot.state != .empty {
                 VStack(spacing: 2) {
-                    Image(systemName: entry.snapshot.state == .stale ? "exclamationmark.triangle.fill" : "alarm.fill")
+                    Image(systemName: stateIconName)
                         .font(.caption)
-                    Text(alarmDate, style: displayStyle)
+                        .widgetAccentable()
+                    Text(formattedCircularAlarmTime(for: alarmDate))
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.6)
+                        .widgetAccentable()
                 }
                 .padding(6)
             } else {
                 Image(systemName: "alarm.slash")
                     .font(.title3)
+                    .widgetAccentable()
             }
         }
     }
 
     private var rectangularView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            titleLabel
+        HStack(alignment: .center, spacing: 8) {
+            Image(systemName: stateIconName)
+                .font(.headline)
+                .widgetAccentable()
 
-            if let alarmDate = entry.snapshot.nextAlarmDate,
-               entry.snapshot.state != .empty {
-                Text(alarmDate, style: displayStyle)
-                    .font(.headline)
-                    .monospacedDigit()
-                    .lineLimit(1)
-            } else {
-                Text("No upcoming alarm")
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 2) {
+                titleLabel
+
+                if let alarmDate = entry.snapshot.nextAlarmDate,
+                   entry.snapshot.state != .empty {
+                    Text(formattedRectangularAlarmTime(for: alarmDate))
+                        .font(.headline)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                } else {
+                    Text("No upcoming alarm")
+                        .font(.headline)
+                        .lineLimit(1)
+                }
+
+                Text(footerSummary)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-
-            Text(footerSummary)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
         }
+        .foregroundStyle(.primary)
     }
 
     private var titleLabel: some View {
@@ -283,16 +233,18 @@ private struct NextAlarmWidgetEntryView: View {
         Group {
             if let alarmDate = entry.snapshot.nextAlarmDate,
                entry.snapshot.state != .empty {
-                Text(alarmDate, style: displayStyle)
+                Text(formattedAlarmTime(for: alarmDate))
                     .font(font)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
+                    .widgetAccentable()
             } else {
                 Text("No Alarm")
                     .font(font)
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
+                    .widgetAccentable()
             }
         }
     }
@@ -309,11 +261,6 @@ private struct NextAlarmWidgetEntryView: View {
     }
 
     private var footerSummary: String {
-        if let detailText = entry.snapshot.detailText,
-           !detailText.isEmpty {
-            return detailText
-        }
-
         if let eventTitle = entry.snapshot.eventTitle,
            !eventTitle.isEmpty {
             return eventTitle
@@ -324,6 +271,11 @@ private struct NextAlarmWidgetEntryView: View {
             return context
         }
 
+        if let detailText = entry.snapshot.detailText,
+           !detailText.isEmpty {
+            return detailText
+        }
+
         return relativeRefreshText
     }
 
@@ -332,9 +284,9 @@ private struct NextAlarmWidgetEntryView: View {
         case .scheduled:
             return "Alarm set"
         case .empty:
-            return "No alarm"
+            return "Open EarlyOtter"
         case .stale:
-            return "Needs refresh"
+            return "Refresh EarlyOtter"
         }
     }
 
@@ -342,7 +294,40 @@ private struct NextAlarmWidgetEntryView: View {
         "Updated \(entry.snapshot.lastUpdatedAt.formatted(date: .omitted, time: .shortened))"
     }
 
-    private var displayStyle: Text.DateStyle {
-		entry.configuration.displayMode == .timeRemaining ? .timer : .time
+    private var stateIconName: String {
+        switch entry.snapshot.state {
+        case .scheduled:
+            return "alarm.fill"
+        case .empty:
+            return "alarm.slash"
+        case .stale:
+            return "arrow.clockwise"
+        }
+    }
+
+    private func formattedAlarmTime(for date: Date) -> String {
+        date.formatted(date: .omitted, time: .shortened)
+    }
+
+    private func formattedInlineAlarmTime(for date: Date) -> String {
+        date.formatted(date: .omitted, time: .shortened)
+    }
+
+    private func formattedCircularAlarmTime(for date: Date) -> String {
+        date.formatted(.dateTime.hour().minute())
+    }
+
+    private func formattedRectangularAlarmTime(for date: Date) -> String {
+        date.formatted(date: .omitted, time: .shortened)
+    }
+
+    @ViewBuilder
+    private var containerBackgroundView: some View {
+        switch family {
+        case .systemSmall:
+            Color(uiColor: .secondarySystemBackground)
+        default:
+            EmptyView()
+        }
     }
 }

@@ -13,9 +13,18 @@ final class UserDefaultsNextAlarmWidgetSnapshotStore: NextAlarmWidgetSnapshotSto
     private let decoder = JSONDecoder()
 
     init(
-        defaults: UserDefaults = UserDefaults(suiteName: AppConfiguration.widgetAppGroupIdentifier) ?? .standard
+        defaults: UserDefaults? = nil
     ) {
-        self.defaults = defaults
+        self.defaults = defaults ?? Self.makeDefaults()
+    }
+
+    private static func makeDefaults() -> UserDefaults {
+        guard let defaults = UserDefaults(suiteName: AppConfiguration.widgetAppGroupIdentifier) else {
+            assertionFailure("Unable to create shared widget defaults for app group \(AppConfiguration.widgetAppGroupIdentifier)")
+            return .standard
+        }
+
+        return defaults
     }
 
     func load() throws -> NextAlarmWidgetSnapshot? {
@@ -29,9 +38,11 @@ final class UserDefaultsNextAlarmWidgetSnapshotStore: NextAlarmWidgetSnapshotSto
     func save(_ snapshot: NextAlarmWidgetSnapshot) throws {
         let data = try encoder.encode(snapshot)
         defaults.set(data, forKey: key)
+        defaults.synchronize()
     }
 
     func clear() throws {
         defaults.removeObject(forKey: key)
+        defaults.synchronize()
     }
 }
