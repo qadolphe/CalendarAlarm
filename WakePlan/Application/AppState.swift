@@ -27,7 +27,10 @@ final class AppState {
     var permissions: PermissionSnapshot = .initial
     var dashboardState: DashboardState = .loading
     var tomorrowPlanPreview: WakeUpPlan?
+    var dailyPlans: [WakeUpPlan] = []
+    var displayPlans: [WakeUpPlan] = []
     var upcomingPlans: [WakeUpPlan] = []
+    var alarmStatusesByPlanID: [WakePlanID: AlarmScheduleStatus] = [:]
     var noticeMessage: String?
     var settingsAlertMessage: String?
 
@@ -85,6 +88,10 @@ final class AppState {
         hasLoaded = true
         dashboardState = .loading
         tomorrowPlanPreview = nil
+        dailyPlans = []
+        displayPlans = []
+        upcomingPlans = []
+        alarmStatusesByPlanID = [:]
         noticeMessage = nil
         settingsAlertMessage = nil
 
@@ -415,7 +422,10 @@ final class AppState {
         accounts = snapshot.accounts
         calendars = snapshot.calendars
         tomorrowPlanPreview = snapshot.tomorrowPlan
+        dailyPlans = snapshot.dailyPlans
+        displayPlans = snapshot.displayPlans
         upcomingPlans = Array(snapshot.displayPlans.dropFirst().prefix(AppConfiguration.dashboardUpcomingDisplayCount))
+        alarmStatusesByPlanID = snapshot.syncResult.statusesByPlanID
         let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
 
         if alarmStatus == .needsPermission {

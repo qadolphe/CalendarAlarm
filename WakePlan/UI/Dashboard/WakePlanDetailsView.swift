@@ -17,39 +17,123 @@ struct WakePlanDetailsView: View {
         return nil
     }
 
+    private var selectedDayTitle: String {
+        plan.targetDay.date.formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+
+    private var showsUnavailableDayState: Bool {
+        switch plan.reason {
+        case .disabled, .inactiveDay, .noSchedule, .systemDisabled:
+            return true
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return false
+        }
+    }
+
+    private var unavailableStateIcon: String {
+        switch plan.reason {
+        case .inactiveDay:
+            return "pause.circle.fill"
+        case .disabled, .systemDisabled:
+            return "power.circle.fill"
+        case .noSchedule:
+            return "calendar.badge.exclamationmark"
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return "alarm.fill"
+        }
+    }
+
+    private var unavailableStateTitle: String {
+        switch plan.reason {
+        case .inactiveDay:
+            return "Auto-Pilot Paused"
+        case .disabled:
+            return "Automatic Alarms Off"
+        case .systemDisabled:
+            return "EarlyOtter Disabled"
+        case .noSchedule:
+            return "Nothing Scheduled"
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return "Wake Time"
+        }
+    }
+
+    private var unavailableStateMessage: String {
+        switch plan.reason {
+        case .inactiveDay:
+            return "This weekday is currently inactive in your schedule, so EarlyOtter will not manage an alarm for it."
+        case .disabled:
+            return "Automatic alarms are turned off. Re-enable Auto-Pilot from the schedule settings to resume managed alarms."
+        case .systemDisabled:
+            return "EarlyOtter is fully disabled right now, so no managed alarms will be created until you turn it back on."
+        case .noSchedule:
+            return "No matching calendar event or fallback alarm was available for this day."
+        case .event, .fallback, .authorizationMissing, .manualOverride:
+            return ""
+        }
+    }
+
     var body: some View {
         ZStack {
             Color.clear.withAppBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    if let ruleName = displayedRuleName {
+                    VStack(alignment: .leading, spacing: 16) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Applied Rule")
+                            Text("Selected Day")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(WPStyles.secondaryText)
                                 .textCase(.uppercase)
-                            Text(ruleName)
+                            Text(selectedDayTitle)
                                 .font(.title2.weight(.bold))
                                 .foregroundStyle(WPStyles.primaryText)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 32) // Add some top padding since we removed the navigation bar
-                    } else {
-                        Spacer().frame(height: 16)
+
+                        if let ruleName = displayedRuleName {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Applied Rule")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(WPStyles.secondaryText)
+                                    .textCase(.uppercase)
+                                Text(ruleName)
+                                    .font(.title3.weight(.bold))
+                                    .foregroundStyle(WPStyles.primaryText)
+                            }
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 32)
 
                     VStack(alignment: .leading, spacing: 16) {
-                        if let event = plan.targetEvent {
+                        if showsUnavailableDayState {
+                            HStack(alignment: .center, spacing: 12) {
+                                Image(systemName: unavailableStateIcon)
+                                    .foregroundStyle(plan.reason == .noSchedule ? WPStyles.secondaryBlue : WPStyles.primaryOrange)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(unavailableStateTitle)
+                                        .font(.headline)
+                                        .foregroundStyle(WPStyles.primaryText)
+
+                                    Text(unavailableStateMessage)
+                                        .font(.subheadline)
+                                        .foregroundStyle(WPStyles.secondaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                Spacer()
+                            }
+                        } else if let event = plan.targetEvent {
                             HStack(alignment: .center) {
                                 Image(systemName: "alarm.fill")
                                     .foregroundStyle(WPStyles.primaryOrange)
-                                
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Wake Time")
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
-                                    
+
                                     HStack(spacing: 6) {
                                         Text(plan.alarmSettings.sound.displayName)
                                         Text("•")
@@ -58,20 +142,20 @@ struct WakePlanDetailsView: View {
                                     .font(.caption)
                                     .foregroundStyle(WPStyles.secondaryText)
                                 }
-                                
+
                                 Spacer()
                                 Text(plan.calculatedWakeTime, style: .time)
                                     .font(.title3.weight(.semibold))
                                     .foregroundStyle(WPStyles.primaryText)
                             }
-                            
+
                             Divider().overlay(WPStyles.cardBorder)
-                            
+
                             timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
                             timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
-                            
+
                             Divider().overlay(WPStyles.cardBorder)
-                            
+
                             HStack {
                                 Image(systemName: "calendar")
                                     .foregroundStyle(WPStyles.secondaryBlue)
@@ -88,12 +172,12 @@ struct WakePlanDetailsView: View {
                             HStack(alignment: .center) {
                                 Image(systemName: "alarm.fill")
                                     .foregroundStyle(WPStyles.primaryOrange)
-                                
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Wake Time")
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
-                                    
+
                                     HStack(spacing: 6) {
                                         Text(plan.alarmSettings.sound.displayName)
                                         Text("•")
@@ -102,15 +186,15 @@ struct WakePlanDetailsView: View {
                                     .font(.caption)
                                     .foregroundStyle(WPStyles.secondaryText)
                                 }
-                                
+
                                 Spacer()
                                 Text(plan.calculatedWakeTime, style: .time)
                                     .font(.title3.weight(.semibold))
                                     .foregroundStyle(WPStyles.primaryText)
                             }
-                            
+
                             Divider().overlay(WPStyles.cardBorder)
-                            
+
                             HStack {
                                 Image(systemName: "moon.zzz.fill")
                                     .foregroundStyle(.indigo)

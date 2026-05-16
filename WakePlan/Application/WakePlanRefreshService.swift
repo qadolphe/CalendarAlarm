@@ -24,6 +24,7 @@ struct WakePlanRefreshSnapshot: Equatable, Sendable {
     let accounts: [ConnectedCalendarAccount]
     let calendars: [CalendarSource]
     let tomorrowPlan: WakeUpPlan
+    let dailyPlans: [WakeUpPlan]
     let displayPlans: [WakeUpPlan]
     let syncResult: AlarmSyncResult
 }
@@ -112,6 +113,7 @@ actor WakePlanRefreshService {
                 accounts: accounts,
                 calendars: calendars,
                 tomorrowPlan: tomorrowPlan,
+                dailyPlans: dailyPlans,
                 displayPlans: displayPlans,
                 syncResult: syncResult
             )
