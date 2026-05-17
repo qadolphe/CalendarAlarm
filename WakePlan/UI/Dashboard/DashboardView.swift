@@ -327,21 +327,61 @@ private struct DashboardNoAlarmCardView: View {
 private struct DashboardWeeklyCardView: View {
     let viewModel: DashboardViewModel
     let onSelect: (DashboardViewModel.WeekEntry) -> Void
+    @State private var selectedWeekIndex: Int
+
+    init(
+        viewModel: DashboardViewModel,
+        onSelect: @escaping (DashboardViewModel.WeekEntry) -> Void
+    ) {
+        self.viewModel = viewModel
+        self.onSelect = onSelect
+        _selectedWeekIndex = State(initialValue: viewModel.defaultWeekPageIndex)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            weeklyViewer
+        VStack(alignment: .leading, spacing: 14) {
+            if !viewModel.weekPages.isEmpty {
+                Text(viewModel.weekRangeTitle(for: currentPage))
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+
+                TabView(selection: $selectedWeekIndex) {
+                    ForEach(viewModel.weekPages) { page in
+                        DashboardWeekPageView(
+                            page: page,
+                            viewModel: viewModel,
+                            onSelect: onSelect
+                        )
+                        .tag(page.index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 270)
+            }
         }
         .cardStyle()
     }
 
-    private var weeklyViewer: some View {
+    private var currentPage: DashboardViewModel.WeekPage {
+        let safeIndex = min(selectedWeekIndex, max(viewModel.weekPages.count - 1, 0))
+        return viewModel.weekPages[safeIndex]
+    }
+}
+
+private struct DashboardWeekPageView: View {
+    let page: DashboardViewModel.WeekPage
+    let viewModel: DashboardViewModel
+    let onSelect: (DashboardViewModel.WeekEntry) -> Void
+
+    var body: some View {
         GeometryReader { geometry in
             let spacing: CGFloat = geometry.size.width > 390 ? 12 : 8
-            let columnWidth = max(34, min(48, (geometry.size.width - (spacing * 6)) / 7))
+            let edgePadding: CGFloat = geometry.size.width > 390 ? 6 : 4
+            let availableWidth = geometry.size.width - (edgePadding * 2)
+            let columnWidth = max(34, min(48, (availableWidth - (spacing * 6)) / 7))
 
             HStack(alignment: .top, spacing: spacing) {
-                ForEach(viewModel.weekEntries) { entry in
+                ForEach(page.entries) { entry in
                     DashboardWeekDayColumnView(
                         entry: entry,
                         viewModel: viewModel,
@@ -350,9 +390,9 @@ private struct DashboardWeeklyCardView: View {
                     )
                 }
             }
+            .padding(.horizontal, edgePadding)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(height: 270)
     }
 }
 
@@ -396,16 +436,18 @@ private struct DashboardWeekPillBarView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let isElapsed = viewModel.isElapsed(entry)
+            let dimmingOpacity = isElapsed ? 0.35 : 1.0
             let outlineColor = isPrimary
                 ? WPStyles.deepOrange.opacity(0.92)
                 : WPStyles.deepOrange.opacity(0.68)
 
             ZStack {
                 Capsule()
-                    .fill(WPStyles.deepOrange.opacity(isPrimary ? 0.16 : 0.09))
+                    .fill(WPStyles.deepOrange.opacity((isPrimary ? 0.16 : 0.09) * dimmingOpacity))
 
                 Capsule()
-                    .stroke(outlineColor, lineWidth: isPrimary ? 2.4 : 1.8)
+                    .stroke(outlineColor.opacity(dimmingOpacity), lineWidth: isPrimary ? 2.4 : 1.8)
 
                 if entry.hasConnectedMarkers,
                    let eventY = markerY(for: entry.eventDate, on: entry.targetDay, height: geometry.size.height),
@@ -419,20 +461,21 @@ private struct DashboardWeekPillBarView: View {
                         WPStyles.primaryOrange.opacity(0.85),
                         style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5])
                     )
+                    .opacity(dimmingOpacity)
                 }
 
                 if let alarmY = markerY(for: entry.alarmDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.primaryOrange, y: alarmY, in: geometry.size)
+                    marker(color: WPStyles.primaryOrange, y: alarmY, in: geometry.size, opacity: dimmingOpacity)
                 }
 
                 if let eventY = markerY(for: entry.eventDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.secondaryBlue, y: eventY, in: geometry.size)
+                    marker(color: WPStyles.secondaryBlue, y: eventY, in: geometry.size, opacity: dimmingOpacity)
                 }
             }
         }
     }
 
-    private func marker(color: Color, y: CGFloat, in size: CGSize) -> some View {
+    private func marker(color: Color, y: CGFloat, in size: CGSize, opacity: Double) -> some View {
         Circle()
             .fill(WPStyles.background)
             .frame(width: isPrimary ? 18 : 16, height: isPrimary ? 18 : 16)
@@ -442,6 +485,7 @@ private struct DashboardWeekPillBarView: View {
                     .padding(isPrimary ? 4 : 3)
             }
             .shadow(color: color.opacity(0.35), radius: isPrimary ? 6 : 3)
+            .opacity(opacity)
             .position(x: size.width / 2, y: y)
     }
 

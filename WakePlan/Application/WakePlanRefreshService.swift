@@ -89,9 +89,10 @@ actor WakePlanRefreshService {
             let permissions = await permissionService.currentStatus()
             let accounts = try await wakePlanService.accounts()
             let calendars = try await wakePlanService.calendars()
+            let dashboardStart = startOfDashboardWeek(containing: now, calendar: calendar)
             let dailyPlans = try await wakePlanService.makeDailyPlans(
-                startingAt: now,
-                count: planningWindowCount,
+                startingAt: dashboardStart,
+                count: AppConfiguration.dashboardPlanningCount,
                 calendar: calendar
             )
             let tomorrowTargetDay = TargetDay.tomorrow(from: now, calendar: calendar)
@@ -105,7 +106,10 @@ actor WakePlanRefreshService {
                     calendar: calendar
                 )
             }
-            let displayPlans = wakePlanService.displayPlans(from: dailyPlans, now: now)
+            let displayPlans = Array(
+                wakePlanService.displayPlans(from: dailyPlans, now: now)
+                    .prefix(planningWindowCount)
+            )
             let syncResult = try await alarmSyncService.sync(plans: displayPlans)
 
             let snapshot = WakePlanRefreshSnapshot(
@@ -139,6 +143,18 @@ actor WakePlanRefreshService {
 }
 
 private extension WakePlanRefreshService {
+    func startOfDashboardWeek(
+        containing date: Date,
+        calendar: Calendar
+    ) -> Date {
+        let startOfDay = calendar.startOfDay(for: date)
+        let weekday = calendar.component(.weekday, from: startOfDay)
+        let daysFromSunday = weekday - 1
+
+        return calendar.date(byAdding: .day, value: -daysFromSunday, to: startOfDay)
+            ?? startOfDay
+    }
+
     func publishWidgetSnapshot(
         from snapshot: WakePlanRefreshSnapshot,
         syncedAt: Date

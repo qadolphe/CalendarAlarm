@@ -16,6 +16,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 
     let targetDay: TargetDay
     let targetEvent: ParsedEvent?
+    let firstEventOfDay: ParsedEvent?
 
     let calculatedWakeTime: Date
     let eventStartTime: Date?
@@ -32,4 +33,34 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 
     /// Names of all rules that matched the chosen event (only populated when >1 rule matched).
     let matchedRuleNames: [String]
+
+    init(
+        id: WakePlanID,
+        targetDay: TargetDay,
+        targetEvent: ParsedEvent?,
+        firstEventOfDay: ParsedEvent? = nil,
+        calculatedWakeTime: Date,
+        eventStartTime: Date?,
+        prepTime: Minutes,
+        commuteTime: Minutes,
+        alarmSettings: RuleAlarmSettings,
+        isFallback: Bool,
+        reason: WakePlanReason,
+        appliedRuleName: String?,
+        matchedRuleNames: [String]
+    ) {
+        self.id = id
+        self.targetDay = targetDay
+        self.targetEvent = targetEvent
+        self.firstEventOfDay = firstEventOfDay ?? targetEvent
+        self.calculatedWakeTime = calculatedWakeTime
+        self.eventStartTime = eventStartTime
+        self.prepTime = prepTime
+        self.commuteTime = commuteTime
+        self.alarmSettings = alarmSettings
+        self.isFallback = isFallback
+        self.reason = reason
+        self.appliedRuleName = appliedRuleName
+        self.matchedRuleNames = matchedRuleNames
+    }
 }

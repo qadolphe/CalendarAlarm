@@ -9,6 +9,9 @@ enum AppConfiguration {
     static let testAlarmDescription =
         "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
     static let managedAlarmPlanningCount = 7
+    static let dashboardWeekLength = 7
+    static let dashboardVisibleWeekCount = 2
+    static let dashboardPlanningCount = dashboardWeekLength * dashboardVisibleWeekCount
     static let dashboardUpcomingDisplayCount = 3
     static let backgroundRefreshTaskIdentifier = "com.earlyotter.calendaralarm.refresh"
     static let backgroundRefreshEarliestInterval: TimeInterval = 6 * 60 * 60

@@ -20,12 +20,40 @@ struct DashboardViewModel {
             }
         }
 
+        var displayedEvent: ParsedEvent? {
+            plan.firstEventOfDay ?? plan.targetEvent
+        }
+
         var eventDate: Date? {
-            plan.targetEvent?.startDate
+            displayedEvent?.startDate
         }
 
         var hasConnectedMarkers: Bool {
-            plan.reason == .event && alarmDate != nil && eventDate != nil
+            plan.reason == .event
+                && plan.targetEvent?.id == displayedEvent?.id
+                && alarmDate != nil
+                && eventDate != nil
+        }
+
+        var latestRelevantDate: Date? {
+            [alarmDate, eventDate].compactMap { $0 }.max()
+        }
+    }
+
+    struct WeekPage: Identifiable, Equatable {
+        let index: Int
+        let entries: [WeekEntry]
+
+        var id: Int {
+            index
+        }
+
+        var startDate: Date? {
+            entries.first?.targetDay.date
+        }
+
+        var endDate: Date? {
+            entries.last?.targetDay.date
         }
     }
 
@@ -40,10 +68,12 @@ struct DashboardViewModel {
 
     let appState: AppState
     private let calendar: Calendar
+    private let now: Date
 
-    init(appState: AppState, calendar: Calendar = .current) {
+    init(appState: AppState, calendar: Calendar = .current, now: Date = Date()) {
         self.appState = appState
         self.calendar = calendar
+        self.now = now
     }
 
     var title: String {
@@ -66,9 +96,9 @@ struct DashboardViewModel {
     }
 
     var weekEntries: [WeekEntry] {
-        let planningCount = max(AppConfiguration.managedAlarmPlanningCount, 1)
+        let planningCount = max(AppConfiguration.dashboardPlanningCount, 1)
         let plansByDay = Dictionary(uniqueKeysWithValues: appState.dailyPlans.map { ($0.targetDay.date, $0) })
-        let startDate = appState.dailyPlans.first?.targetDay.date ?? calendar.startOfDay(for: Date())
+        let startDate = appState.dailyPlans.first?.targetDay.date ?? startOfWeek(containing: now)
 
         return (0..<planningCount).map { offset in
             let date = calendar.date(byAdding: .day, value: offset, to: startDate) ?? startDate
@@ -81,6 +111,38 @@ struct DashboardViewModel {
                 alarmStatus: alarmStatus(for: plan)
             )
         }
+    }
+
+    var weekPages: [WeekPage] {
+        stride(from: 0, to: weekEntries.count, by: AppConfiguration.dashboardWeekLength).map { startIndex in
+            let entries = Array(
+                weekEntries[startIndex..<min(startIndex + AppConfiguration.dashboardWeekLength, weekEntries.count)]
+            )
+
+            return WeekPage(
+                index: startIndex / AppConfiguration.dashboardWeekLength,
+                entries: entries
+            )
+        }
+    }
+
+    var defaultWeekPageIndex: Int {
+        guard weekPages.count > 1 else {
+            return 0
+        }
+
+        let today = calendar.startOfDay(for: now)
+
+        guard calendar.component(.weekday, from: today) == 7,
+              let saturdayEntry = weekEntries.first(where: {
+                  calendar.isDate($0.targetDay.date, inSameDayAs: today)
+              }),
+              saturdayEntry.latestRelevantDate != nil,
+              isElapsed(saturdayEntry) else {
+            return 0
+        }
+
+        return 1
     }
 
     var visibleTimeWindow: VisibleTimeWindow {
@@ -198,9 +260,17 @@ struct DashboardViewModel {
     func accessibilityLabel(for entry: WeekEntry) -> String {
         let day = entry.targetDay.date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
 
-        if let event = entry.plan.targetEvent,
+        if let event = entry.displayedEvent,
            let alarmDate = entry.alarmDate {
-            return "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) linked to \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+            if entry.hasConnectedMarkers {
+                return "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) linked to \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+            }
+
+            return "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) and first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+        }
+
+        if let event = entry.displayedEvent {
+            return "\(day), first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
         }
 
         if let alarmDate = entry.alarmDate {
@@ -229,6 +299,41 @@ struct DashboardViewModel {
         let normalized = (seconds - window.startSeconds) / window.spanSeconds
 
         return CGFloat(min(max(normalized, 0), 1))
+    }
+
+    func weekRangeTitle(for page: WeekPage) -> String {
+        guard let startDate = page.startDate,
+              let endDate = page.endDate else {
+            return ""
+        }
+
+        let sameYear = calendar.component(.year, from: startDate) == calendar.component(.year, from: endDate)
+        let sameMonth = sameYear && calendar.component(.month, from: startDate) == calendar.component(.month, from: endDate)
+
+        if sameMonth {
+            return "\(startDate.formatted(.dateTime.month(.abbreviated).day())) - \(endDate.formatted(.dateTime.day()))"
+        }
+
+        if sameYear {
+            return "\(startDate.formatted(.dateTime.month(.abbreviated).day())) - \(endDate.formatted(.dateTime.month(.abbreviated).day()))"
+        }
+
+        return "\(startDate.formatted(.dateTime.year().month(.abbreviated).day())) - \(endDate.formatted(.dateTime.year().month(.abbreviated).day()))"
+    }
+
+    func isElapsed(_ entry: WeekEntry) -> Bool {
+        let today = calendar.startOfDay(for: now)
+
+        if entry.targetDay.date < today {
+            return true
+        }
+
+        if calendar.isDate(entry.targetDay.date, inSameDayAs: now),
+           let latestRelevantDate = entry.latestRelevantDate {
+            return latestRelevantDate <= now
+        }
+
+        return false
     }
 
     private func alarmStatus(for plan: WakeUpPlan) -> AlarmScheduleStatus? {
@@ -261,6 +366,15 @@ struct DashboardViewModel {
             appliedRuleName: nil,
             matchedRuleNames: []
         )
+    }
+
+    private func startOfWeek(containing date: Date) -> Date {
+        let startOfDay = calendar.startOfDay(for: date)
+        let weekday = calendar.component(.weekday, from: startOfDay)
+        let daysFromSunday = weekday - 1
+
+        return calendar.date(byAdding: .day, value: -daysFromSunday, to: startOfDay)
+            ?? startOfDay
     }
 
     private func timeOfDaySeconds(for date: Date, on targetDay: TargetDay) -> TimeInterval {

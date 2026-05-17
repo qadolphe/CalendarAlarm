@@ -72,6 +72,14 @@ struct WakePlanDetailsView: View {
         }
     }
 
+    private var standaloneEvent: ParsedEvent? {
+        guard plan.targetEvent == nil else {
+            return nil
+        }
+
+        return plan.firstEventOfDay
+    }
+
     var body: some View {
         ZStack {
             Color.clear.withAppBackground()
@@ -116,6 +124,11 @@ struct WakePlanDetailsView: View {
                                 }
 
                                 Spacer()
+                            }
+
+                            if let standaloneEvent {
+                                Divider().overlay(WPStyles.cardBorder)
+                                standaloneEventRow(standaloneEvent)
                             }
                         } else if let event = plan.targetEvent {
                             HStack(alignment: .center) {
@@ -188,13 +201,17 @@ struct WakePlanDetailsView: View {
 
                             Divider().overlay(WPStyles.cardBorder)
 
-                            HStack {
-                                Image(systemName: "moon.zzz.fill")
-                                    .foregroundStyle(.indigo)
-                                Text("No early events")
-                                    .font(.headline)
-                                    .foregroundStyle(WPStyles.primaryText)
-                                Spacer()
+                            if let standaloneEvent {
+                                standaloneEventRow(standaloneEvent)
+                            } else {
+                                HStack {
+                                    Image(systemName: "moon.zzz.fill")
+                                        .foregroundStyle(.indigo)
+                                    Text("No early events")
+                                        .font(.headline)
+                                        .foregroundStyle(WPStyles.primaryText)
+                                    Spacer()
+                                }
                             }
                         }
                     }
@@ -285,6 +302,29 @@ struct WakePlanDetailsView: View {
             Spacer()
             Text(value)
                 .font(.subheadline.monospacedDigit().weight(.medium))
+                .foregroundStyle(WPStyles.primaryText)
+        }
+    }
+
+    private func standaloneEventRow(_ event: ParsedEvent) -> some View {
+        HStack(alignment: .center) {
+            Image(systemName: "calendar")
+                .foregroundStyle(WPStyles.secondaryBlue)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("First Event")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WPStyles.secondaryText)
+                Text(event.title)
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(event.startDate, style: .time)
+                .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)
         }
     }

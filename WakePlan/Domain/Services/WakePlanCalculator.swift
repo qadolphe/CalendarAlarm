@@ -122,6 +122,7 @@ struct WakePlanCalculator {
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
+        let firstEventOfDay = validEvents.min(by: { $0.startDate < $1.startDate })
 
         // Build every candidate: (event, matchingRule, calculatedWakeTime)
         // A rule matches an event if AlarmRule.matches returns true.
@@ -169,7 +170,8 @@ struct WakePlanCalculator {
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
                     timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings
+                    alarmSettings: fallbackAlarmSettings,
+                    firstEventOfDay: firstEventOfDay
                 )
             }
 
@@ -183,6 +185,7 @@ struct WakePlanCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
+                firstEventOfDay: firstEventOfDay,
                 calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -213,7 +216,8 @@ struct WakePlanCalculator {
                 targetDay: targetDay,
                 wakeTime: fallbackWakeTime,
                 timingRules: timingRules,
-                alarmSettings: fallbackAlarmSettings
+                alarmSettings: fallbackAlarmSettings,
+                firstEventOfDay: firstEventOfDay
             )
         }
 
@@ -231,6 +235,7 @@ struct WakePlanCalculator {
             ),
             targetDay: targetDay,
             targetEvent: winningEvent,
+            firstEventOfDay: firstEventOfDay,
             calculatedWakeTime: winnerWakeTime,
             eventStartTime: winningEvent.startDate,
             prepTime: winningRule.prepTime,
@@ -251,7 +256,8 @@ struct WakePlanCalculator {
         targetDay: TargetDay,
         wakeTime: Date,
         timingRules: TimingRules,
-        alarmSettings: RuleAlarmSettings = .default
+        alarmSettings: RuleAlarmSettings = .default,
+        firstEventOfDay: ParsedEvent? = nil
     ) -> WakeUpPlan {
         WakeUpPlan(
             id: hasher.makeID(
@@ -263,6 +269,7 @@ struct WakePlanCalculator {
             ),
             targetDay: targetDay,
             targetEvent: nil,
+            firstEventOfDay: firstEventOfDay,
             calculatedWakeTime: wakeTime,
             eventStartTime: nil,
             prepTime: timingRules.prepTime,
