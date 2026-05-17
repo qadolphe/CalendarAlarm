@@ -142,7 +142,7 @@ actor EarlyOtterRefreshService {
     }
 }
 
-private extension EarlyOtterRefreshService {
+extension EarlyOtterRefreshService {
     func startOfDashboardWeek(
         containing date: Date,
         calendar: Calendar
@@ -177,6 +177,7 @@ private extension EarlyOtterRefreshService {
             nextAlarmDate: previousSnapshot?.nextAlarmDate,
             eventTitle: previousSnapshot?.eventTitle,
             context: previousSnapshot?.context,
+            showsConnectedMarkers: previousSnapshot?.showsConnectedMarkers,
             detailText: detailText,
             lastUpdatedAt: lastUpdatedAt
         )
@@ -193,11 +194,13 @@ private extension EarlyOtterRefreshService {
 
         if let nextRecord = snapshot.syncResult.records.first {
             let plan = plansByID[nextRecord.planID]
+            let displayedEvent = widgetDisplayedEvent(for: plan)
 
             return .scheduled(
                 nextAlarmDate: nextRecord.scheduledWakeTime,
-                eventTitle: plan?.targetEvent?.title,
-                context: widgetContext(for: plan),
+                eventTitle: displayedEvent?.title,
+                context: widgetContext(for: plan, displayedEvent: displayedEvent),
+                showsConnectedMarkers: widgetShowsConnectedMarkers(for: plan, displayedEvent: displayedEvent),
                 detailText: nil,
                 lastUpdatedAt: syncedAt
             )
@@ -209,16 +212,41 @@ private extension EarlyOtterRefreshService {
         )
     }
 
-    func widgetContext(for plan: WakeUpPlan?) -> String? {
+    func widgetDisplayedEvent(for plan: WakeUpPlan?) -> ParsedEvent? {
         guard let plan else {
             return nil
         }
 
-        if let event = plan.targetEvent {
+        return plan.firstEventOfDay ?? plan.targetEvent
+    }
+
+    func widgetContext(
+        for plan: WakeUpPlan?,
+        displayedEvent: ParsedEvent? = nil
+    ) -> String? {
+        guard let plan else {
+            return nil
+        }
+
+        if let event = displayedEvent ?? widgetDisplayedEvent(for: plan) {
             return event.startDate.formatted(date: .omitted, time: .shortened)
         }
 
         return "Fixed alarm"
+    }
+
+    func widgetShowsConnectedMarkers(
+        for plan: WakeUpPlan?,
+        displayedEvent: ParsedEvent? = nil
+    ) -> Bool {
+        guard let plan else {
+            return false
+        }
+
+        let shownEvent = displayedEvent ?? widgetDisplayedEvent(for: plan)
+        return plan.reason == .event
+            && plan.targetEvent?.id == shownEvent?.id
+            && shownEvent != nil
     }
 
     func widgetEmptyDetail(for permissions: PermissionSnapshot) -> String {

@@ -68,6 +68,7 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(widgetSnapshot.state, .scheduled)
         XCTAssertEqual(widgetSnapshot.nextAlarmDate, scheduledRecord.scheduledWakeTime)
         XCTAssertEqual(widgetSnapshot.eventTitle, "Design Review")
+        XCTAssertEqual(widgetSnapshot.showsConnectedMarkers, true)
         XCTAssertEqual(widgetSnapshot.lastUpdatedAt, now)
     }
 
@@ -178,6 +179,111 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(widgetSnapshot.eventTitle, "Existing Alarm")
         XCTAssertEqual(widgetSnapshot.detailText, TestFailure.expected.localizedDescription)
         XCTAssertEqual(widgetSnapshot.lastUpdatedAt, now)
+    }
+
+    func testMakeWidgetSnapshotUsesDisplayedEventForFallbackWithoutConnector() async throws {
+        let calendar = configuredCalendar()
+        let syncedAt = makeDate(
+            year: 2026,
+            month: 5,
+            day: 15,
+            hour: 18,
+            minute: 0,
+            second: 0,
+            calendar: calendar
+        )
+        let targetDayDate = makeDate(
+            year: 2026,
+            month: 5,
+            day: 16,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            calendar: calendar
+        )
+        let wakeTime = makeDate(
+            year: 2026,
+            month: 5,
+            day: 16,
+            hour: 7,
+            minute: 0,
+            second: 0,
+            calendar: calendar
+        )
+        let firstEventStart = makeDate(
+            year: 2026,
+            month: 5,
+            day: 16,
+            hour: 8,
+            minute: 30,
+            second: 0,
+            calendar: calendar
+        )
+        let firstEvent = makeEvent(
+            id: "event-1",
+            title: "Team Sync",
+            startDate: firstEventStart,
+            calendarID: "work"
+        )
+        let plan = WakeUpPlan(
+            id: "fallback-plan",
+            targetDay: TargetDay(date: targetDayDate, calendar: calendar),
+            targetEvent: nil,
+            firstEventOfDay: firstEvent,
+            calculatedWakeTime: wakeTime,
+            eventStartTime: nil,
+            prepTime: Minutes(30),
+            commuteTime: Minutes(15),
+            alarmSettings: .default,
+            isFallback: true,
+            reason: .fallback,
+            appliedRuleName: nil,
+            matchedRuleNames: []
+        )
+        let scheduledRecord = ScheduledAlarmRecord(
+            planID: plan.id,
+            nativeAlarmID: "native-1",
+            scheduledWakeTime: wakeTime,
+            targetEventID: nil,
+            createdAt: syncedAt,
+            updatedAt: syncedAt
+        )
+        let snapshot = EarlyOtterRefreshSnapshot(
+            permissions: .initial,
+            accounts: [],
+            calendars: [],
+            tomorrowPlan: plan,
+            dailyPlans: [plan],
+            displayPlans: [plan],
+            syncResult: AlarmSyncResult(
+                records: [scheduledRecord],
+                statusesByPlanID: [plan.id: .scheduled(scheduledRecord)],
+                scheduledCount: 1,
+                canceledCount: 0,
+                failedCount: 0
+            )
+        )
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: EarlyOtterService(
+                calendarProvider: StubCalendarProvider(events: []),
+                preferencesStore: InMemoryPreferencesStore(preferences: .default)
+            ),
+            permissionService: PermissionService(
+                calendarReader: StubCalendarReader(),
+                alarmScheduler: FakeAlarmScheduler()
+            ),
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: FakeAlarmScheduler(),
+                alarmStore: FakeScheduledAlarmStore()
+            ),
+            widgetSnapshotStore: InMemoryWidgetSnapshotStore()
+        )
+
+        let widgetSnapshot = await service.makeWidgetSnapshot(from: snapshot, syncedAt: syncedAt)
+
+        XCTAssertEqual(widgetSnapshot.eventTitle, "Team Sync")
+        XCTAssertEqual(widgetSnapshot.context, firstEventStart.formatted(date: .omitted, time: .shortened))
+        XCTAssertEqual(widgetSnapshot.showsConnectedMarkers, false)
     }
 
     private func configuredCalendar() -> Calendar {

@@ -11,6 +11,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
     let nextAlarmDate: Date?
     let eventTitle: String?
     let context: String?
+    let showsConnectedMarkers: Bool?
     let detailText: String?
     let lastUpdatedAt: Date
 
@@ -18,6 +19,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
         nextAlarmDate: Date,
         eventTitle: String? = nil,
         context: String? = nil,
+        showsConnectedMarkers: Bool? = nil,
         detailText: String? = nil,
         lastUpdatedAt: Date
     ) -> Self {
@@ -26,6 +28,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
             nextAlarmDate: nextAlarmDate,
             eventTitle: eventTitle,
             context: context,
+            showsConnectedMarkers: showsConnectedMarkers,
             detailText: detailText,
             lastUpdatedAt: lastUpdatedAt
         )
@@ -40,6 +43,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
             nextAlarmDate: nil,
             eventTitle: nil,
             context: nil,
+            showsConnectedMarkers: nil,
             detailText: detailText,
             lastUpdatedAt: lastUpdatedAt
         )
@@ -49,6 +53,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
         nextAlarmDate: Date? = nil,
         eventTitle: String? = nil,
         context: String? = nil,
+        showsConnectedMarkers: Bool? = nil,
         detailText: String? = nil,
         lastUpdatedAt: Date
     ) -> Self {
@@ -57,6 +62,7 @@ struct NextAlarmWidgetSnapshot: Codable, Equatable, Sendable {
             nextAlarmDate: nextAlarmDate,
             eventTitle: eventTitle,
             context: context,
+            showsConnectedMarkers: showsConnectedMarkers,
             detailText: detailText,
             lastUpdatedAt: lastUpdatedAt
         )
