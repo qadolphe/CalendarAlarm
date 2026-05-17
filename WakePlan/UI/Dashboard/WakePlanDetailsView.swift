@@ -3,7 +3,6 @@ import SwiftUI
 struct WakePlanDetailsView: View {
     let plan: WakeUpPlan
     let alarmStatus: AlarmScheduleStatus?
-    @Environment(\.dismiss) private var dismiss
 
     private var displayedRuleName: String? {
         if let ruleName = plan.appliedRuleName {
@@ -80,15 +79,9 @@ struct WakePlanDetailsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Selected Day")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(WPStyles.secondaryText)
-                                .textCase(.uppercase)
-                            Text(selectedDayTitle)
-                                .font(.title2.weight(.bold))
-                                .foregroundStyle(WPStyles.primaryText)
-                        }
+                        Text(selectedDayTitle)
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(WPStyles.primaryText)
 
                         if let ruleName = displayedRuleName {
                             VStack(alignment: .leading, spacing: 4) {

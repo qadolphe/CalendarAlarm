@@ -29,6 +29,15 @@ struct DashboardViewModel {
         }
     }
 
+    struct VisibleTimeWindow: Equatable {
+        let startSeconds: TimeInterval
+        let endSeconds: TimeInterval
+
+        var spanSeconds: TimeInterval {
+            max(endSeconds - startSeconds, 60 * 60)
+        }
+    }
+
     let appState: AppState
     private let calendar: Calendar
 
@@ -74,82 +83,28 @@ struct DashboardViewModel {
         }
     }
 
-    var upcomingPlans: [WakeUpPlan] {
-        appState.upcomingPlans
-    }
+    var visibleTimeWindow: VisibleTimeWindow {
+        let defaultStart: TimeInterval = 5 * 60 * 60
+        let defaultEnd: TimeInterval = 11 * 60 * 60
+        let extensionAmount: TimeInterval = 60 * 60
+        let dayLength: TimeInterval = 24 * 60 * 60
 
-    var summaryHeadline: String {
-        guard let nextPlan = appState.displayPlans.first else {
-            return "No managed alarms this week"
+        let markerSeconds = weekEntries.flatMap { entry in
+            let markerDates: [Date] = [entry.alarmDate, entry.eventDate].compactMap { $0 }
+            return markerDates.map { date in
+                timeOfDaySeconds(for: date, on: entry.targetDay)
+            }
         }
 
-        return "Next alarm \(nextPlan.calculatedWakeTime.formatted(date: .omitted, time: .shortened))"
-    }
-
-    var summaryMessage: String {
-        guard let nextPlan = appState.displayPlans.first else {
-            return "Each day spans a full pill. Tap any day to inspect its alarm and event details."
+        guard let earliest = markerSeconds.min(),
+              let latest = markerSeconds.max() else {
+            return VisibleTimeWindow(startSeconds: defaultStart, endSeconds: defaultEnd)
         }
 
-        if let event = nextPlan.targetEvent {
-            return "Based on \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened)) on \(nextPlan.targetDay.date.formatted(.dateTime.weekday(.wide)))."
-        }
+        let start = min(defaultStart, max(0, earliest - extensionAmount))
+        let end = max(defaultEnd, min(dayLength, latest + extensionAmount))
 
-        switch nextPlan.reason {
-        case .fallback:
-            return "Using your fallback alarm on \(nextPlan.targetDay.date.formatted(.dateTime.weekday(.wide)))."
-        case .authorizationMissing:
-            return "EarlyOtter calculated the wake time, but alarm access is still needed to sync it."
-        case .manualOverride:
-            return "A manual alarm setup is taking priority for that day."
-        case .event:
-            return "Auto alarm is linked to the first matching event for that day."
-        case .disabled:
-            return "Automatic alarms are turned off."
-        case .inactiveDay:
-            return "Auto-Pilot is paused for some weekdays."
-        case .noSchedule:
-            return "No matching event or fallback alarm is available in the current planning window."
-        case .systemDisabled:
-            return "EarlyOtter is currently disabled."
-        }
-    }
-
-    var statusPillText: String? {
-        guard let viewState else { return nil }
-
-        switch viewState.alarmStatus {
-        case .scheduled:
-            return "Synced"
-        case .needsPermission:
-            return "Alarm Access Needed"
-        case .disabled:
-            return "Paused"
-        case .failed:
-            return "Needs Attention"
-        case .notScheduled:
-            return "No Alarm"
-        }
-    }
-
-    var eventSummary: String? {
-        guard let plan else { return nil }
-
-        if let event = plan.targetEvent {
-            return "For \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))"
-        }
-
-        return "Fixed alarm"
-    }
-
-    var heroContext: String {
-        guard let plan else { return "Baseline wake limit" }
-
-        if let event = plan.targetEvent {
-            return "Based on \"\(event.title)\""
-        }
-
-        return "No calendar event found"
+        return VisibleTimeWindow(startSeconds: start, endSeconds: end)
     }
 
     var timeUntilWake: String? {
@@ -166,49 +121,6 @@ struct DashboardViewModel {
         }
 
         return "In \(formatted)"
-    }
-
-    var timingSummary: String? {
-        guard let plan else { return nil }
-        return "\(plan.prepTime.rawValue) min prep · \(plan.commuteTime.rawValue) min commute"
-    }
-
-    var calendarSummary: String? {
-        guard let plan else { return nil }
-
-        if let event = plan.targetEvent,
-           let title = appState.calendars.first(where: { $0.id == event.calendarID })?.title {
-            return title
-        }
-
-        let selectedCalendars = appState.calendars.filter(\.isSelected)
-
-        if selectedCalendars.count == 1 {
-            return selectedCalendars[0].title
-        }
-
-        if selectedCalendars.isEmpty {
-            return nil
-        }
-
-        return "\(selectedCalendars.count) calendars"
-    }
-
-    var statusTitle: String {
-        guard let viewState else { return "Loading" }
-
-        switch viewState.alarmStatus {
-        case .scheduled:
-            return "Scheduled"
-        case .needsPermission:
-            return "Needs Permission"
-        case .disabled:
-            return "Disabled"
-        case .failed:
-            return "Schedule Failed"
-        case .notScheduled:
-            return "Not Scheduled"
-        }
     }
 
     var statusMessage: String? {
@@ -250,6 +162,18 @@ struct DashboardViewModel {
         appState.displayPlans.first?.id == entry.plan.id
     }
 
+    func entry(for plan: WakeUpPlan, alarmStatus: AlarmScheduleStatus?) -> WeekEntry {
+        if let existing = weekEntries.first(where: { $0.plan.id == plan.id }) {
+            return existing
+        }
+
+        return WeekEntry(
+            targetDay: plan.targetDay,
+            plan: plan,
+            alarmStatus: alarmStatus ?? self.alarmStatus(for: plan)
+        )
+    }
+
     func daySymbol(for date: Date) -> String {
         switch calendar.component(.weekday, from: date) {
         case 1:
@@ -268,17 +192,6 @@ struct DashboardViewModel {
             return "S"
         default:
             return date.formatted(.dateTime.weekday(.narrow))
-        }
-    }
-
-    func footerText(for entry: WeekEntry) -> String {
-        switch entry.plan.reason {
-        case .event, .fallback, .authorizationMissing, .manualOverride:
-            return entry.plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened)
-        case .disabled, .inactiveDay, .systemDisabled:
-            return "Off"
-        case .noSchedule:
-            return "None"
         }
     }
 
@@ -308,46 +221,14 @@ struct DashboardViewModel {
         }
     }
 
-    func dayLabel(for plan: WakeUpPlan) -> String {
-        plan.targetDay.date.formatted(.dateTime.weekday(.wide))
-    }
+    func markerFraction(for date: Date?, on targetDay: TargetDay) -> CGFloat? {
+        guard let date else { return nil }
 
-    func upcomingTitle(for plan: WakeUpPlan) -> String {
-        if let event = plan.targetEvent {
-            return event.title
-        }
+        let seconds = timeOfDaySeconds(for: date, on: targetDay)
+        let window = visibleTimeWindow
+        let normalized = (seconds - window.startSeconds) / window.spanSeconds
 
-        switch plan.reason {
-        case .inactiveDay:
-            return "Inactive day"
-        case .noSchedule:
-            return "No scheduled alarm"
-        case .disabled:
-            return "Auto-Pilot paused"
-        case .systemDisabled:
-            return "System disabled"
-        case .fallback, .authorizationMissing, .manualOverride, .event:
-            return "Fixed alarm"
-        }
-    }
-
-    func upcomingSubtitle(for plan: WakeUpPlan) -> String {
-        if let event = plan.targetEvent {
-            return event.startDate.formatted(date: .omitted, time: .shortened)
-        }
-
-        switch plan.reason {
-        case .inactiveDay:
-            return "Not scheduled on this weekday"
-        case .noSchedule:
-            return "No scheduled events or fixed alarm"
-        case .disabled:
-            return "Turn Auto-Pilot back on in Schedule"
-        case .systemDisabled:
-            return "Turn system on in Settings to reactivate"
-        case .fallback, .authorizationMissing, .manualOverride, .event:
-            return "No matching event found"
-        }
+        return CGFloat(min(max(normalized, 0), 1))
     }
 
     private func alarmStatus(for plan: WakeUpPlan) -> AlarmScheduleStatus? {
@@ -380,5 +261,10 @@ struct DashboardViewModel {
             appliedRuleName: nil,
             matchedRuleNames: []
         )
+    }
+
+    private func timeOfDaySeconds(for date: Date, on targetDay: TargetDay) -> TimeInterval {
+        let dayLength: TimeInterval = 24 * 60 * 60
+        return min(max(date.timeIntervalSince(targetDay.date), 0), dayLength)
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 public enum WPStyles {
     public static let primaryOrange = Color(red: 1.0, green: 0.62, blue: 0.04)
+    public static let deepOrange = Color(red: 0.70, green: 0.36, blue: 0.08)
     public static let secondaryBlue = Color(red: 0.04, green: 0.52, blue: 1.0)
     public static let successGreen = Color(red: 0.19, green: 0.82, blue: 0.35)
     public static let background = Color(red: 0.07, green: 0.07, blue: 0.07)
