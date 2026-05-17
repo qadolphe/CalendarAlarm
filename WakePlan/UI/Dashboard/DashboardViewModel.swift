@@ -76,10 +76,6 @@ struct DashboardViewModel {
         self.now = now
     }
 
-    var title: String {
-        "Week View"
-    }
-
     var viewState: WakePlanViewState? {
         switch appState.dashboardState {
         case .needsAlarmPermission(let viewState),

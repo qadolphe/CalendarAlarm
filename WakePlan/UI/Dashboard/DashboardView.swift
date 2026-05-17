@@ -85,10 +85,7 @@ struct DashboardView: View {
              .emptyFallback(let viewState):
             VStack(alignment: .leading, spacing: 24) {
                 ZStack(alignment: .topTrailing) {
-                    if viewState.plan.reason == .disabled
-                        || viewState.plan.reason == .inactiveDay
-                        || viewState.plan.reason == .noSchedule
-                        || viewState.plan.reason == .systemDisabled {
+                    if showsNoAlarmCard(for: viewState.plan) {
                         DashboardNoAlarmCardView(
                             message: noAlarmMessage(for: viewState.plan)
                         )
@@ -147,6 +144,15 @@ struct DashboardView: View {
             return "EarlyOtter is disabled."
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return "No alarm is currently scheduled."
+        }
+    }
+
+    private func showsNoAlarmCard(for plan: WakeUpPlan) -> Bool {
+        switch plan.reason {
+        case .disabled, .inactiveDay, .noSchedule, .systemDisabled:
+            return true
+        case .fallback, .authorizationMissing, .manualOverride, .event:
+            return false
         }
     }
 
@@ -339,14 +345,16 @@ private struct DashboardWeeklyCardView: View {
     }
 
     var body: some View {
+        let pages = viewModel.weekPages
+
         VStack(alignment: .leading, spacing: 14) {
-            if !viewModel.weekPages.isEmpty {
+            if let currentPage = currentPage(in: pages) {
                 Text(viewModel.weekRangeTitle(for: currentPage))
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(WPStyles.primaryText)
 
                 TabView(selection: $selectedWeekIndex) {
-                    ForEach(viewModel.weekPages) { page in
+                    ForEach(pages) { page in
                         DashboardWeekPageView(
                             page: page,
                             viewModel: viewModel,
@@ -362,9 +370,13 @@ private struct DashboardWeeklyCardView: View {
         .cardStyle()
     }
 
-    private var currentPage: DashboardViewModel.WeekPage {
-        let safeIndex = min(selectedWeekIndex, max(viewModel.weekPages.count - 1, 0))
-        return viewModel.weekPages[safeIndex]
+    private func currentPage(in pages: [DashboardViewModel.WeekPage]) -> DashboardViewModel.WeekPage? {
+        guard !pages.isEmpty else {
+            return nil
+        }
+
+        let safeIndex = min(max(selectedWeekIndex, 0), pages.count - 1)
+        return pages[safeIndex]
     }
 }
 
