@@ -269,7 +269,7 @@ private struct DashboardHeroCardView: View {
                 if let event = plan.targetEvent {
                     HStack(spacing: 8) {
                         Image(systemName: "calendar")
-                            .foregroundStyle(WPStyles.primaryOrange)
+                            .foregroundStyle(WPStyles.secondaryBlue)
                         Text(event.title)
                             .font(.headline)
                             .lineLimit(1)
