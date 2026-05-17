@@ -106,39 +106,42 @@ private struct NextAlarmWidgetEntryView: View {
 
             Spacer(minLength: 12)
 
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top, spacing: SmallWidgetLayout.contentSpacing) {
                 markerColumn
 
-                VStack(alignment: .leading, spacing: markerRowSpacing) {
+                VStack(alignment: .leading, spacing: SmallWidgetLayout.markerRowSpacing) {
                     Text(formattedAlarmTime(for: alarmDate))
-                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .font(.system(size: 35, weight: .heavy, design: .rounded))
+                        .fontWidth(.compressed)
                         .monospacedDigit()
                         .foregroundStyle(WidgetTheme.primaryText)
                         .lineLimit(1)
                         .minimumScaleFactor(0.58)
                         .allowsTightening(true)
                         .layoutPriority(1)
-                        .frame(maxWidth: .infinity, minHeight: alarmRowHeight, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: SmallWidgetLayout.alarmRowHeight, alignment: .leading)
 
-                    if hasEventRow {
+                    if let eventTitle = eventTitleText {
                         HStack(alignment: .center, spacing: 8) {
-                            Text(entry.snapshot.eventTitle ?? "")
-                                .font(.caption.weight(.semibold))
+                            Text(eventTitle)
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .fontWidth(.compressed)
                                 .foregroundStyle(WidgetTheme.primaryText)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.85)
 
                             Spacer(minLength: 0)
 
-                            if let eventContext = eventContextText {
+                            if let eventContext = entry.snapshot.context {
                                 Text(eventContext)
-                                    .font(.caption.weight(.medium))
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .fontWidth(.compressed)
                                     .foregroundStyle(WidgetTheme.secondaryText)
                                     .lineLimit(1)
                                     .fixedSize(horizontal: true, vertical: false)
                             }
                         }
-                        .frame(maxWidth: .infinity, minHeight: eventRowHeight, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: SmallWidgetLayout.eventRowHeight, alignment: .leading)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,35 +179,17 @@ private struct NextAlarmWidgetEntryView: View {
     }
 
     private var markerColumn: some View {
-        VStack(spacing: 0) {
-            Circle()
-                .fill(WidgetTheme.primaryOrange)
-                .frame(width: markerSize, height: markerSize)
-                .frame(height: alarmRowHeight, alignment: .center)
-
-            if hasEventRow {
-                if entry.snapshot.showsConnectedMarkers == true {
-                    DottedConnector()
-                        .frame(width: markerConnectorWidth, height: markerRowSpacing)
-                } else {
-                    Color.clear
-                        .frame(width: markerConnectorWidth, height: markerRowSpacing)
-                }
-
-                Circle()
-                    .fill(WidgetTheme.secondaryBlue)
-                    .frame(width: markerSize, height: markerSize)
-                    .frame(height: eventRowHeight, alignment: .center)
-            }
-        }
-        .frame(width: markerColumnWidth)
-        .offset(x: -2)
+        SmallWidgetMarkerColumn(
+            showsEvent: eventTitleText != nil,
+            showsConnectedMarkers: hasConnectedMarkers
+        )
+        .offset(x: SmallWidgetLayout.markerColumnOffsetX)
     }
 
     private var inlineView: some View {
         Group {
             if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
-                Text("\(Image(systemName: stateIconName)) \(formattedInlineAlarmTime(for: alarmDate))")
+                Text("\(Image(systemName: stateIconName)) \(formattedAlarmTime(for: alarmDate))")
                     .font(.headline)
             } else {
                 Text(inlineFallbackText)
@@ -220,7 +205,7 @@ private struct NextAlarmWidgetEntryView: View {
                     Image(systemName: stateIconName)
                         .font(.caption2.weight(.bold))
                         .widgetAccentable()
-                    Text(formattedCircularAlarmTime(for: alarmDate))
+                    Text(formattedAlarmTime(for: alarmDate))
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.6)
@@ -245,7 +230,7 @@ private struct NextAlarmWidgetEntryView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
-                        Text(formattedRectangularAlarmTime(for: alarmDate))
+                        Text(formattedAlarmTime(for: alarmDate))
                             .font(.system(.body, design: .rounded).weight(.bold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
@@ -283,34 +268,12 @@ private struct NextAlarmWidgetEntryView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
+
+                    SmallWidgetAtmosphere()
                 }
             default:
                 EmptyView()
             }
-        }
-    }
-
-    @ViewBuilder
-    private var titleLabel: some View {
-        if entry.snapshot.state == .empty {
-            Text("EarlyOtter")
-        } else if let title = entry.snapshot.eventTitle {
-            Text(title).lineLimit(1)
-        } else {
-            Text("Next Alarm")
-        }
-    }
-
-    @ViewBuilder
-    private func alarmValue(font: Font) -> some View {
-        if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
-            Text(formattedAlarmTime(for: alarmDate))
-                .font(font)
-                .minimumScaleFactor(0.7)
-        } else {
-            Text(stateDescription)
-                .font(font)
-                .minimumScaleFactor(0.7)
         }
     }
 
@@ -338,18 +301,17 @@ private struct NextAlarmWidgetEntryView: View {
         }
     }
 
-    private var hasEventRow: Bool {
-        if let eventTitle = entry.snapshot.eventTitle {
-            return !eventTitle.isEmpty
-        }
-        return false
-    }
-
-    private var eventContextText: String? {
-        guard hasEventRow else {
+    private var eventTitleText: String? {
+        guard let eventTitle = entry.snapshot.eventTitle,
+              !eventTitle.isEmpty else {
             return nil
         }
-        return entry.snapshot.context
+
+        return eventTitle
+    }
+
+    private var hasConnectedMarkers: Bool {
+        eventTitleText != nil && entry.snapshot.showsConnectedMarkers == true
     }
 
     private var smallFooterText: String? {
@@ -357,7 +319,7 @@ private struct NextAlarmWidgetEntryView: View {
             return detailText
         }
 
-        if !hasEventRow, entry.snapshot.nextAlarmDate != nil {
+        if eventTitleText == nil, entry.snapshot.nextAlarmDate != nil {
             return "No early events"
         }
 
@@ -373,43 +335,123 @@ private struct NextAlarmWidgetEntryView: View {
         return "Enjoy sleeping in"
     }
 
-    private var markerSize: CGFloat { 11 }
-
-    private var markerConnectorWidth: CGFloat { 3 }
-
-    private var markerColumnWidth: CGFloat { 12 }
-
-    private var markerRowSpacing: CGFloat { 10 }
-
-    private var alarmRowHeight: CGFloat { 40 }
-
-    private var eventRowHeight: CGFloat { 18 }
-
-    private var footerSummary: String? {
-        if entry.snapshot.state == .empty { return entry.snapshot.detailText }
-        if let detail = entry.snapshot.detailText { return detail }
-        if let context = entry.snapshot.context { return context }
-        return nil
-    }
-
     private func formattedAlarmTime(for date: Date) -> String {
-        date.formatted(date: .omitted, time: .shortened)
-    }
-
-    private func formattedInlineAlarmTime(for date: Date) -> String {
-        date.formatted(date: .omitted, time: .shortened)
-    }
-
-    private func formattedCircularAlarmTime(for date: Date) -> String {
-        date.formatted(date: .omitted, time: .shortened)
-    }
-
-    private func formattedRectangularAlarmTime(for date: Date) -> String {
         date.formatted(date: .omitted, time: .shortened)
     }
 }
 
-private struct DottedConnector: View {
+private enum SmallWidgetLayout {
+    static let contentSpacing: CGFloat = 8
+    static let markerColumnOffsetX: CGFloat = -2
+    static let markerColumnWidth: CGFloat = 12
+    static let markerRowSpacing: CGFloat = 10
+    static let alarmRowHeight: CGFloat = 40
+    static let eventRowHeight: CGFloat = 18
+    static let primaryMarkerOuterSize: CGFloat = 16
+    static let secondaryMarkerOuterSize: CGFloat = 15
+    static let connectorWidth: CGFloat = 3
+
+    static func markerColumnHeight(hasEvent: Bool) -> CGFloat {
+        alarmRowHeight + (hasEvent ? markerRowSpacing + eventRowHeight : 0)
+    }
+
+    static var alarmMarkerOffset: CGFloat {
+        (alarmRowHeight - primaryMarkerOuterSize) / 2
+    }
+
+    static var eventMarkerOffset: CGFloat {
+        alarmRowHeight + markerRowSpacing + ((eventRowHeight - secondaryMarkerOuterSize) / 2)
+    }
+
+    static var connectorTopOffset: CGFloat {
+        alarmMarkerOffset + (primaryMarkerOuterSize / 2)
+    }
+
+    static var connectorHeight: CGFloat {
+        max((eventMarkerOffset + (secondaryMarkerOuterSize / 2)) - connectorTopOffset, 0)
+    }
+}
+
+private struct SmallWidgetAtmosphere: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(WidgetTheme.primaryOrange.opacity(0.10))
+                .frame(width: 128, height: 128)
+                .blur(radius: 34)
+                .offset(x: 58, y: 4)
+
+            Circle()
+                .fill(WidgetTheme.secondaryBlue.opacity(0.14))
+                .frame(width: 210, height: 210)
+                .blur(radius: 58)
+                .offset(x: 88, y: 92)
+        }
+        .compositingGroup()
+    }
+}
+
+private struct SmallWidgetMarkerColumn: View {
+    let showsEvent: Bool
+    let showsConnectedMarkers: Bool
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            if showsConnectedMarkers {
+                SmallWidgetConnector()
+                    .frame(width: SmallWidgetLayout.connectorWidth, height: SmallWidgetLayout.connectorHeight)
+                    .offset(y: SmallWidgetLayout.connectorTopOffset)
+            }
+
+            SmallWidgetMarker(
+                color: WidgetTheme.primaryOrange,
+                outerSize: SmallWidgetLayout.primaryMarkerOuterSize,
+                inset: 2.5,
+                shadowOpacity: 0.32,
+                shadowRadius: 4
+            )
+            .offset(y: SmallWidgetLayout.alarmMarkerOffset)
+
+            if showsEvent {
+                SmallWidgetMarker(
+                    color: WidgetTheme.secondaryBlue,
+                    outerSize: SmallWidgetLayout.secondaryMarkerOuterSize,
+                    inset: 2,
+                    shadowOpacity: 0.24,
+                    shadowRadius: 2.5
+                )
+                .offset(y: SmallWidgetLayout.eventMarkerOffset)
+            }
+        }
+        .frame(
+            width: SmallWidgetLayout.markerColumnWidth,
+            height: SmallWidgetLayout.markerColumnHeight(hasEvent: showsEvent),
+            alignment: .top
+        )
+    }
+}
+
+private struct SmallWidgetMarker: View {
+    let color: Color
+    let outerSize: CGFloat
+    let inset: CGFloat
+    let shadowOpacity: Double
+    let shadowRadius: CGFloat
+
+    var body: some View {
+        Circle()
+            .fill(WidgetTheme.background)
+            .frame(width: outerSize, height: outerSize)
+            .overlay {
+                Circle()
+                    .fill(color)
+                    .padding(inset)
+            }
+            .shadow(color: color.opacity(shadowOpacity), radius: shadowRadius)
+    }
+}
+
+private struct SmallWidgetConnector: View {
     var body: some View {
         GeometryReader { geometry in
             Path { path in
@@ -419,7 +461,7 @@ private struct DottedConnector: View {
             }
             .stroke(
                 WidgetTheme.primaryOrange.opacity(0.85),
-                style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [2, 3])
+                style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5])
             )
         }
     }
@@ -429,9 +471,9 @@ private struct DottedConnector: View {
 private enum WidgetTheme {
     static let primaryOrange = Color(red: 1.0, green: 0.62, blue: 0.04)
     static let secondaryBlue = Color(red: 0.04, green: 0.52, blue: 1.0)
+    static let background = Color(red: 0.07, green: 0.07, blue: 0.07)
     static let bgGradientStart = Color(red: 0.04, green: 0.04, blue: 0.04)
     static let bgGradientEnd = Color(red: 0.11, green: 0.11, blue: 0.11)
-    static let surface = Color(red: 0.12, green: 0.12, blue: 0.12)
     static let primaryText = Color(red: 0.89, green: 0.89, blue: 0.89)
     static let secondaryText = Color(red: 0.85, green: 0.76, blue: 0.68)
 }
