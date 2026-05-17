@@ -446,7 +446,7 @@ struct OnboardingView: View {
             columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7),
             spacing: 8
         ) {
-            ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+            ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
                 weekdayCell(option)
             }
         }

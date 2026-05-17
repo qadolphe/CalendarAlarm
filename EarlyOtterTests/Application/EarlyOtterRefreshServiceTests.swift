@@ -1,7 +1,7 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
-final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
+final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
     func testRefreshAndSyncPublishesScheduledWidgetSnapshot() async throws {
         let calendar = configuredCalendar()
         let now = makeDate(
@@ -33,7 +33,7 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
             ]
         )
         let preferencesStore = InMemoryPreferencesStore(preferences: .default)
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: provider,
             preferencesStore: preferencesStore
         )
@@ -48,8 +48,8 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
             alarmScheduler: alarmScheduler
         )
         let widgetSnapshotStore = InMemoryWidgetSnapshotStore()
-        let service = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             widgetSnapshotStore: widgetSnapshotStore,
@@ -88,7 +88,7 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
         preferences.schedule.fallbackEnabledDays = []
         let provider = StubCalendarProvider(events: [])
         let preferencesStore = InMemoryPreferencesStore(preferences: preferences)
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: provider,
             preferencesStore: preferencesStore
         )
@@ -102,8 +102,8 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
             alarmScheduler: alarmScheduler
         )
         let widgetSnapshotStore = InMemoryWidgetSnapshotStore()
-        let service = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             widgetSnapshotStore: widgetSnapshotStore,
@@ -143,7 +143,7 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
             detailText: nil,
             lastUpdatedAt: now.addingTimeInterval(-600)
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: FailingCalendarProvider(),
             preferencesStore: InMemoryPreferencesStore(preferences: .default)
         )
@@ -156,8 +156,8 @@ final class WakePlanRefreshWidgetSnapshotTests: XCTestCase {
             calendarReader: StubCalendarReader(),
             alarmScheduler: alarmScheduler
         )
-        let service = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             widgetSnapshotStore: widgetSnapshotStore

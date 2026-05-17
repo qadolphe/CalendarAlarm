@@ -6,7 +6,7 @@ import WidgetKit
 #endif
 
 @main
-struct WakePlanApp: App {
+struct EarlyOtterApp: App {
     private static let onboardingStorageKey = "hasCompletedOnboarding"
 
     @State private var appState: AppState
@@ -14,7 +14,7 @@ struct WakePlanApp: App {
 
     init() {
         let launchArguments = ProcessInfo.processInfo.arguments
-        let environment = WakePlanEnvironment.live()
+        let environment = EarlyOtterEnvironment.live()
 
         if launchArguments.contains(LaunchArguments.resetAppData) {
             Self.resetPersistedAppState(
@@ -35,7 +35,7 @@ struct WakePlanApp: App {
 
     var body: some Scene {
         WindowGroup {
-            WakePlanRootView(appState: appState)
+            EarlyOtterRootView(appState: appState)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
@@ -49,7 +49,7 @@ struct WakePlanApp: App {
         accountStore: UserDefaultsAccountStore,
         preferencesStore: UserDefaultsPreferencesStore,
         alarmStore: UserDefaultsScheduledAlarmStore,
-        refreshResultStore: UserDefaultsWakePlanRefreshResultStore,
+        refreshResultStore: UserDefaultsEarlyOtterRefreshResultStore,
         widgetSnapshotStore: UserDefaultsNextAlarmWidgetSnapshotStore,
         alarmScheduler: AlarmKitScheduler
     ) {

@@ -1,6 +1,6 @@
 import Foundation
 
-struct WakePlanID: RawRepresentable, Codable, Equatable, Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral {
+struct EarlyOtterID: RawRepresentable, Codable, Equatable, Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral {
     let rawValue: String
 
     init(rawValue: String) {

@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA0000000000000000000006"
                BuildableName = "EarlyOtter.app"
-               BlueprintName = "WakePlan"
-               ReferencedContainer = "container:WakePlan.xcodeproj">
+               BlueprintName = "EarlyOtter"
+               ReferencedContainer = "container:EarlyOtter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA0000000000000000000007"
-               BuildableName = "WakePlanTests.xctest"
-               BlueprintName = "WakePlanTests"
-               ReferencedContainer = "container:WakePlan.xcodeproj">
+               BuildableName = "EarlyOtterTests.xctest"
+               BlueprintName = "EarlyOtterTests"
+               ReferencedContainer = "container:EarlyOtter.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA0000000000000000000007"
-               BuildableName = "WakePlanTests.xctest"
-               BlueprintName = "WakePlanTests"
-               ReferencedContainer = "container:WakePlan.xcodeproj">
+               BuildableName = "EarlyOtterTests.xctest"
+               BlueprintName = "EarlyOtterTests"
+               ReferencedContainer = "container:EarlyOtter.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -70,8 +70,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA0000000000000000000006"
             BuildableName = "EarlyOtter.app"
-            BlueprintName = "WakePlan"
-            ReferencedContainer = "container:WakePlan.xcodeproj">
+            BlueprintName = "EarlyOtter"
+            ReferencedContainer = "container:EarlyOtter.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -101,8 +101,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA0000000000000000000006"
             BuildableName = "EarlyOtter.app"
-            BlueprintName = "WakePlan"
-            ReferencedContainer = "container:WakePlan.xcodeproj">
+            BlueprintName = "EarlyOtter"
+            ReferencedContainer = "container:EarlyOtter.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

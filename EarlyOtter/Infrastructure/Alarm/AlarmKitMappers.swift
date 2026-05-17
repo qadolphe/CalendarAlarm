@@ -5,14 +5,14 @@ import Foundation
 import SwiftUI
 
 @available(iOS 26.0, *)
-struct WakePlanAlarmMetadata: AlarmMetadata {
+struct EarlyOtterAlarmMetadata: AlarmMetadata {
     let planID: String
     let eventTitle: String
 }
 
 @available(iOS 26.0, *)
 enum AlarmKitMappers {
-    static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<WakePlanAlarmMetadata> {
+    static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<EarlyOtterAlarmMetadata> {
         let eventTitle = normalizedEventTitle(from: plan)
         let title = AppConfiguration.alarmTitle(for: eventTitle)
         let secondaryButton = snoozeButton(for: plan.alarmSettings)
@@ -44,7 +44,7 @@ enum AlarmKitMappers {
 
         let attributes = AlarmAttributes(
             presentation: presentation,
-            metadata: WakePlanAlarmMetadata(
+            metadata: EarlyOtterAlarmMetadata(
                 planID: plan.id.rawValue,
                 eventTitle: eventTitle ?? AppConfiguration.genericAlarmTitle
             ),

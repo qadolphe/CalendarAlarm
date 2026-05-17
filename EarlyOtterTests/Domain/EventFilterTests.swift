@@ -1,5 +1,5 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
 final class EventFilterTests: XCTestCase {
     private let filter = EventFilter()

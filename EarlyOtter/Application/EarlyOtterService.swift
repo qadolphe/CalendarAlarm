@@ -1,14 +1,14 @@
 import Foundation
 
-final class WakePlanService {
+final class EarlyOtterService {
     private let calendarProvider: CalendarEventProviding
     private let preferencesStore: PreferencesStoring
-    private let calculator: WakePlanCalculator
+    private let calculator: EarlyOtterCalculator
 
     init(
         calendarProvider: CalendarEventProviding,
         preferencesStore: PreferencesStoring,
-        calculator: WakePlanCalculator = WakePlanCalculator()
+        calculator: EarlyOtterCalculator = EarlyOtterCalculator()
     ) {
         self.calendarProvider = calendarProvider
         self.preferencesStore = preferencesStore

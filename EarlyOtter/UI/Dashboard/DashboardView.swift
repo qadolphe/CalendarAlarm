@@ -57,7 +57,7 @@ struct DashboardView: View {
             await appState.loadIfNeeded()
         }
         .sheet(item: $selectedDayDetails) { item in
-            WakePlanDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus)
+            EarlyOtterDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus)
         }
     }
 

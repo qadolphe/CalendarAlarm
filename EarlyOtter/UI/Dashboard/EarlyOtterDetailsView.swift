@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WakePlanDetailsView: View {
+struct EarlyOtterDetailsView: View {
     let plan: WakeUpPlan
     let alarmStatus: AlarmScheduleStatus?
 
@@ -331,11 +331,11 @@ struct WakePlanDetailsView: View {
 }
 
 #if DEBUG
-struct WakePlanDetailsView_Previews: PreviewProvider {
+struct EarlyOtterDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            WakePlanDetailsView(plan: samplePlanWithEvent, alarmStatus: .scheduled(sampleRecord))
-            WakePlanDetailsView(plan: sampleFallbackPlan, alarmStatus: .failed("The operation couldn’t be completed. Alarm ID: preview"))
+            EarlyOtterDetailsView(plan: samplePlanWithEvent, alarmStatus: .scheduled(sampleRecord))
+            EarlyOtterDetailsView(plan: sampleFallbackPlan, alarmStatus: .failed("The operation couldn’t be completed. Alarm ID: preview"))
         }
     }
 

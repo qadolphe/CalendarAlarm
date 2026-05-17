@@ -1,5 +1,5 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
 final class ClockTimeTests: XCTestCase {
     func testDateOnTargetDayUsesProvidedTime() {

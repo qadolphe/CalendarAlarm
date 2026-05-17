@@ -1,5 +1,5 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
 final class AlarmSyncServiceTests: XCTestCase {
     func testSchedulesAlarmWhenNoExistingAlarm() async throws {
@@ -414,7 +414,7 @@ final class AlarmSyncServiceTests: XCTestCase {
     private func makePlan(startOffset: TimeInterval) -> WakeUpPlan {
         let targetDay = TargetDay(date: Date(timeIntervalSince1970: 1_000_000))
 
-        return WakePlanCalculator().calculate(
+        return EarlyOtterCalculator().calculate(
             events: [makeEvent(startOffset: startOffset)],
             preferences: .default,
             targetDay: targetDay
@@ -439,7 +439,7 @@ final class AlarmSyncServiceTests: XCTestCase {
 
     private func makeFallbackPlan(wakeTime: Date) -> WakeUpPlan {
         WakeUpPlan(
-            id: WakePlanID(rawValue: "fallback-\(Int(wakeTime.timeIntervalSince1970))"),
+            id: EarlyOtterID(rawValue: "fallback-\(Int(wakeTime.timeIntervalSince1970))"),
             targetDay: TargetDay(date: wakeTime),
             targetEvent: nil,
             calculatedWakeTime: wakeTime,
@@ -475,7 +475,7 @@ final class AlarmSyncServiceTests: XCTestCase {
         )
 
         return WakeUpPlan(
-            id: WakePlanID(rawValue: id),
+            id: EarlyOtterID(rawValue: id),
             targetDay: TargetDay(date: baseDate),
             targetEvent: event,
             calculatedWakeTime: baseDate.addingTimeInterval(wakeOffset),

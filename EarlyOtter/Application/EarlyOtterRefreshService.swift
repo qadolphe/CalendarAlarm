@@ -11,7 +11,7 @@ enum RefreshReason: String, Codable, Sendable {
     case shortcut
 }
 
-struct WakePlanRefreshResult: Codable, Equatable, Sendable {
+struct EarlyOtterRefreshResult: Codable, Equatable, Sendable {
     let syncedAt: Date
     let plannedDays: Int
     let scheduledCount: Int
@@ -19,7 +19,7 @@ struct WakePlanRefreshResult: Codable, Equatable, Sendable {
     let failedCount: Int
 }
 
-struct WakePlanRefreshSnapshot: Equatable, Sendable {
+struct EarlyOtterRefreshSnapshot: Equatable, Sendable {
     let permissions: PermissionSnapshot
     let accounts: [ConnectedCalendarAccount]
     let calendars: [CalendarSource]
@@ -29,14 +29,14 @@ struct WakePlanRefreshSnapshot: Equatable, Sendable {
     let syncResult: AlarmSyncResult
 }
 
-struct WakePlanRefreshOutcome: Equatable, Sendable {
-    let snapshot: WakePlanRefreshSnapshot
-    let result: WakePlanRefreshResult
+struct EarlyOtterRefreshOutcome: Equatable, Sendable {
+    let snapshot: EarlyOtterRefreshSnapshot
+    let result: EarlyOtterRefreshResult
 }
 
-protocol WakePlanRefreshResultStoring {
-    func load() throws -> WakePlanRefreshResult?
-    func save(_ result: WakePlanRefreshResult) throws
+protocol EarlyOtterRefreshResultStoring {
+    func load() throws -> EarlyOtterRefreshResult?
+    func save(_ result: EarlyOtterRefreshResult) throws
     func clear() throws
 }
 
@@ -45,30 +45,30 @@ protocol BackgroundAlarmRefreshScheduling {
 }
 
 protocol StaleSyncReminderScheduling {
-    func updateReminder(for result: WakePlanRefreshResult) async
+    func updateReminder(for result: EarlyOtterRefreshResult) async
 }
 
-actor WakePlanRefreshService {
-    private let wakePlanService: WakePlanService
+actor EarlyOtterRefreshService {
+    private let earlyOtterService: EarlyOtterService
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
-    private let resultStore: WakePlanRefreshResultStoring?
+    private let resultStore: EarlyOtterRefreshResultStoring?
     private let widgetSnapshotStore: NextAlarmWidgetSnapshotStoring?
     private let backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling?
     private let staleSyncReminderScheduler: StaleSyncReminderScheduling?
     private let planningWindowCount: Int
 
     init(
-        wakePlanService: WakePlanService,
+        earlyOtterService: EarlyOtterService,
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService,
-        resultStore: WakePlanRefreshResultStoring? = nil,
+        resultStore: EarlyOtterRefreshResultStoring? = nil,
         widgetSnapshotStore: NextAlarmWidgetSnapshotStoring? = nil,
         backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling? = nil,
         staleSyncReminderScheduler: StaleSyncReminderScheduling? = nil,
         planningWindowCount: Int = AppConfiguration.managedAlarmPlanningCount
     ) {
-        self.wakePlanService = wakePlanService
+        self.earlyOtterService = earlyOtterService
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
         self.resultStore = resultStore
@@ -82,15 +82,15 @@ actor WakePlanRefreshService {
         reason: RefreshReason,
         now: Date = Date(),
         calendar: Calendar = .current
-    ) async throws -> WakePlanRefreshOutcome {
+    ) async throws -> EarlyOtterRefreshOutcome {
         _ = reason
 
         do {
             let permissions = await permissionService.currentStatus()
-            let accounts = try await wakePlanService.accounts()
-            let calendars = try await wakePlanService.calendars()
+            let accounts = try await earlyOtterService.accounts()
+            let calendars = try await earlyOtterService.calendars()
             let dashboardStart = startOfDashboardWeek(containing: now, calendar: calendar)
-            let dailyPlans = try await wakePlanService.makeDailyPlans(
+            let dailyPlans = try await earlyOtterService.makeDailyPlans(
                 startingAt: dashboardStart,
                 count: AppConfiguration.dashboardPlanningCount,
                 calendar: calendar
@@ -101,18 +101,18 @@ actor WakePlanRefreshService {
             if let plannedTomorrow = dailyPlans.first(where: { $0.targetDay == tomorrowTargetDay }) {
                 tomorrowPlan = plannedTomorrow
             } else {
-                tomorrowPlan = try await wakePlanService.makePlan(
+                tomorrowPlan = try await earlyOtterService.makePlan(
                     targetDay: tomorrowTargetDay,
                     calendar: calendar
                 )
             }
             let displayPlans = Array(
-                wakePlanService.displayPlans(from: dailyPlans, now: now)
+                earlyOtterService.displayPlans(from: dailyPlans, now: now)
                     .prefix(planningWindowCount)
             )
             let syncResult = try await alarmSyncService.sync(plans: displayPlans)
 
-            let snapshot = WakePlanRefreshSnapshot(
+            let snapshot = EarlyOtterRefreshSnapshot(
                 permissions: permissions,
                 accounts: accounts,
                 calendars: calendars,
@@ -121,7 +121,7 @@ actor WakePlanRefreshService {
                 displayPlans: displayPlans,
                 syncResult: syncResult
             )
-            let result = WakePlanRefreshResult(
+            let result = EarlyOtterRefreshResult(
                 syncedAt: now,
                 plannedDays: displayPlans.count,
                 scheduledCount: syncResult.scheduledCount,
@@ -134,7 +134,7 @@ actor WakePlanRefreshService {
             await staleSyncReminderScheduler?.updateReminder(for: result)
             await backgroundRefreshScheduler?.scheduleNextRefresh(after: now)
 
-            return WakePlanRefreshOutcome(snapshot: snapshot, result: result)
+            return EarlyOtterRefreshOutcome(snapshot: snapshot, result: result)
         } catch {
             publishStaleWidgetSnapshot(lastUpdatedAt: now, detailText: error.localizedDescription)
             throw error
@@ -142,7 +142,7 @@ actor WakePlanRefreshService {
     }
 }
 
-private extension WakePlanRefreshService {
+private extension EarlyOtterRefreshService {
     func startOfDashboardWeek(
         containing date: Date,
         calendar: Calendar
@@ -156,7 +156,7 @@ private extension WakePlanRefreshService {
     }
 
     func publishWidgetSnapshot(
-        from snapshot: WakePlanRefreshSnapshot,
+        from snapshot: EarlyOtterRefreshSnapshot,
         syncedAt: Date
     ) {
         let widgetSnapshot = makeWidgetSnapshot(from: snapshot, syncedAt: syncedAt)
@@ -186,7 +186,7 @@ private extension WakePlanRefreshService {
     }
 
     func makeWidgetSnapshot(
-        from snapshot: WakePlanRefreshSnapshot,
+        from snapshot: EarlyOtterRefreshSnapshot,
         syncedAt: Date
     ) -> NextAlarmWidgetSnapshot {
         let plansByID = Dictionary(uniqueKeysWithValues: snapshot.displayPlans.map { ($0.id, $0) })
@@ -240,7 +240,7 @@ private extension WakePlanRefreshService {
     }
 }
 
-final class UserDefaultsWakePlanRefreshResultStore: WakePlanRefreshResultStoring {
+final class UserDefaultsEarlyOtterRefreshResultStore: EarlyOtterRefreshResultStoring {
     private let key = "wakeplan.lastRefreshResult"
     private let defaults: UserDefaults
     private let encoder = JSONEncoder()
@@ -250,15 +250,15 @@ final class UserDefaultsWakePlanRefreshResultStore: WakePlanRefreshResultStoring
         self.defaults = defaults
     }
 
-    func load() throws -> WakePlanRefreshResult? {
+    func load() throws -> EarlyOtterRefreshResult? {
         guard let data = defaults.data(forKey: key) else {
             return nil
         }
 
-        return try decoder.decode(WakePlanRefreshResult.self, from: data)
+        return try decoder.decode(EarlyOtterRefreshResult.self, from: data)
     }
 
-    func save(_ result: WakePlanRefreshResult) throws {
+    func save(_ result: EarlyOtterRefreshResult) throws {
         let data = try encoder.encode(result)
         defaults.set(data, forKey: key)
     }

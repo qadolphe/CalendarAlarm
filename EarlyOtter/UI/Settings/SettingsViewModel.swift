@@ -26,7 +26,7 @@ struct RuleEditorDescriptor: Identifiable, Equatable, Sendable {
     var id: RulesDestination { destination }
 }
 
-enum WakePlanUIConfiguration {
+enum EarlyOtterUIConfiguration {
     static let sundayFirstWeekdays: [WeekdayOption] = [
         WeekdayOption(weekday: 1, shortLabel: "SUN", fullLabel: "Sunday"),
         WeekdayOption(weekday: 2, shortLabel: "MON", fullLabel: "Monday"),
@@ -65,7 +65,7 @@ enum WakePlanUIConfiguration {
     ]
 }
 
-enum WakePlanSummaryFormatter {
+enum EarlyOtterSummaryFormatter {
     static func selectedCalendarsSummary(calendars: [CalendarSource], preferences: AlarmPreferences) -> String {
         let count = calendars.filter(\.isSelected).count
 
@@ -94,7 +94,7 @@ enum WakePlanSummaryFormatter {
         }
 
         if activeDays.count == 1,
-           let option = WakePlanUIConfiguration.sundayFirstWeekdays.first(where: { activeDays.contains($0.weekday) }) {
+           let option = EarlyOtterUIConfiguration.sundayFirstWeekdays.first(where: { activeDays.contains($0.weekday) }) {
             return option.fullLabel
         }
 
@@ -152,7 +152,7 @@ enum WakePlanSummaryFormatter {
     }
 
     private static func labels(for activeDays: Set<Int>) -> [String] {
-        WakePlanUIConfiguration.sundayFirstWeekdays.compactMap {
+        EarlyOtterUIConfiguration.sundayFirstWeekdays.compactMap {
             activeDays.contains($0.weekday) ? $0.shortLabel.capitalized : nil
         }
     }
@@ -163,7 +163,7 @@ struct ScheduleViewModel {
     let appState: AppState
 
     var weekdayOptions: [WeekdayOption] {
-        WakePlanUIConfiguration.sundayFirstWeekdays
+        EarlyOtterUIConfiguration.sundayFirstWeekdays
     }
 
     var scheduleStateTitle: String {
@@ -171,7 +171,7 @@ struct ScheduleViewModel {
     }
 
     var scheduleStateSummary: String {
-        let days = WakePlanSummaryFormatter.activeDaysSummary(appState.preferences.activeDays).lowercased()
+        let days = EarlyOtterSummaryFormatter.activeDaysSummary(appState.preferences.activeDays).lowercased()
         let fallback = appState.preferences.latestWakeTime
             .date(on: TargetDay(date: Date()))
             .formatted(date: .omitted, time: .shortened)
@@ -184,7 +184,7 @@ struct ScheduleViewModel {
     }
 
     var activeDaysSummary: String {
-        WakePlanSummaryFormatter.activeDaysSummary(appState.preferences.activeDays)
+        EarlyOtterSummaryFormatter.activeDaysSummary(appState.preferences.activeDays)
     }
 
     var latestWakeSummary: String {

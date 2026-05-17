@@ -1,12 +1,12 @@
 import Foundation
 
-struct WakePlanCalculator {
+struct EarlyOtterCalculator {
     private let eventFilter: EventFilter
-    private let hasher: WakePlanHasher
+    private let hasher: EarlyOtterHasher
 
     init(
         eventFilter: EventFilter = EventFilter(),
-        hasher: WakePlanHasher = WakePlanHasher()
+        hasher: EarlyOtterHasher = EarlyOtterHasher()
     ) {
         self.eventFilter = eventFilter
         self.hasher = hasher

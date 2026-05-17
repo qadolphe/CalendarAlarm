@@ -1,8 +1,8 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
-final class WakePlanCalculatorTests: XCTestCase {
-    private let calculator = WakePlanCalculator()
+final class EarlyOtterCalculatorTests: XCTestCase {
+    private let calculator = EarlyOtterCalculator()
 
     func testUsesEarliestValidEvent() {
         let calendar = configuredCalendar()

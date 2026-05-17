@@ -1,5 +1,5 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
 @MainActor
 final class AccountServiceTests: XCTestCase {

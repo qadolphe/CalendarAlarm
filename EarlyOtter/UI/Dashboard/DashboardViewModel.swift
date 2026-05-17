@@ -76,7 +76,7 @@ struct DashboardViewModel {
         self.now = now
     }
 
-    var viewState: WakePlanViewState? {
+    var viewState: EarlyOtterViewState? {
         switch appState.dashboardState {
         case .needsAlarmPermission(let viewState),
              .ready(let viewState),
@@ -349,7 +349,7 @@ struct DashboardViewModel {
 
     private func fallbackPlan(for targetDay: TargetDay) -> WakeUpPlan {
         WakeUpPlan(
-            id: WakePlanID(rawValue: "dashboard-week-\(Int(targetDay.date.timeIntervalSince1970))"),
+            id: EarlyOtterID(rawValue: "dashboard-week-\(Int(targetDay.date.timeIntervalSince1970))"),
             targetDay: targetDay,
             targetEvent: nil,
             calculatedWakeTime: targetDay.date,

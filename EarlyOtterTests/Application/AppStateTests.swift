@@ -1,5 +1,5 @@
 import XCTest
-@testable import WakePlan
+@testable import EarlyOtter
 
 @MainActor
 final class AppStateTests: XCTestCase {
@@ -78,14 +78,14 @@ final class AppStateTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: CompositeCalendarProvider(providers: [
                 StubCalendarProvider(error: StubCalendarProviderError.googleExpired)
             ]),
             preferencesStore: preferencesStore
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
@@ -126,12 +126,12 @@ final class AppStateTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: CompositeCalendarProvider(providers: []),
             preferencesStore: preferencesStore
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
@@ -176,12 +176,12 @@ final class AppStateTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: CompositeCalendarProvider(providers: []),
             preferencesStore: preferencesStore
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,
@@ -247,7 +247,7 @@ final class AppStateTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: provider,
             preferencesStore: preferencesStore
         )
@@ -255,8 +255,8 @@ final class AppStateTests: XCTestCase {
             alarmScheduler: alarmScheduler,
             alarmStore: StubScheduledAlarmStore()
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService
         )
@@ -315,8 +315,8 @@ final class AppStateTests: XCTestCase {
             alarmScheduler: alarmScheduler,
             alarmStore: StubScheduledAlarmStore()
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: WakePlanService(
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: EarlyOtterService(
                 calendarProvider: rangeProvider,
                 preferencesStore: preferencesStore
             ),
@@ -385,7 +385,7 @@ final class AppStateTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: CompositeCalendarProvider(providers: []),
             preferencesStore: preferencesStore
         )
@@ -393,8 +393,8 @@ final class AppStateTests: XCTestCase {
             alarmScheduler: alarmScheduler,
             alarmStore: StubScheduledAlarmStore()
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService
         )
@@ -481,7 +481,7 @@ final class CompositeCalendarProviderTests: XCTestCase {
     }
 }
 
-final class WakePlanRefreshServiceTests: XCTestCase {
+final class EarlyOtterRefreshServiceTests: XCTestCase {
     func testRefreshAndSyncBatchesPlanningWindowEventFetches() async throws {
         let calendar = configuredCalendar()
         let now = makeDate(
@@ -500,12 +500,12 @@ final class WakePlanRefreshServiceTests: XCTestCase {
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler
         )
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: rangeProvider,
             preferencesStore: preferencesStore
         )
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: AlarmSyncService(
                 alarmScheduler: alarmScheduler,

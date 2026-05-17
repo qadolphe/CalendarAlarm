@@ -8,11 +8,11 @@ import AppIntents
 
 actor BackgroundAlarmRefreshService: BackgroundAlarmRefreshScheduling {
     private let taskIdentifier: String
-    private let makeRefreshService: () -> WakePlanRefreshService
+    private let makeRefreshService: () -> EarlyOtterRefreshService
 
     init(
         taskIdentifier: String = AppConfiguration.backgroundRefreshTaskIdentifier,
-        makeRefreshService: @escaping () -> WakePlanRefreshService
+        makeRefreshService: @escaping () -> EarlyOtterRefreshService
     ) {
         self.taskIdentifier = taskIdentifier
         self.makeRefreshService = makeRefreshService
@@ -44,7 +44,7 @@ actor StaleSyncReminderService: StaleSyncReminderScheduling {
         self.center = center
     }
 
-    func updateReminder(for result: WakePlanRefreshResult) async {
+    func updateReminder(for result: EarlyOtterRefreshResult) async {
         let settings = await center.notificationSettingsAsync()
 
         switch settings.authorizationStatus {
@@ -93,24 +93,24 @@ actor StaleSyncReminderService: StaleSyncReminderScheduling {
     }
 }
 
-struct WakePlanEnvironment {
+struct EarlyOtterEnvironment {
     let accountStore: UserDefaultsAccountStore
     let accountService: AccountService
     let preferencesStore: UserDefaultsPreferencesStore
     let alarmStore: UserDefaultsScheduledAlarmStore
-    let refreshResultStore: UserDefaultsWakePlanRefreshResultStore
+    let refreshResultStore: UserDefaultsEarlyOtterRefreshResultStore
     let widgetSnapshotStore: UserDefaultsNextAlarmWidgetSnapshotStore
     let calendarReader: EventKitCalendarReader
     let alarmScheduler: AlarmKitScheduler
-    let wakePlanService: WakePlanService
+    let earlyOtterService: EarlyOtterService
     let permissionService: PermissionService
     let alarmSyncService: AlarmSyncService
-    let refreshService: WakePlanRefreshService
+    let refreshService: EarlyOtterRefreshService
     let backgroundRefreshService: BackgroundAlarmRefreshService
     let staleSyncReminderService: StaleSyncReminderService
 
     @MainActor
-    static func live() -> WakePlanEnvironment {
+    static func live() -> EarlyOtterEnvironment {
         let accountStore = UserDefaultsAccountStore()
         let googleAuthenticator = GoogleSignInAuthenticator()
         let accountService = AccountService(
@@ -119,7 +119,7 @@ struct WakePlanEnvironment {
         )
         let preferencesStore = UserDefaultsPreferencesStore()
         let alarmStore = UserDefaultsScheduledAlarmStore()
-        let refreshResultStore = UserDefaultsWakePlanRefreshResultStore()
+        let refreshResultStore = UserDefaultsEarlyOtterRefreshResultStore()
         let widgetSnapshotStore = UserDefaultsNextAlarmWidgetSnapshotStore()
         let calendarReader = EventKitCalendarReader()
         let calendarProvider = CompositeCalendarProvider(
@@ -129,7 +129,7 @@ struct WakePlanEnvironment {
             ]
         )
         let alarmScheduler = AlarmKitScheduler()
-        let wakePlanService = WakePlanService(
+        let earlyOtterService = EarlyOtterService(
             calendarProvider: calendarProvider,
             preferencesStore: preferencesStore
         )
@@ -143,10 +143,10 @@ struct WakePlanEnvironment {
         )
         let staleSyncReminderService = StaleSyncReminderService()
         let backgroundRefreshService = BackgroundAlarmRefreshService {
-            WakePlanEnvironment.live().refreshService
+            EarlyOtterEnvironment.live().refreshService
         }
-        let refreshService = WakePlanRefreshService(
-            wakePlanService: wakePlanService,
+        let refreshService = EarlyOtterRefreshService(
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             resultStore: refreshResultStore,
@@ -155,7 +155,7 @@ struct WakePlanEnvironment {
             staleSyncReminderScheduler: staleSyncReminderService
         )
 
-        return WakePlanEnvironment(
+        return EarlyOtterEnvironment(
             accountStore: accountStore,
             accountService: accountService,
             preferencesStore: preferencesStore,
@@ -164,7 +164,7 @@ struct WakePlanEnvironment {
             widgetSnapshotStore: widgetSnapshotStore,
             calendarReader: calendarReader,
             alarmScheduler: alarmScheduler,
-            wakePlanService: wakePlanService,
+            earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             refreshService: refreshService,
@@ -208,7 +208,7 @@ private extension UNUserNotificationCenter {
 
 #if canImport(AppIntents)
 @available(iOS 16.0, *)
-struct RefreshWakePlanAlarmsIntent: AppIntent {
+struct RefreshEarlyOtterAlarmsIntent: AppIntent {
     static var title: LocalizedStringResource = "Refresh Alarms"
     static var description = IntentDescription(
         "Refresh EarlyOtter's rolling wake-up alarms using your latest calendar events."
@@ -217,7 +217,7 @@ struct RefreshWakePlanAlarmsIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let environment = await MainActor.run {
-            WakePlanEnvironment.live()
+            EarlyOtterEnvironment.live()
         }
         let outcome = try await environment.refreshService.refreshAndSync(reason: .shortcut)
         let alarmLabel = outcome.result.scheduledCount == 1 ? "alarm" : "alarms"
@@ -232,10 +232,10 @@ struct RefreshWakePlanAlarmsIntent: AppIntent {
 }
 
 @available(iOS 16.0, *)
-struct WakePlanShortcutsProvider: AppShortcutsProvider {
+struct EarlyOtterShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: RefreshWakePlanAlarmsIntent(),
+            intent: RefreshEarlyOtterAlarmsIntent(),
             phrases: [
                 "Refresh alarms in \(.applicationName)",
                 "Refresh my alarms in \(.applicationName)"

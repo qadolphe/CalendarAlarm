@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WakePlanRootView: View {
+struct EarlyOtterRootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Bindable var appState: AppState

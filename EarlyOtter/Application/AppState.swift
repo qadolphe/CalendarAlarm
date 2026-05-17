@@ -4,7 +4,7 @@ import Observation
 import UIKit
 #endif
 
-struct WakePlanViewState: Equatable {
+struct EarlyOtterViewState: Equatable {
     let plan: WakeUpPlan
     let alarmStatus: AlarmScheduleStatus
 }
@@ -12,9 +12,9 @@ struct WakePlanViewState: Equatable {
 enum DashboardState: Equatable {
     case loading
     case needsCalendarPermission
-    case needsAlarmPermission(WakePlanViewState)
-    case ready(WakePlanViewState)
-    case emptyFallback(WakePlanViewState)
+    case needsAlarmPermission(EarlyOtterViewState)
+    case ready(EarlyOtterViewState)
+    case emptyFallback(EarlyOtterViewState)
     case error(String)
 }
 
@@ -30,7 +30,7 @@ final class AppState {
     var dailyPlans: [WakeUpPlan] = []
     var displayPlans: [WakeUpPlan] = []
     var upcomingPlans: [WakeUpPlan] = []
-    var alarmStatusesByPlanID: [WakePlanID: AlarmScheduleStatus] = [:]
+    var alarmStatusesByPlanID: [EarlyOtterID: AlarmScheduleStatus] = [:]
     var noticeMessage: String?
     var settingsAlertMessage: String?
 
@@ -39,7 +39,7 @@ final class AppState {
     private let preferencesStore: PreferencesStoring
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
-    private let refreshService: WakePlanRefreshService
+    private let refreshService: EarlyOtterRefreshService
     private let openAppSettings: @MainActor () -> Void
     private var hasLoaded = false
     private var refreshGeneration = 0
@@ -67,7 +67,7 @@ final class AppState {
         preferencesStore: PreferencesStoring,
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService,
-        refreshService: WakePlanRefreshService,
+        refreshService: EarlyOtterRefreshService,
         openAppSettings: @escaping @MainActor () -> Void = { AppState.defaultOpenAppSettings() }
     ) {
         self.accountStore = accountStore
@@ -426,7 +426,7 @@ final class AppState {
         displayPlans = snapshot.displayPlans
         upcomingPlans = Array(snapshot.displayPlans.dropFirst().prefix(AppConfiguration.dashboardUpcomingDisplayCount))
         alarmStatusesByPlanID = snapshot.syncResult.statusesByPlanID
-        let viewState = WakePlanViewState(plan: plan, alarmStatus: alarmStatus)
+        let viewState = EarlyOtterViewState(plan: plan, alarmStatus: alarmStatus)
 
         if alarmStatus == .needsPermission {
             dashboardState = .needsAlarmPermission(viewState)
@@ -484,7 +484,7 @@ final class AppState {
 
         let nextDay = TargetDay.tomorrow(from: now, calendar: calendar)
         return WakeUpPlan(
-            id: WakePlanID(rawValue: "dashboard-empty-\(Int(nextDay.date.timeIntervalSince1970))"),
+            id: EarlyOtterID(rawValue: "dashboard-empty-\(Int(nextDay.date.timeIntervalSince1970))"),
             targetDay: nextDay,
             targetEvent: nil,
             calculatedWakeTime: nextDay.date,

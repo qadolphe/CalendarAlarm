@@ -1,6 +1,6 @@
 import Foundation
 
-enum WakePlanReason: String, Codable, Equatable, Sendable {
+enum EarlyOtterReason: String, Codable, Equatable, Sendable {
     case event
     case fallback
     case noSchedule
@@ -12,7 +12,7 @@ enum WakePlanReason: String, Codable, Equatable, Sendable {
 }
 
 struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
-    let id: WakePlanID
+    let id: EarlyOtterID
 
     let targetDay: TargetDay
     let targetEvent: ParsedEvent?
@@ -26,7 +26,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     let alarmSettings: RuleAlarmSettings
 
     let isFallback: Bool
-    let reason: WakePlanReason
+    let reason: EarlyOtterReason
 
     /// Name of the rule that produced the chosen wake time.
     var appliedRuleName: String?
@@ -35,7 +35,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     let matchedRuleNames: [String]
 
     init(
-        id: WakePlanID,
+        id: EarlyOtterID,
         targetDay: TargetDay,
         targetEvent: ParsedEvent?,
         firstEventOfDay: ParsedEvent? = nil,
@@ -45,7 +45,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         commuteTime: Minutes,
         alarmSettings: RuleAlarmSettings,
         isFallback: Bool,
-        reason: WakePlanReason,
+        reason: EarlyOtterReason,
         appliedRuleName: String?,
         matchedRuleNames: [String]
     ) {

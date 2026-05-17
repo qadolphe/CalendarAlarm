@@ -10,7 +10,7 @@ enum AlarmScheduleStatus: Equatable, Sendable {
 
 struct AlarmSyncResult: Equatable, Sendable {
     let records: [ScheduledAlarmRecord]
-    let statusesByPlanID: [WakePlanID: AlarmScheduleStatus]
+    let statusesByPlanID: [EarlyOtterID: AlarmScheduleStatus]
     let scheduledCount: Int
     let canceledCount: Int
     let failedCount: Int
@@ -65,7 +65,7 @@ actor AlarmSyncService {
             )
         }
 
-        var statusesByPlanID: [WakePlanID: AlarmScheduleStatus] = [:]
+        var statusesByPlanID: [EarlyOtterID: AlarmScheduleStatus] = [:]
         var desiredManagedPlans: [WakeUpPlan] = []
 
         for plan in plans {
@@ -174,7 +174,7 @@ actor AlarmSyncService {
         let wakeTime = nextMinute(after: now, calendar: calendar)
 
         return WakeUpPlan(
-            id: WakePlanID(rawValue: "test-\(Int(wakeTime.timeIntervalSince1970))"),
+            id: EarlyOtterID(rawValue: "test-\(Int(wakeTime.timeIntervalSince1970))"),
             targetDay: TargetDay(date: wakeTime, calendar: calendar),
             targetEvent: nil,
             calculatedWakeTime: wakeTime,

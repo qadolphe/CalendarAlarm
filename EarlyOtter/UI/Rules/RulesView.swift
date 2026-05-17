@@ -130,7 +130,7 @@ struct RulesView: View {
                     columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7),
                     spacing: 8
                 ) {
-                    ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+                    ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
                         weekdayCell(option)
                     }
                 }
@@ -732,7 +732,7 @@ struct RuleEditorView: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7),
                 spacing: 8
             ) {
-                ForEach(WakePlanUIConfiguration.sundayFirstWeekdays) { option in
+                ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
                     weekdayToggleCell(option)
                 }
             }

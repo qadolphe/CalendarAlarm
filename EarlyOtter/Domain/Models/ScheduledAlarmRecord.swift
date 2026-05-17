@@ -1,7 +1,7 @@
 import Foundation
 
 struct ScheduledAlarmRecord: Codable, Equatable, Sendable {
-    let planID: WakePlanID
+    let planID: EarlyOtterID
     let nativeAlarmID: String
 
     let scheduledWakeTime: Date
