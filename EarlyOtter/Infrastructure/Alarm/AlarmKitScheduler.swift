@@ -1,4 +1,5 @@
 #if canImport(AlarmKit)
+import ActivityKit
 import AlarmKit
 import CryptoKit
 import Foundation
@@ -74,6 +75,38 @@ final class AlarmKitScheduler: AlarmScheduling {
     func cancel(nativeAlarmID: String) async throws {
         guard let alarmID = UUID(uuidString: nativeAlarmID) else { return }
         try AlarmManager.shared.cancel(id: alarmID)
+        await endLiveActivities(matching: [nativeAlarmID])
+    }
+
+    func endOrphanedLiveActivities(keepingNativeAlarmIDs: Set<String>) async {
+        let activities = Activity<AlarmAttributes<EarlyOtterAlarmMetadata>>.activities
+        let normalizedKeep = Set(keepingNativeAlarmIDs.map { $0.lowercased() })
+
+        for activity in activities {
+            let activityAlarmID = activity.content.state.alarmID.uuidString.lowercased()
+            let stillScheduled = normalizedKeep.contains(activityAlarmID)
+
+            // Always end activities that are no longer tied to a scheduled
+            // alarm, or that the system has already marked as ended/dismissed
+            // but somehow still surface in the Dynamic Island.
+            if !stillScheduled
+                || activity.activityState == .ended
+                || activity.activityState == .dismissed
+                || activity.activityState == .stale {
+                await activity.end(nil, dismissalPolicy: .immediate)
+            }
+        }
+    }
+
+    private func endLiveActivities(matching nativeAlarmIDs: Set<String>) async {
+        let normalized = Set(nativeAlarmIDs.map { $0.lowercased() })
+        let activities = Activity<AlarmAttributes<EarlyOtterAlarmMetadata>>.activities
+
+        for activity in activities {
+            let activityAlarmID = activity.content.state.alarmID.uuidString.lowercased()
+            guard normalized.contains(activityAlarmID) else { continue }
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
     }
 
     private func deterministicAlarmID(for rawPlanID: String) -> UUID {

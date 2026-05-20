@@ -5,12 +5,6 @@ import Foundation
 import SwiftUI
 
 @available(iOS 26.0, *)
-struct EarlyOtterAlarmMetadata: AlarmMetadata {
-    let planID: String
-    let eventTitle: String
-}
-
-@available(iOS 26.0, *)
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<EarlyOtterAlarmMetadata> {
         let eventTitle = normalizedEventTitle(from: plan)

@@ -104,6 +104,10 @@ actor AlarmSyncService {
             let activeRecords = retainedRecords.values.sorted(by: Self.sortRecords)
             try saveRecords(activeRecords)
 
+            await alarmScheduler.endOrphanedLiveActivities(
+                keepingNativeAlarmIDs: Set(activeRecords.map(\.nativeAlarmID))
+            )
+
             return AlarmSyncResult(
                 records: activeRecords,
                 statusesByPlanID: statusesByPlanID,
@@ -139,6 +143,14 @@ actor AlarmSyncService {
 
         let activeRecords = retainedRecords.values.sorted(by: Self.sortRecords)
         try saveRecords(activeRecords)
+
+        // Ensure no stray AlarmKit Live Activities are left over for alarms
+        // that no longer exist. This guards against the iOS 26 "zombie" Live
+        // Activity behaviour where a swipe-dismissed alert leaves an empty
+        // pill in the Dynamic Island.
+        await alarmScheduler.endOrphanedLiveActivities(
+            keepingNativeAlarmIDs: Set(activeRecords.map(\.nativeAlarmID))
+        )
 
         return AlarmSyncResult(
             records: activeRecords,

@@ -9,8 +9,11 @@ import WidgetKit
 struct EarlyOtterApp: App {
     private static let onboardingStorageKey = "hasCompletedOnboarding"
 
+    @Environment(\.scenePhase) private var scenePhase
     @State private var appState: AppState
     private let backgroundRefreshService: BackgroundAlarmRefreshService
+    private let alarmScheduler: AlarmKitScheduler
+    private let alarmStore: UserDefaultsScheduledAlarmStore
 
     init() {
         let launchArguments = ProcessInfo.processInfo.arguments
@@ -28,8 +31,15 @@ struct EarlyOtterApp: App {
         }
 
         backgroundRefreshService = environment.backgroundRefreshService
+        alarmScheduler = environment.alarmScheduler
+        alarmStore = environment.alarmStore
         _appState = State(
             initialValue: environment.makeAppState()
+        )
+
+        Self.sweepOrphanedLiveActivities(
+            alarmScheduler: environment.alarmScheduler,
+            alarmStore: environment.alarmStore
         )
     }
 
@@ -39,9 +49,30 @@ struct EarlyOtterApp: App {
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        Self.sweepOrphanedLiveActivities(
+                            alarmScheduler: alarmScheduler,
+                            alarmStore: alarmStore
+                        )
+                    }
+                }
         }
         .backgroundTask(.appRefresh(AppConfiguration.backgroundRefreshTaskIdentifier)) {
             await backgroundRefreshService.handleAppRefresh()
+        }
+    }
+
+    /// Best-effort cleanup of any AlarmKit Live Activities that no longer
+    /// match a scheduled alarm. Runs at launch and whenever the scene becomes
+    /// active so the Dynamic Island doesn't display stale alarm presentations.
+    private static func sweepOrphanedLiveActivities(
+        alarmScheduler: AlarmKitScheduler,
+        alarmStore: UserDefaultsScheduledAlarmStore
+    ) {
+        let keep = Set(((try? alarmStore.load()) ?? []).map(\.nativeAlarmID))
+        Task.detached(priority: .utility) {
+            await alarmScheduler.endOrphanedLiveActivities(keepingNativeAlarmIDs: keep)
         }
     }
 
