@@ -292,6 +292,47 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.commuteTime, Minutes(0))
     }
 
+    func testDisabledCustomRuleFallsBackToDefaultRule() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        let officeEvent = event(
+            id: "office",
+            calendarID: "work",
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar),
+            title: "Office planning"
+        )
+        let disabledRule = AlarmRule(
+            id: UUID(),
+            name: "Office",
+            isDefault: false,
+            isEnabled: false,
+            activeWeekdays: Set(1...7),
+            selectedCalendarIDs: [],
+            conditions: [.titleContains("office")],
+            prepTime: Minutes(60),
+            commuteTime: Minutes(30),
+            alarmSettings: .default
+        )
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [
+            disabledRule,
+            AlarmRule.makeDefault(prepTime: Minutes(10), commuteTime: Minutes(0))
+        ]
+        preferences.fallbackEnabledDays = []
+
+        let plan = calculator.calculate(
+            events: [officeEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.appliedRuleName, "Default")
+        XCTAssertEqual(plan.prepTime, Minutes(10))
+        XCTAssertEqual(plan.commuteTime, Minutes(0))
+    }
+
     // MARK: - Earliest wake time policy
 
     /// An event that starts later but needs heavy prep wins over an earlier event with minimal prep.

@@ -87,6 +87,30 @@ final class EventFilterTests: XCTestCase {
         XCTAssertEqual(preferences.filters.titleKeywords.allowedKeywords, ["onsite"])
     }
 
+        func testAlarmRuleDecodesMissingEnabledFlagAsEnabled() throws {
+                let data = """
+                {
+                    "id": "0E0A4470-4785-4B3A-9C23-FA4A845C4C0E",
+                    "name": "Office",
+                    "isDefault": false,
+                    "activeWeekdays": [1, 2, 3, 4, 5, 6, 7],
+                    "selectedCalendarIDs": ["work"],
+                    "conditions": [{ "type": "titleContains", "value": "office" }],
+                    "prepTime": { "rawValue": 45 },
+                    "commuteTime": { "rawValue": 20 },
+                    "alarmSettings": {
+                        "sound": "default",
+                        "snoozeEnabled": true,
+                        "snoozeDuration": { "rawValue": 10 }
+                    }
+                }
+                """.data(using: .utf8)!
+
+                let rule = try JSONDecoder().decode(AlarmRule.self, from: data)
+
+                XCTAssertTrue(rule.isEnabled)
+        }
+
     private func event(
         calendarID: String = "work",
         title: String = "Standup",

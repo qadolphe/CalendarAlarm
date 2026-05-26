@@ -343,7 +343,7 @@ struct OnboardingView: View {
                 } else if finishPhase >= 4 {
                     if finishStepPlan != nil {
                         VStack(spacing: 28) {
-                            Text("Set a fixed alarm for days without morning events.")
+                            Text("Set fixed alarms for days without morning events.")
                                 .font(.body.weight(.medium))
                                 .multilineTextAlignment(finishPhase == 4 ? .center : .leading)
                                 .foregroundStyle(WPStyles.secondaryText)

@@ -168,11 +168,21 @@ struct RulesView: View {
                     Text(rule.name)
                         .font(.headline)
                         .foregroundStyle(WPStyles.primaryText)
+
+                    if !rule.isDefault && !rule.isEnabled {
+                        statusBadge("Off")
+                    }
                 }
 
                 HStack(spacing: 12) {
                     timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
                     timingBadge(icon: "car.fill", value: rule.commuteTime.rawValue, unit: "commute")
+                }
+
+                if !rule.isDefault && !rule.isEnabled {
+                    Text("This rule is currently disabled.")
+                        .font(.caption)
+                        .foregroundStyle(WPStyles.secondaryText)
                 }
             }
 
@@ -185,6 +195,19 @@ struct RulesView: View {
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
         .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
+        .opacity(rule.isDefault || rule.isEnabled ? 1 : 0.72)
+    }
+
+    private func statusBadge(_ text: String) -> some View {
+        Text(text)
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(WPStyles.secondaryText)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(WPStyles.surfaceRaised)
+            )
     }
 
     private func timingBadge(icon: String, value: Int, unit: String) -> some View {
@@ -294,6 +317,7 @@ struct RuleEditorView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String
+    @State private var isEnabled: Bool
     @State private var conditions: [AlarmRuleCondition]
     @State private var activeWeekdays: Set<Int>
     @State private var selectedCalendarIDs: Set<String>
@@ -309,6 +333,8 @@ struct RuleEditorView: View {
     @State private var expandedAccountIDs: Set<CalendarAccountID> = []
     @FocusState private var focusedConditionField: ConditionField?
 
+    @State private var selectedTab = 0 // 0 = Trigger Criteria, 1 = Alarm Actions
+
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
         return false
@@ -321,6 +347,7 @@ struct RuleEditorView: View {
         case .add:
             let dr = appState.preferences.defaultAlarmRule
             _name = State(initialValue: "")
+            _isEnabled = State(initialValue: true)
             _conditions = State(initialValue: [])
             _activeWeekdays = State(initialValue: dr.activeWeekdays)
             _selectedCalendarIDs = State(initialValue: dr.selectedCalendarIDs)
@@ -331,6 +358,7 @@ struct RuleEditorView: View {
             _snoozeDuration = State(initialValue: dr.alarmSettings.snoozeDuration)
         case .edit(let rule):
             _name = State(initialValue: rule.name)
+            _isEnabled = State(initialValue: rule.isEnabled)
             _conditions = State(initialValue: rule.conditions)
             _activeWeekdays = State(initialValue: rule.activeWeekdays)
             _selectedCalendarIDs = State(initialValue: rule.selectedCalendarIDs)
@@ -346,20 +374,41 @@ struct RuleEditorView: View {
         ZStack {
             Color.clear.withAppBackground()
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 28) {
-                    if !isDefaultRule {
-                        nameSection
-                        conditionsSection
-                    }
-                    if !isDefaultRule {
-                        weekdaysSection
-                    }
-                    calendarsSection
-                    timingSection
-                    alarmSection
+            VStack(spacing: 0) {
+                if !isDefaultRule {
+                    enabledAndNameSection
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                        .padding(.bottom, 16)
                 }
-                .padding(24)
+
+                Picker("Editor Mode", selection: $selectedTab) {
+                    Text("Trigger Criteria").tag(0)
+                    Text("Alarm Actions").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+                .disabled(!isDefaultRule && !isEnabled)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 28) {
+                        if selectedTab == 0 {
+                            if !isDefaultRule {
+                                weekdaysSection
+                                conditionsSection
+                            }
+                            calendarsSection
+                        } else {
+                            timingSection
+                            alarmSection
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
+                    .disabled(!isDefaultRule && !isEnabled)
+                    .opacity((!isDefaultRule && !isEnabled) ? 0.5 : 1.0)
+                }
             }
         }
         .simultaneousGesture(
@@ -589,20 +638,37 @@ struct RuleEditorView: View {
         return name.isEmpty ? "Rule" : name
     }
 
-    private var nameSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionLabel("Name")
-            TextField("e.g. Doctor Appointments", text: $name)
-                .font(.body)
-                .foregroundStyle(WPStyles.primaryText)
-                .padding(14)
-                .background(WPStyles.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(WPStyles.cardBorder, lineWidth: 1)
-                )
+    private var enabledAndNameSection: some View {
+        VStack(spacing: 0) {
+            Toggle(isOn: $isEnabled) {
+                Text("Enable Rule")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(WPStyles.primaryText)
+            }
+            .tint(WPStyles.primaryOrange)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+
+            Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+
+            HStack {
+                Text("Name")
+                    .font(.body)
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                TextField("e.g. Doctor Appointments", text: $name)
+                    .font(.body)
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(WPStyles.secondaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
+        .background(WPStyles.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1)
+        )
     }
 
     private var conditionsSection: some View {

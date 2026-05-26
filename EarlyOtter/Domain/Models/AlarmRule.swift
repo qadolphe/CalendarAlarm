@@ -153,6 +153,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var name: String
     /// When true this rule matches every event (no conditions evaluated).
     var isDefault: Bool
+    var isEnabled: Bool
     var activeWeekdays: Set<Int>
     var selectedCalendarIDs: Set<String>
     var conditions: [AlarmRuleCondition]
@@ -171,6 +172,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
             id: UUID(),
             name: "Default",
             isDefault: true,
+            isEnabled: true,
             activeWeekdays: activeWeekdays,
             selectedCalendarIDs: selectedCalendarIDs,
             conditions: [],
@@ -186,6 +188,10 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         activeCalendarIDs: Set<String>,
         calendar: Calendar = .current
     ) -> Bool {
+        guard isEnabled || isDefault else {
+            return false
+        }
+
         let weekday = calendar.component(.weekday, from: event.startDate)
         guard activeWeekdays.contains(weekday) else {
             return false
@@ -218,6 +224,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         case id
         case name
         case isDefault
+        case isEnabled
         case activeWeekdays
         case selectedCalendarIDs
         case conditions
@@ -230,6 +237,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         id: UUID,
         name: String,
         isDefault: Bool,
+        isEnabled: Bool = true,
         activeWeekdays: Set<Int>,
         selectedCalendarIDs: Set<String>,
         conditions: [AlarmRuleCondition],
@@ -240,6 +248,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         self.id = id
         self.name = name
         self.isDefault = isDefault
+        self.isEnabled = isEnabled
         self.activeWeekdays = activeWeekdays
         self.selectedCalendarIDs = selectedCalendarIDs
         self.conditions = conditions
@@ -253,6 +262,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
         isDefault = try container.decode(Bool.self, forKey: .isDefault)
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         activeWeekdays = try container.decodeIfPresent(Set<Int>.self, forKey: .activeWeekdays) ?? Set(1...7)
         selectedCalendarIDs = try container.decodeIfPresent(Set<String>.self, forKey: .selectedCalendarIDs) ?? []
         conditions = try container.decodeIfPresent([AlarmRuleCondition].self, forKey: .conditions) ?? []
@@ -266,6 +276,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
         try container.encode(isDefault, forKey: .isDefault)
+        try container.encode(isEnabled, forKey: .isEnabled)
         try container.encode(activeWeekdays, forKey: .activeWeekdays)
         try container.encode(selectedCalendarIDs, forKey: .selectedCalendarIDs)
         try container.encode(conditions, forKey: .conditions)

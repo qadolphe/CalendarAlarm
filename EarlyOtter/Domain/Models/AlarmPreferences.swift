@@ -193,6 +193,7 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         var normalized = alarmRules
 
         if let defaultIndex = normalized.firstIndex(where: { $0.isDefault }) {
+            normalized[defaultIndex].isEnabled = true
             normalized[defaultIndex].activeWeekdays = Set(1...7)
             if normalized[defaultIndex].selectedCalendarIDs.isEmpty,
                !legacySelectedCalendarIDs.isEmpty {
