@@ -384,7 +384,7 @@ struct RuleEditorView: View {
 
                 Picker("Editor Mode", selection: $selectedTab) {
                     Text("Trigger Criteria").tag(0)
-                    Text("Alarm Actions").tag(1)
+                    Text("Alarm").tag(1)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 24)
