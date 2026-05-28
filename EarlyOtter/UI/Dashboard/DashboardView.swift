@@ -12,46 +12,64 @@ struct DashboardView: View {
     @Bindable var appState: AppState
     @State private var selectedDayDetails: DayDetailsPresentation? = nil
 
+    private var isLoading: Bool {
+        if case .loading = appState.dashboardState { return true }
+        return false
+    }
+
     var body: some View {
         let viewModel = DashboardViewModel(appState: appState)
 
         ZStack {
-            Color.clear.withAppBackground()
+            if isLoading {
+                DashboardLoadingView()
+                    .toolbar(.hidden, for: .navigationBar)
+                    .toolbar(.hidden, for: .tabBar)
+                    .transition(.opacity)
+                    .zIndex(1)
+            } else {
+                ZStack {
+                    Color.clear.withAppBackground()
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    topBar
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 24) {
+                            topBar
 
-                    if !appState.preferences.isSystemEnabled {
-                        systemDisabledBanner
+                            if !appState.preferences.isSystemEnabled {
+                                systemDisabledBanner
+                            }
+
+                            VStack(alignment: .leading, spacing: 24) {
+                                if let permissionBanner = viewModel.permissionBanner {
+                                    banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
+                                }
+
+                                if let noticeMessage = appState.noticeMessage {
+                                    banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
+                                }
+
+                                if let errorMessage = appState.errorMessage {
+                                    banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
+                                }
+
+                                content(viewModel: viewModel)
+                            }
+                            .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
+                            .disabled(!appState.preferences.isSystemEnabled)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+                        .padding(.bottom, 28)
                     }
-
-                    VStack(alignment: .leading, spacing: 24) {
-                        if let permissionBanner = viewModel.permissionBanner {
-                            banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
-                        }
-
-                        if let noticeMessage = appState.noticeMessage {
-                            banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
-                        }
-
-                        if let errorMessage = appState.errorMessage {
-                            banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
-                        }
-
-                        content(viewModel: viewModel)
-                    }
-                    .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
-                    .disabled(!appState.preferences.isSystemEnabled)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 28)
+                .refreshable {
+                    await appState.refreshPlan()
+                }
+                .transition(.opacity)
+                .zIndex(0)
             }
         }
-        .refreshable {
-            await appState.refreshPlan()
-        }
+        .animation(.easeInOut(duration: 0.5), value: isLoading)
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await appState.loadIfNeeded()
@@ -65,17 +83,7 @@ struct DashboardView: View {
     private func content(viewModel: DashboardViewModel) -> some View {
         switch appState.dashboardState {
         case .loading:
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Next Alarm")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(WPStyles.primaryText)
-
-                ProgressView()
-                    .tint(WPStyles.primaryOrange)
-                    .scaleEffect(1.5)
-                    .frame(maxWidth: .infinity, minHeight: 180)
-            }
-            .cardStyle()
+            EmptyView()
         case .needsCalendarPermission:
             permissionPromptCard(viewModel: viewModel)
         case .error:

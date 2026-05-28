@@ -389,6 +389,9 @@ final class AppState {
 
     private func refreshDashboard(reason: RefreshReason) async throws {
         let refreshGeneration = beginRefresh()
+        let isShowingLoadingScreen = (dashboardState == .loading || !hasLoadedInitialState)
+        let startTime = Date()
+
         let now = Date()
         let calendar = Calendar.current
         let currentPermissions = await permissionService.currentStatus()
@@ -415,6 +418,13 @@ final class AppState {
             for: plan,
             syncResult: snapshot.syncResult
         )
+
+        if isShowingLoadingScreen {
+            let elapsed = Date().timeIntervalSince(startTime)
+            if elapsed < 1.0 {
+                try? await Task.sleep(nanoseconds: UInt64((1.0 - elapsed) * 1_000_000_000))
+            }
+        }
 
         guard isCurrentRefresh(refreshGeneration) else { return }
 

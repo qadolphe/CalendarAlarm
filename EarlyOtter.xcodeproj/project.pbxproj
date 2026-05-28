@@ -42,6 +42,7 @@
 		AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */; };
 		AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */; };
 		AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */; };
+		AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */; };
 		AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */; };
 		AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */; };
 		AA0000000000000000000221 /* UI/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000121 /* UI/Settings/SettingsView.swift */; };
@@ -161,6 +162,7 @@
 		AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/CalendarSelection/CalendarSelectionViewModel.swift; sourceTree = "<group>"; };
 		AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardViewModel.swift; sourceTree = "<group>"; };
+		AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardLoadingView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsViewModel.swift; sourceTree = "<group>"; };
 		AA0000000000000000000121 /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 			isa = PBXGroup;
 			children = (
 				AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */,
+				AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */,
 				AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */,
 				775180102FA6F5EA00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift */,
 			);
@@ -751,6 +754,7 @@
 				AA000000000000000000021B /* UI/CalendarSelection/CalendarSelectionView.swift in Sources */,
 				AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */,
 				AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */,
+				AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */,
 				AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */,
 				AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */,
 				AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */,
