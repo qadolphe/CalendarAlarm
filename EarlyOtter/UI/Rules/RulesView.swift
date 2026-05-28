@@ -46,7 +46,11 @@ struct RulesView: View {
 
             // MARK: Rules
             Section(header: sectionHeader("Rules")) {
-                let allRules = [appState.preferences.defaultAlarmRule] + appState.preferences.customAlarmRules.sorted { $0.name.lowercased() < $1.name.lowercased() }
+                let sortedCustomRules = appState.preferences.customAlarmRules.sorted { lhs, rhs in
+                    if lhs.isEnabled != rhs.isEnabled { return lhs.isEnabled && !rhs.isEnabled }
+                    return lhs.name.lowercased() < rhs.name.lowercased()
+                }
+                let allRules = [appState.preferences.defaultAlarmRule] + sortedCustomRules
                 
                 ForEach(allRules) { rule in
                     ZStack(alignment: .leading) {
@@ -164,25 +168,13 @@ struct RulesView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    Text(rule.name)
-                        .font(.headline)
-                        .foregroundStyle(WPStyles.primaryText)
-
-                    if !rule.isDefault && !rule.isEnabled {
-                        statusBadge("Off")
-                    }
-                }
+                Text(rule.name)
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
 
                 HStack(spacing: 12) {
                     timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
                     timingBadge(icon: "car.fill", value: rule.commuteTime.rawValue, unit: "commute")
-                }
-
-                if !rule.isDefault && !rule.isEnabled {
-                    Text("This rule is currently disabled.")
-                        .font(.caption)
-                        .foregroundStyle(WPStyles.secondaryText)
                 }
             }
 
@@ -196,18 +188,6 @@ struct RulesView: View {
         .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
         .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         .opacity(rule.isDefault || rule.isEnabled ? 1 : 0.72)
-    }
-
-    private func statusBadge(_ text: String) -> some View {
-        Text(text)
-            .font(.caption2.weight(.bold))
-            .foregroundStyle(WPStyles.secondaryText)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(WPStyles.surfaceRaised)
-            )
     }
 
     private func timingBadge(icon: String, value: Int, unit: String) -> some View {
@@ -382,14 +362,10 @@ struct RuleEditorView: View {
                         .padding(.bottom, 16)
                 }
 
-                Picker("Editor Mode", selection: $selectedTab) {
-                    Text("Trigger Criteria").tag(0)
-                    Text("Alarm").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-                .disabled(!isDefaultRule && !isEnabled)
+                editorTabSelector
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+                    .disabled(!isDefaultRule && !isEnabled)
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
@@ -444,6 +420,14 @@ struct RuleEditorView: View {
             if previousField == .location, currentField != .location {
                 commitPendingLocationKeyword()
             }
+        }
+        .onChange(of: isEnabled) { _, newValue in
+            guard case .edit(let rule) = mode, !rule.isDefault else { return }
+            var copy = appState.preferences
+            guard let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) else { return }
+            guard copy.alarmRules[idx].isEnabled != newValue else { return }
+            copy.alarmRules[idx].isEnabled = newValue
+            Task { await appState.updatePreferences(copy) }
         }
     }
 
@@ -630,6 +614,46 @@ struct RuleEditorView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         }
+    }
+
+    private var editorTabSelector: some View {
+        HStack(spacing: 6) {
+            editorTabButton(title: "Trigger Criteria", tag: 0)
+            editorTabButton(title: "Alarm", tag: 1)
+        }
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(WPStyles.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(WPStyles.cardBorder, lineWidth: 1)
+        )
+    }
+
+    private func editorTabButton(title: String, tag: Int) -> some View {
+        let isSelected = selectedTab == tag
+        return Button {
+            withAnimation(.easeInOut(duration: 0.18)) {
+                selectedTab = tag
+            }
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.85))
+                .frame(maxWidth: .infinity)
+                .frame(height: 36)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(isSelected ? WPStyles.surfaceRaised : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.7) : Color.clear, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
     }
 
     private var navTitle: String {
@@ -993,6 +1017,7 @@ struct RuleEditorView: View {
         case .edit(let rule):
             if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
                 copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
+                copy.alarmRules[idx].isEnabled = isDefaultRule ? true : isEnabled
                 copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
                 copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
                 copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
