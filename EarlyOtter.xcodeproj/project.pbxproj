@@ -874,7 +874,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -911,7 +911,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -987,7 +987,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1017,7 +1017,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
