@@ -33,10 +33,8 @@ struct ScheduleView: View {
 
     private func dayRow(_ option: WeekdayOption) -> some View {
         let weekday = option.weekday
-        let autoOn = appState.preferences.isEnabled
-        let isEvent = appState.preferences.activeDays.contains(weekday)
-        let isFixed = appState.preferences.fallbackEnabledDays.contains(weekday)
-        let autoEnabled = isEvent && autoOn
+        let autoEnabled = appState.preferences.autoAlarmEnabled(on: weekday)
+        let isFixed = appState.preferences.fixedAlarmEnabled(on: weekday)
         let isOff = !autoEnabled && !isFixed
 
         // Left stripe + outline light up when auto alarms drive the day.

@@ -91,48 +91,46 @@ struct DaySettingsView: View {
             .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
     }
 
+    private var weekday: Int { weekdayOption.weekday }
+
     private var activeBinding: Binding<Bool> {
         Binding(
-            get: { appState.preferences.activeDays.contains(weekdayOption.weekday) },
-            set: { v in
-                var copy = appState.preferences
-                if v {
-                    copy.activeDays.insert(weekdayOption.weekday)
-                } else {
-                    copy.activeDays.remove(weekdayOption.weekday)
+            get: { appState.preferences.activeDays.contains(weekday) },
+            set: { isOn in
+                Task {
+                    await appState.mutatePreferences { prefs in
+                        if isOn { prefs.activeDays.insert(weekday) }
+                        else { prefs.activeDays.remove(weekday) }
+                    }
                 }
-                Task { await appState.updatePreferences(copy) }
             }
         )
     }
 
     private var fallbackEnabledBinding: Binding<Bool> {
         Binding(
-            get: { appState.preferences.fallbackEnabledDays.contains(weekdayOption.weekday) },
-            set: { v in
-                var copy = appState.preferences
-                if v {
-                    copy.fallbackEnabledDays.insert(weekdayOption.weekday)
-                } else {
-                    copy.fallbackEnabledDays.remove(weekdayOption.weekday)
+            get: { appState.preferences.fixedAlarmEnabled(on: weekday) },
+            set: { isOn in
+                Task {
+                    await appState.mutatePreferences { prefs in
+                        if isOn { prefs.fallbackEnabledDays.insert(weekday) }
+                        else { prefs.fallbackEnabledDays.remove(weekday) }
+                    }
                 }
-                Task { await appState.updatePreferences(copy) }
             }
         )
     }
 
     private var fallbackTimeBinding: Binding<Date> {
         Binding(
-            get: {
-                let clockTime = appState.preferences.fallbackWakeTime(for: weekdayOption.weekday)
-                return clockTime.date(on: TargetDay(date: Date()))
-            },
+            get: { appState.preferences.fallbackWakeTime(for: weekday).date(on: TargetDay(date: Date())) },
             set: { date in
                 let comps = Calendar.current.dateComponents([.hour, .minute], from: date)
-                if let h = comps.hour, let m = comps.minute {
-                    var copy = appState.preferences
-                    copy.schedule.fallbackWakeTimes[weekdayOption.weekday] = ClockTime(hour: h, minute: m)
-                    Task { await appState.updatePreferences(copy) }
+                guard let hour = comps.hour, let minute = comps.minute else { return }
+                Task {
+                    await appState.mutatePreferences { prefs in
+                        prefs.schedule.fallbackWakeTimes[weekday] = ClockTime(hour: hour, minute: minute)
+                    }
                 }
             }
         )

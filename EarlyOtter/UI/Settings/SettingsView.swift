@@ -112,10 +112,8 @@ struct SettingsView: View {
     private var isSystemEnabledBinding: Binding<Bool> {
         Binding(
             get: { appState.preferences.isSystemEnabled },
-            set: { v in
-                var copy = appState.preferences
-                copy.isSystemEnabled = v
-                Task { await appState.updatePreferences(copy) }
+            set: { isOn in
+                Task { await appState.mutatePreferences { $0.isSystemEnabled = isOn } }
             }
         )
     }

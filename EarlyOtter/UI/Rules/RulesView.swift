@@ -181,9 +181,9 @@ struct RulesView: View {
     // MARK: Helpers
 
     private func deleteRule(_ rule: AlarmRule) {
-        var copy = appState.preferences
-        copy.alarmRules.removeAll { $0.id == rule.id }
-        Task { await appState.updatePreferences(copy) }
+        Task {
+            await appState.mutatePreferences { $0.alarmRules.removeAll { $0.id == rule.id } }
+        }
     }
 }
 

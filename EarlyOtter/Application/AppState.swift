@@ -104,17 +104,28 @@ final class AppState {
     }
 
     func updatePreferences(_ newPreferences: AlarmPreferences) async {
+        let previousDashboardState = dashboardState
         noticeMessage = nil
         settingsAlertMessage = nil
 
         do {
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
-            dashboardState = .loading
+            // Refresh in place — keep the current dashboard visible instead of
+            // flashing the loading screen for small edits like day toggles.
             try await refreshDashboard(reason: .manual)
+        } catch is CancellationError {
+            dashboardState = previousDashboardState
         } catch {
             dashboardState = .error(format(error))
         }
+    }
+
+    /// Apply an in-place mutation to the current preferences, then persist and refresh.
+    func mutatePreferences(_ mutate: (inout AlarmPreferences) -> Void) async {
+        var copy = preferences
+        mutate(&copy)
+        await updatePreferences(copy)
     }
 
     func refreshPlan() async {

@@ -167,6 +167,21 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         schedule.fallbackWakeTimes[weekday] ?? timing.latestWakeTime
     }
 
+    /// Whether event-driven auto alarms run on the given weekday.
+    func autoAlarmEnabled(on weekday: Int) -> Bool {
+        isEnabled && activeDays.contains(weekday)
+    }
+
+    /// Whether a fixed backup alarm is set for the given weekday.
+    func fixedAlarmEnabled(on weekday: Int) -> Bool {
+        fallbackEnabledDays.contains(weekday)
+    }
+
+    /// True when no fixed backup alarms are configured for any day.
+    var hasNoFixedAlarms: Bool {
+        fallbackEnabledDays.isEmpty
+    }
+
     /// The single default rule (always present, matches any event).
     var defaultAlarmRule: AlarmRule {
         alarmRules.first(where: { $0.isDefault }) ?? AlarmRule.makeDefault(

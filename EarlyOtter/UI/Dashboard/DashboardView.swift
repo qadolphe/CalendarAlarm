@@ -133,7 +133,7 @@ struct DashboardView: View {
     }
 
     private var hasNoFixedAlarms: Bool {
-        appState.preferences.fallbackEnabledDays.isEmpty
+        appState.preferences.hasNoFixedAlarms
     }
 
     private var setAlarmsPromptCard: some View {
@@ -266,9 +266,7 @@ struct DashboardView: View {
                 .foregroundStyle(WPStyles.secondaryText)
             
             Button {
-                var copy = appState.preferences
-                copy.isSystemEnabled = true
-                Task { await appState.updatePreferences(copy) }
+                Task { await appState.mutatePreferences { $0.isSystemEnabled = true } }
             } label: {
                 Text("Reactivate")
                     .font(.headline)
