@@ -336,11 +336,15 @@ struct RuleEditorView: View {
         }
         .onChange(of: isEnabled) { _, newValue in
             guard case .edit(let rule) = mode, !rule.isDefault else { return }
-            var copy = appState.preferences
-            guard let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) else { return }
-            guard copy.alarmRules[idx].isEnabled != newValue else { return }
-            copy.alarmRules[idx].isEnabled = newValue
-            Task { await appState.updatePreferences(copy) }
+            guard let current = appState.preferences.alarmRules.first(where: { $0.id == rule.id }),
+                  current.isEnabled != newValue else { return }
+            Task {
+                await appState.mutatePreferences { copy in
+                    if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
+                        copy.alarmRules[idx].isEnabled = newValue
+                    }
+                }
+            }
         }
     }
 
@@ -904,46 +908,48 @@ struct RuleEditorView: View {
     }
 
     private func save() {
-        var copy = appState.preferences
-        switch mode {
-        case .add:
-            let newRule = AlarmRule(
-                id: UUID(),
-                name: name.isEmpty ? "New Rule" : name,
-                isDefault: false,
-                activeWeekdays: activeWeekdays,
-                selectedCalendarIDs: selectedCalendarIDs,
-                conditions: conditions,
-                prepTime: prepTime,
-                commuteTime: commuteTime,
-                alarmSettings: RuleAlarmSettings(
-                    sound: sound,
-                    snoozeEnabled: snoozeEnabled,
-                    snoozeDuration: snoozeDuration
-                )
-            )
-            if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
-                copy.alarmRules.insert(newRule, at: idx)
-            } else {
-                copy.alarmRules.append(newRule)
-            }
-        case .edit(let rule):
-            if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
-                copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
-                copy.alarmRules[idx].isEnabled = isDefaultRule ? true : isEnabled
-                copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
-                copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
-                copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
-                copy.alarmRules[idx].prepTime = prepTime
-                copy.alarmRules[idx].commuteTime = commuteTime
-                copy.alarmRules[idx].alarmSettings = RuleAlarmSettings(
-                    sound: sound,
-                    snoozeEnabled: snoozeEnabled,
-                    snoozeDuration: snoozeDuration
-                )
+        Task {
+            await appState.mutatePreferences { copy in
+                switch mode {
+                case .add:
+                    let newRule = AlarmRule(
+                        id: UUID(),
+                        name: name.isEmpty ? "New Rule" : name,
+                        isDefault: false,
+                        activeWeekdays: activeWeekdays,
+                        selectedCalendarIDs: selectedCalendarIDs,
+                        conditions: conditions,
+                        prepTime: prepTime,
+                        commuteTime: commuteTime,
+                        alarmSettings: RuleAlarmSettings(
+                            sound: sound,
+                            snoozeEnabled: snoozeEnabled,
+                            snoozeDuration: snoozeDuration
+                        )
+                    )
+                    if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
+                        copy.alarmRules.insert(newRule, at: idx)
+                    } else {
+                        copy.alarmRules.append(newRule)
+                    }
+                case .edit(let rule):
+                    if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
+                        copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
+                        copy.alarmRules[idx].isEnabled = isDefaultRule ? true : isEnabled
+                        copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
+                        copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
+                        copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
+                        copy.alarmRules[idx].prepTime = prepTime
+                        copy.alarmRules[idx].commuteTime = commuteTime
+                        copy.alarmRules[idx].alarmSettings = RuleAlarmSettings(
+                            sound: sound,
+                            snoozeEnabled: snoozeEnabled,
+                            snoozeDuration: snoozeDuration
+                        )
+                    }
+                }
             }
         }
-        Task { await appState.updatePreferences(copy) }
         dismiss()
     }
 
@@ -1057,14 +1063,20 @@ struct GlobalEventFiltersView: View {
                 Button("Save") {
                     addKeyword($newBlockedKeyword, to: $blockedKeywords)
                     addKeyword($newAllowedKeyword, to: $allowedKeywords)
-                    var copy = appState.preferences
-                    copy.titleBlocklist = blockedKeywords
-                        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-                        .filter { !$0.isEmpty }
-                    copy.titleAllowlist = allowedKeywords
-                        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-                        .filter { !$0.isEmpty }
-                    Task { await appState.updatePreferences(copy); dismiss() }
+                    let normalize: ([String]) -> [String] = { keywords in
+                        keywords
+                            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                            .filter { !$0.isEmpty }
+                    }
+                    let blocked = normalize(blockedKeywords)
+                    let allowed = normalize(allowedKeywords)
+                    Task {
+                        await appState.mutatePreferences { copy in
+                            copy.titleBlocklist = blocked
+                            copy.titleAllowlist = allowed
+                        }
+                        dismiss()
+                    }
                 }
                 .fontWeight(.semibold)
                 .foregroundStyle(WPStyles.primaryOrange)
@@ -1082,9 +1094,7 @@ struct GlobalEventFiltersView: View {
         Binding(
             get: { appState.preferences[keyPath: keyPath] },
             set: { value in
-                var copy = appState.preferences
-                copy[keyPath: keyPath] = value
-                Task { await appState.updatePreferences(copy) }
+                Task { await appState.mutatePreferences { $0[keyPath: keyPath] = value } }
             }
         )
     }

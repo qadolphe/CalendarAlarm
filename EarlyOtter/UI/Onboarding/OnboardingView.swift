@@ -760,13 +760,15 @@ struct OnboardingView: View {
         Binding(
             get: { appState.preferences.defaultAlarmRule.prepTime.rawValue },
             set: { v in
-                var copy = appState.preferences
                 let minutes = Minutes(v)
-                copy.prepTime = minutes
-                if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
-                    copy.alarmRules[idx].prepTime = minutes
+                Task {
+                    await appState.mutatePreferences { copy in
+                        copy.prepTime = minutes
+                        if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
+                            copy.alarmRules[idx].prepTime = minutes
+                        }
+                    }
                 }
-                Task { await appState.updatePreferences(copy) }
             }
         )
     }
@@ -775,13 +777,15 @@ struct OnboardingView: View {
         Binding(
             get: { appState.preferences.defaultAlarmRule.commuteTime.rawValue },
             set: { v in
-                var copy = appState.preferences
                 let minutes = Minutes(v)
-                copy.defaultCommuteTime = minutes
-                if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
-                    copy.alarmRules[idx].commuteTime = minutes
+                Task {
+                    await appState.mutatePreferences { copy in
+                        copy.defaultCommuteTime = minutes
+                        if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
+                            copy.alarmRules[idx].commuteTime = minutes
+                        }
+                    }
                 }
-                Task { await appState.updatePreferences(copy) }
             }
         )
     }
