@@ -42,7 +42,6 @@
 		AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */; };
 		AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */; };
 		AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */; };
-		AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */; };
 		AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */; };
 		AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */; };
 		AA0000000000000000000221 /* UI/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000121 /* UI/Settings/SettingsView.swift */; };
@@ -85,6 +84,8 @@
 		AA000000000000000000024C /* Domain/Models/NextAlarmWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000146 /* Domain/Models/NextAlarmWidgetSnapshot.swift */; };
 		AA000000000000000000024D /* Infrastructure/Persistence/UserDefaultsNextAlarmWidgetSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000147 /* Infrastructure/Persistence/UserDefaultsNextAlarmWidgetSnapshotStore.swift */; };
 		AA0000000000000000000250 /* Infrastructure/Alarm/EarlyOtterAlarmMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000150 /* Infrastructure/Alarm/EarlyOtterAlarmMetadata.swift */; };
+		AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */; };
+		AA0000000000000000000252 /* UI/Schedule/ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */; };
 		AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
 		AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000301 /* Domain/EventFilterTests.swift */; };
 		AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */; };
@@ -162,7 +163,6 @@
 		AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/CalendarSelection/CalendarSelectionViewModel.swift; sourceTree = "<group>"; };
 		AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardViewModel.swift; sourceTree = "<group>"; };
-		AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardLoadingView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsViewModel.swift; sourceTree = "<group>"; };
 		AA0000000000000000000121 /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
@@ -205,6 +205,8 @@
 		AA000000000000000000014C /* EarlyOtter/EarlyOtter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EarlyOtter/EarlyOtter.entitlements; sourceTree = "<group>"; };
 		AA000000000000000000014D /* NextAlarmWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NextAlarmWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000150 /* Infrastructure/Alarm/EarlyOtterAlarmMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Alarm/EarlyOtterAlarmMetadata.swift; sourceTree = "<group>"; };
+		AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardLoadingView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Schedule/ScheduleView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000301 /* Domain/EventFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EventFilterTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EarlyOtterCalculatorTests.swift; sourceTree = "<group>"; };
@@ -347,6 +349,7 @@
 				AA0000000000000000000532 /* Permissions */,
 				AA0000000000000000000535 /* Root */,
 				AA0000000000000000000536 /* Rules */,
+				AA0000000000000000000538 /* Schedule */,
 				AA0000000000000000000533 /* Settings */,
 				0D5AD69CE17087D801EF78B3 /* DesignSystem */,
 			);
@@ -523,6 +526,14 @@
 				AA0000000000000000000127 /* UI/Rules/RulesView.swift */,
 			);
 			name = Rules;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000538 /* Schedule */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */,
+			);
+			name = Schedule;
 			sourceTree = "<group>";
 		};
 		AA0000000000000000000537 /* NextAlarmWidget */ = {
@@ -755,6 +766,7 @@
 				AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */,
 				AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */,
 				AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */,
+				AA0000000000000000000252 /* UI/Schedule/ScheduleView.swift in Sources */,
 				AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */,
 				AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */,
 				AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */,
@@ -862,7 +874,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -899,7 +911,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -975,7 +987,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1005,7 +1017,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";

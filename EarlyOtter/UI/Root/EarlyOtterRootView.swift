@@ -69,22 +69,22 @@ struct EarlyOtterRootView: View {
     private var mainTabView: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                DashboardView(appState: appState)
+                DashboardView(appState: appState, onOpenSchedule: { selectedTab = .schedule })
             }
             .tag(MainTab.home)
             .tabItem { Label("Home", systemImage: "house.fill") }
 
             NavigationStack {
+                ScheduleView(appState: appState)
+            }
+            .tag(MainTab.schedule)
+            .tabItem { Label("Schedule", systemImage: "calendar") }
+
+            NavigationStack {
                 RulesView(appState: appState)
             }
             .tag(MainTab.rules)
-            .tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
-
-            NavigationStack {
-                SettingsView(appState: appState)
-            }
-            .tag(MainTab.settings)
-            .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            .tabItem { Label("Rules", systemImage: "gearshape.fill") }
         }
         .tint(WPStyles.primaryOrange)
         .toolbarBackground(WPStyles.background, for: .tabBar)
@@ -106,6 +106,6 @@ struct EarlyOtterRootView: View {
 
 private enum MainTab {
     case home
+    case schedule
     case rules
-    case settings
 }

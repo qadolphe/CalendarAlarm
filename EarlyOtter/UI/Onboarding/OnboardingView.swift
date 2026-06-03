@@ -650,9 +650,9 @@ struct OnboardingView: View {
             if let title = plan.targetEvent?.title, !title.isEmpty {
                 return Text(title)
             }
-            return Text("Tomorrow's alarm is ") + Text(timeString).bold() + Text(".")
+            return Text("Tomorrow's alarm is \(Text(timeString).bold()).")
         case .fallback, .manualOverride:
-            return Text("Fixed alarm at ") + Text(timeString).bold() + Text(".")
+            return Text("Fixed alarm at \(Text(timeString).bold()).")
         case .authorizationMissing:
             return Text("Alarm access is still off.")
         case .noSchedule, .inactiveDay:

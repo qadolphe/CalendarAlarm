@@ -10,6 +10,7 @@ struct DashboardView: View {
     }
 
     @Bindable var appState: AppState
+    var onOpenSchedule: () -> Void = {}
     @State private var selectedDayDetails: DayDetailsPresentation? = nil
 
     private var isLoading: Bool {
@@ -91,7 +92,7 @@ struct DashboardView: View {
         case .needsAlarmPermission(let viewState),
              .ready(let viewState),
              .emptyFallback(let viewState):
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 14) {
                 ZStack(alignment: .topTrailing) {
                     if showsNoAlarmCard(for: viewState.plan) {
                         DashboardNoAlarmCardView(
@@ -120,11 +121,51 @@ struct DashboardView: View {
                 }
                 .padding(.top, 16)
 
+                if hasNoFixedAlarms {
+                    setAlarmsPromptCard
+                }
+
                 DashboardWeeklyCardView(viewModel: viewModel) { entry in
                     selectedDayDetails = DayDetailsPresentation(entry: entry)
                 }
             }
         }
+    }
+
+    private var hasNoFixedAlarms: Bool {
+        appState.preferences.fallbackEnabledDays.isEmpty
+    }
+
+    private var setAlarmsPromptCard: some View {
+        Button {
+            onOpenSchedule()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "alarm.fill")
+                    .font(.title3)
+                    .foregroundStyle(WPStyles.primaryOrange)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Set your standby alarms")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(WPStyles.primaryText)
+                    Text("Pick wake-up times for days without events")
+                        .font(.caption)
+                        .foregroundStyle(WPStyles.secondaryText)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(WPStyles.tertiaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.primaryOrange.opacity(0.4), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     private var topBar: some View {
@@ -143,7 +184,7 @@ struct DashboardView: View {
     private func noAlarmMessage(for plan: WakeUpPlan) -> String {
         switch plan.reason {
         case .inactiveDay:
-            return "Auto-Pilot is paused for this day."
+            return "Auto Alarms are paused for this day."
         case .noSchedule:
             return "No scheduled events or fallback alarms are coming up."
         case .disabled:

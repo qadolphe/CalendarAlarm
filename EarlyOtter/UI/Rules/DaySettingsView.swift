@@ -10,40 +10,49 @@ struct DaySettingsView: View {
             ZStack {
                 Color.clear.withAppBackground()
 
-                List {
-                    Section(header: Text("Auto-Pilot").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
-                        Toggle("Event Alarm", isOn: activeBinding)
-                            .tint(WPStyles.primaryOrange)
-                            .foregroundStyle(WPStyles.primaryText)
-                        
-                        Text("Use calendar events to set this day's alarm.")
-                            .font(.caption)
-                            .foregroundStyle(WPStyles.secondaryText)
-                    }
-                    .listRowBackground(WPStyles.surface)
+                VStack(spacing: 10) {
+                    toggleCard(
+                        icon: "calendar.badge.clock",
+                        iconTint: WPStyles.primaryOrange,
+                        title: "Calendar Alarms",
+                        isOn: activeBinding
+                    )
 
-                    Section(header: Text("Fixed Alarm").font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.secondaryText).textCase(.uppercase)) {
-                        Toggle("Enable Fixed Alarm", isOn: fallbackEnabledBinding)
-                            .tint(WPStyles.primaryOrange)
-                            .foregroundStyle(WPStyles.primaryText)
-                        
+                    VStack(spacing: 0) {
+                        toggleRow(
+                            icon: "alarm.fill",
+                            iconTint: WPStyles.secondaryBlue,
+                            title: "Standby Alarm",
+                            isOn: fallbackEnabledBinding
+                        )
+
                         if appState.preferences.fallbackEnabledDays.contains(weekdayOption.weekday) {
+                            Divider().overlay(WPStyles.cardBorder)
                             DatePicker(
                                 "Wake Time",
                                 selection: fallbackTimeBinding,
                                 displayedComponents: .hourAndMinute
                             )
-                            .foregroundStyle(WPStyles.primaryText)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 150)
+                            .clipped()
                         }
-                        
-                        Text("Use a fixed alarm when you want a guaranteed wake-up.")
-                            .font(.caption)
-                            .foregroundStyle(WPStyles.secondaryText)
                     }
-                    .listRowBackground(WPStyles.surface)
+                    .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                    Text("If you don't have any early events, EarlyOtter will wake you up at this time.")
+                        .font(.caption)
+                        .foregroundStyle(WPStyles.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 6)
+
+                    Spacer(minLength: 0)
                 }
-                .scrollContentBackground(.hidden)
-                .listStyle(.insetGrouped)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
             }
             .navigationTitle("\(weekdayOption.fullLabel) Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -56,9 +65,30 @@ struct DaySettingsView: View {
                     .foregroundStyle(WPStyles.primaryOrange)
                 }
             }
-            .presentationDetents([.large])
+            .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
         }
+    }
+
+    private func toggleRow(icon: String, iconTint: Color, title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(iconTint)
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+            }
+        }
+        .tint(WPStyles.primaryOrange)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private func toggleCard(icon: String, iconTint: Color, title: String, isOn: Binding<Bool>) -> some View {
+        toggleRow(icon: icon, iconTint: iconTint, title: title, isOn: isOn)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
     }
 
     private var activeBinding: Binding<Bool> {

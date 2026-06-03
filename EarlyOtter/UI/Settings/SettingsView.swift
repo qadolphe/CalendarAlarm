@@ -1,9 +1,6 @@
 import SwiftUI
 
-// MARK: - Schedule (typealias kept for any lingering references)
-typealias ScheduleView = SettingsView
-
-// MARK: - Settings tab (app-level configuration only)
+// MARK: - Settings (app-level configuration, opened from the Rules tab)
 
 struct SettingsView: View {
     @Bindable var appState: AppState

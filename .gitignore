@@ -60,3 +60,7 @@ stitch-downloads/
 
 # ===== Logs =====
 *.log
+
+
+# === promo ====
+promo/

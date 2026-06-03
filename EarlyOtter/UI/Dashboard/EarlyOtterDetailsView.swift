@@ -45,7 +45,7 @@ struct EarlyOtterDetailsView: View {
     private var unavailableStateTitle: String {
         switch plan.reason {
         case .inactiveDay:
-            return "Auto-Pilot Paused"
+            return "Auto Alarms Paused"
         case .disabled:
             return "Automatic Alarms Off"
         case .systemDisabled:
@@ -62,7 +62,7 @@ struct EarlyOtterDetailsView: View {
         case .inactiveDay:
             return "This weekday is currently inactive in your schedule, so EarlyOtter will not manage an alarm for it."
         case .disabled:
-            return "Automatic alarms are turned off. Re-enable Auto-Pilot from the schedule settings to resume managed alarms."
+            return "Automatic alarms are turned off. Re-enable Auto Alarms from the schedule settings to resume managed alarms."
         case .systemDisabled:
             return "EarlyOtter is fully disabled right now, so no managed alarms will be created until you turn it back on."
         case .noSchedule:

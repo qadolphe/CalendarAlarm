@@ -167,7 +167,7 @@ struct ScheduleViewModel {
     }
 
     var scheduleStateTitle: String {
-        appState.preferences.isEnabled ? "Auto-Pilot is On" : "Auto-Pilot is Paused"
+        appState.preferences.isEnabled ? "Auto Alarms are On" : "Auto Alarms are Paused"
     }
 
     var scheduleStateSummary: String {
@@ -177,7 +177,7 @@ struct ScheduleViewModel {
             .formatted(date: .omitted, time: .shortened)
 
         if !appState.preferences.isEnabled {
-            return "EarlyOtter will not calculate or schedule alarms until Auto-Pilot is re-enabled."
+            return "EarlyOtter will not calculate or schedule alarms until Auto Alarms are re-enabled."
         }
 
         return "EarlyOtter can schedule alarms on \(days) and use a fixed alarm time of \(fallback) when no event matches."

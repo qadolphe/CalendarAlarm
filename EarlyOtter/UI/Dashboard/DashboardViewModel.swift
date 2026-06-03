@@ -188,7 +188,7 @@ struct DashboardViewModel {
         switch viewState.alarmStatus {
         case .scheduled:
             if plan.reason == .inactiveDay {
-                return "Auto-Pilot is paused for that day based on your active schedule."
+                return "Auto Alarms are paused for that day based on your active schedule."
             }
             if plan.reason == .fallback {
                 return "Fixed alarm is scheduled."
@@ -275,7 +275,7 @@ struct DashboardViewModel {
 
         switch entry.plan.reason {
         case .inactiveDay:
-            return "\(day), Auto-Pilot is paused for this day."
+            return "\(day), Auto Alarms are paused for this day."
         case .disabled:
             return "\(day), automatic alarms are turned off."
         case .systemDisabled:

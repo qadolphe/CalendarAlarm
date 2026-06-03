@@ -5,17 +5,12 @@ import SwiftUI
 struct RulesView: View {
     @Bindable var appState: AppState
     @State private var isAddingRule = false
-    @State private var selectedWeekday: WeekdayOption?
+    @State private var isShowingSettings = false
 
     var body: some View {
         List {
-            // MARK: Schedule config (global, lives above rules)
+            // MARK: Global filters (live above rules)
             Section {
-                scheduleCard
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
-
                 NavigationLink(destination: GlobalEventFiltersView(appState: appState)) {
                     HStack(spacing: 12) {
                         ZStack {
@@ -99,51 +94,33 @@ struct RulesView: View {
         .background(Color.clear.withAppBackground())
         .navigationTitle("Rules")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isShowingSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundStyle(WPStyles.primaryOrange)
+                }
+            }
+        }
         .sheet(isPresented: $isAddingRule) {
             NavigationStack {
                 RuleEditorView(appState: appState, mode: .add)
             }
         }
-        .sheet(item: $selectedWeekday) { option in
-            DaySettingsView(appState: appState, weekdayOption: option)
-        }
-    }
-
-    // MARK: Schedule cards
-
-    private var scheduleCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(WPStyles.primaryOrange.opacity(0.12))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: "calendar.day.timeline.left")
-                        .foregroundStyle(WPStyles.primaryOrange)
-                }
-
-                Text("Daily Schedule")
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-
-                Spacer()
-            }
-
-            if appState.preferences.isEnabled {
-                LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7),
-                    spacing: 8
-                ) {
-                    ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
-                        weekdayCell(option)
+        .sheet(isPresented: $isShowingSettings) {
+            NavigationStack {
+                SettingsView(appState: appState)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { isShowingSettings = false }
+                                .fontWeight(.bold)
+                                .foregroundStyle(WPStyles.primaryOrange)
+                        }
                     }
-                }
-                .padding(.top, 14)
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: appState.preferences.isEnabled)
-        .cardStyle()
     }
 
     // MARK: Rule cards
@@ -202,70 +179,6 @@ struct RulesView: View {
     }
 
     // MARK: Helpers
-
-    private func weekdayCell(_ option: WeekdayOption) -> some View {
-        let isAutoPilot = appState.preferences.activeDays.contains(option.weekday)
-        let isFallback = appState.preferences.fallbackEnabledDays.contains(option.weekday)
-
-        return Button { selectedWeekday = option } label: {
-            VStack(spacing: 8) {
-                Text(option.shortLabel).font(.system(size: 9, weight: .bold))
-                Circle()
-                    .fill(isFallback ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
-                    .frame(width: 6, height: 6)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isAutoPilot || isFallback ? WPStyles.surfaceRaised : WPStyles.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isAutoPilot ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
-            )
-            .foregroundStyle(isAutoPilot || isFallback ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var enabledBinding: Binding<Bool> {
-        Binding(
-            get: { appState.preferences.isEnabled },
-            set: { v in
-                var copy = appState.preferences
-                copy.isEnabled = v
-                Task { await appState.updatePreferences(copy) }
-            }
-        )
-    }
-
-    private func toggleActiveDay(_ weekday: Int) {
-        var copy = appState.preferences
-        if copy.activeDays.contains(weekday) {
-            guard copy.activeDays.count > 1 else { return }
-            copy.activeDays.remove(weekday)
-        } else {
-            copy.activeDays.insert(weekday)
-        }
-        Task { await appState.updatePreferences(copy) }
-    }
-
-    private func fallbackTimeBinding(for weekday: Int) -> Binding<Date> {
-        Binding(
-            get: {
-                let clockTime = appState.preferences.fallbackWakeTime(for: weekday)
-                return clockTime.date(on: TargetDay(date: Date()))
-            },
-            set: { date in
-                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
-                guard let h = c.hour, let m = c.minute else { return }
-                var copy = appState.preferences
-                copy.schedule.fallbackWakeTimes[weekday] = ClockTime(hour: h, minute: m)
-                Task { await appState.updatePreferences(copy) }
-            }
-        )
-    }
 
     private func deleteRule(_ rule: AlarmRule) {
         var copy = appState.preferences
