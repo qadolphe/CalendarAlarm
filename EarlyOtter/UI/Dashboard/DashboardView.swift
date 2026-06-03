@@ -12,6 +12,7 @@ struct DashboardView: View {
     @Bindable var appState: AppState
     var onOpenSchedule: () -> Void = {}
     @State private var selectedDayDetails: DayDetailsPresentation? = nil
+    @AppStorage("hasDismissedStandbyPrompt") private var hasDismissedStandbyPrompt = false
 
     private var isLoading: Bool {
         if case .loading = appState.dashboardState { return true }
@@ -121,7 +122,7 @@ struct DashboardView: View {
                 }
                 .padding(.top, 16)
 
-                if hasNoFixedAlarms {
+                if hasNoFixedAlarms && !hasDismissedStandbyPrompt {
                     setAlarmsPromptCard
                 }
 
@@ -137,35 +138,49 @@ struct DashboardView: View {
     }
 
     private var setAlarmsPromptCard: some View {
-        Button {
-            onOpenSchedule()
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "alarm.fill")
-                    .font(.title3)
-                    .foregroundStyle(WPStyles.primaryOrange)
+        // Two sibling buttons (not nested): the card navigates, the corner ✕ dismisses.
+        ZStack(alignment: .topTrailing) {
+            Button {
+                onOpenSchedule()
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "alarm.fill")
+                        .font(.title3)
+                        .foregroundStyle(WPStyles.primaryOrange)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Set your standby alarms")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(WPStyles.primaryText)
-                    Text("Pick wake-up times for days without events")
-                        .font(.caption)
-                        .foregroundStyle(WPStyles.secondaryText)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Set your standby alarms")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(WPStyles.primaryText)
+                        Text("Pick wake-up times for days without events")
+                            .font(.caption)
+                            .foregroundStyle(WPStyles.secondaryText)
+                    }
+
+                    Spacer(minLength: 8)
                 }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(WPStyles.tertiaryText)
+                .padding(.leading, 16)
+                .padding(.trailing, 30) // reserve room so text never sits under the ✕
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.primaryOrange.opacity(0.4), lineWidth: 1))
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.primaryOrange.opacity(0.4), lineWidth: 1))
+            .buttonStyle(.plain)
+
+            Button {
+                hasDismissedStandbyPrompt = true
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(WPStyles.tertiaryText)
+                    .padding(8)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 4)
+            .padding(.top, 4)
         }
-        .buttonStyle(.plain)
     }
 
     private var topBar: some View {
