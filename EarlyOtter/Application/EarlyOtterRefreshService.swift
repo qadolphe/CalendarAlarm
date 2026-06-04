@@ -232,7 +232,7 @@ extension EarlyOtterRefreshService {
             return event.startDate.formatted(date: .omitted, time: .shortened)
         }
 
-        return "Fixed alarm"
+        return "Standby alarm"
     }
 
     func widgetShowsConnectedMarkers(

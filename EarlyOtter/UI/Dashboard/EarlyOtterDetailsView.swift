@@ -10,7 +10,7 @@ struct EarlyOtterDetailsView: View {
         }
 
         if plan.reason == .fallback {
-            return "Fixed"
+            return "Standby"
         }
 
         return nil

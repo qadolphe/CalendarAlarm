@@ -191,7 +191,7 @@ struct DashboardViewModel {
                 return "Auto Alarms are paused for that day based on your active schedule."
             }
             if plan.reason == .fallback {
-                return "Fixed alarm is scheduled."
+                return "Standby alarm is scheduled."
             }
             return "Alarm scheduled for the next valid event."
         case .needsPermission:
@@ -201,7 +201,7 @@ struct DashboardViewModel {
         case .failed(let message):
             return "Couldn't schedule alarm: \(message)"
         case .notScheduled:
-            return "No scheduled events or fixed alarm."
+            return "No scheduled events or standby alarm."
         }
     }
 

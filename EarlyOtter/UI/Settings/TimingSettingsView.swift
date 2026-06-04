@@ -44,7 +44,7 @@ struct TimingSettingsView: View {
                         Divider()
 
                         HStack {
-                            Text("Fixed alarm time")
+                            Text("Standby alarm time")
                                 .font(.headline)
                                 .foregroundStyle(WPStyles.primaryText)
                             Spacer()

@@ -282,7 +282,7 @@ struct OnboardingView: View {
                 } else if finishPhase == 3 {
                     if let plan = finishStepPlan {
                         VStack(spacing: 24) {
-                            Text(plan.reason == .event ? "Your First Smart Alarm" : "No Events Tomorrow!")
+                            Text(plan.reason == .event ? "Your First Auto Alarm" : "No Events Tomorrow!")
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundStyle(WPStyles.primaryText)
                                 .multilineTextAlignment(.center)
@@ -343,7 +343,7 @@ struct OnboardingView: View {
                 } else if finishPhase >= 4 {
                     if finishStepPlan != nil {
                         VStack(spacing: 28) {
-                            Text("Set fixed alarms for days without morning events.")
+                            Text("Set Standby Alarms for days without events.")
                                 .font(.body.weight(.medium))
                                 .multilineTextAlignment(finishPhase == 4 ? .center : .leading)
                                 .foregroundStyle(WPStyles.secondaryText)
@@ -355,7 +355,7 @@ struct OnboardingView: View {
 
                             if finishPhase >= 5 {
                                 VStack(alignment: .leading, spacing: 16) {
-                                    Text("Fixed Alarms")
+                                    Text("Standby Alarms")
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
                                     
@@ -453,27 +453,27 @@ struct OnboardingView: View {
     }
     
     private func weekdayCell(_ option: WeekdayOption) -> some View {
-        let isAutoPilot = appState.preferences.activeDays.contains(option.weekday)
-        let isFallback = appState.preferences.fallbackEnabledDays.contains(option.weekday)
+        let isAutoAlarm = appState.preferences.activeDays.contains(option.weekday)
+        let isFixed = appState.preferences.fixedAlarmEnabled(on: option.weekday)
 
         return Button { selectedWeekday = option } label: {
             VStack(spacing: 8) {
                 Text(option.shortLabel).font(.system(size: 9, weight: .bold))
                 Circle()
-                    .fill(isFallback ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
+                    .fill(isFixed ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
                     .frame(width: 6, height: 6)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isAutoPilot || isFallback ? WPStyles.surfaceRaised : WPStyles.surface)
+                    .fill(isAutoAlarm || isFixed ? WPStyles.surfaceRaised : WPStyles.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isAutoPilot ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(isAutoAlarm ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
             )
-            .foregroundStyle(isAutoPilot || isFallback ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
+            .foregroundStyle(isAutoAlarm || isFixed ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
         }
         .buttonStyle(.plain)
     }
@@ -652,7 +652,7 @@ struct OnboardingView: View {
             }
             return Text("Tomorrow's alarm is \(Text(timeString).bold()).")
         case .fallback, .manualOverride:
-            return Text("Fixed alarm at \(Text(timeString).bold()).")
+            return Text("Standby alarm at \(Text(timeString).bold()).")
         case .authorizationMissing:
             return Text("Alarm access is still off.")
         case .noSchedule, .inactiveDay:
