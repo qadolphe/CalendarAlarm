@@ -91,6 +91,7 @@ final class EarlyOtterService {
                 && plan.reason != .inactiveDay
                 && plan.reason != .systemDisabled
                 && plan.reason != .noSchedule
+                && plan.reason != .manualSkip
                 && plan.calculatedWakeTime > now
         }
     }

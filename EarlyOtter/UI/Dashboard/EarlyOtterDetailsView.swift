@@ -1,19 +1,39 @@
 import SwiftUI
 
 struct EarlyOtterDetailsView: View {
-    let plan: WakeUpPlan
+    private let inputPlan: WakeUpPlan
     let alarmStatus: AlarmScheduleStatus?
+    /// Optional so SwiftUI previews can render without a full app state.
+    /// When present, a single-day "Edit Alarm" action is offered.
+    let appState: AppState?
 
-    private var displayedRuleName: String? {
-        if let ruleName = plan.appliedRuleName {
-            return ruleName
+    @State private var isEditing = false
+
+    init(plan: WakeUpPlan, alarmStatus: AlarmScheduleStatus?, appState: AppState? = nil) {
+        self.inputPlan = plan
+        self.alarmStatus = alarmStatus
+        self.appState = appState
+    }
+
+    /// The most up-to-date plan for this day: re-derived from app state so an edit made
+    /// in the pushed editor is reflected the moment we slide back, falling back to the
+    /// plan captured when the sheet opened.
+    private var plan: WakeUpPlan {
+        guard let appState else { return inputPlan }
+        return appState.dailyPlans.first(where: { $0.targetDay == inputPlan.targetDay }) ?? inputPlan
+    }
+
+    /// This date carries a one-off manual adjustment.
+    private var isAdjusted: Bool {
+        plan.reason == .manualOverride || plan.reason == .manualSkip
+    }
+
+    /// Only today and future days are editable, and never while fully disabled.
+    private var isEditableDay: Bool {
+        guard appState != nil, plan.reason != .systemDisabled else {
+            return false
         }
-
-        if plan.reason == .fallback {
-            return "Standby"
-        }
-
-        return nil
+        return plan.targetDay.date >= Calendar.current.startOfDay(for: Date())
     }
 
     private var selectedDayTitle: String {
@@ -22,7 +42,7 @@ struct EarlyOtterDetailsView: View {
 
     private var showsUnavailableDayState: Bool {
         switch plan.reason {
-        case .disabled, .inactiveDay, .noSchedule, .systemDisabled:
+        case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
             return true
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return false
@@ -37,6 +57,8 @@ struct EarlyOtterDetailsView: View {
             return "power.circle.fill"
         case .noSchedule:
             return "calendar.badge.exclamationmark"
+        case .manualSkip:
+            return "bell.slash.fill"
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return "alarm.fill"
         }
@@ -52,6 +74,8 @@ struct EarlyOtterDetailsView: View {
             return "EarlyOtter Disabled"
         case .noSchedule:
             return "Nothing Scheduled"
+        case .manualSkip:
+            return "Manually Disabled"
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return "Wake Time"
         }
@@ -67,6 +91,8 @@ struct EarlyOtterDetailsView: View {
             return "EarlyOtter is fully disabled right now, so no managed alarms will be created until you turn it back on."
         case .noSchedule:
             return "No matching calendar event or fallback alarm was available for this day."
+        case .manualSkip:
+            return ""
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return ""
         }
@@ -82,26 +108,33 @@ struct EarlyOtterDetailsView: View {
 
     var body: some View {
         ZStack {
+            // Shared background so only the foreground content crossfades.
             Color.clear.withAppBackground()
 
+            if isEditing, let appState {
+                DayAlarmEditView(
+                    appState: appState,
+                    plan: plan,
+                    onClose: closeEditor
+                )
+                .transition(.opacity)
+            } else {
+                detailScroll
+                    .transition(.opacity)
+            }
+        }
+        .presentationDetents([.fraction(0.6)])
+        .presentationDragIndicator(.visible)
+    }
+
+    private var detailScroll: some View {
+        ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(selectedDayTitle)
                             .font(.title2.weight(.bold))
                             .foregroundStyle(WPStyles.primaryText)
-
-                        if let ruleName = displayedRuleName {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Applied Rule")
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(WPStyles.secondaryText)
-                                    .textCase(.uppercase)
-                                Text(ruleName)
-                                    .font(.title3.weight(.bold))
-                                    .foregroundStyle(WPStyles.primaryText)
-                            }
-                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 32)
@@ -117,10 +150,12 @@ struct EarlyOtterDetailsView: View {
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
 
-                                    Text(unavailableStateMessage)
-                                        .font(.subheadline)
-                                        .foregroundStyle(WPStyles.secondaryText)
-                                        .fixedSize(horizontal: false, vertical: true)
+                                    if !unavailableStateMessage.isEmpty {
+                                        Text(unavailableStateMessage)
+                                            .font(.subheadline)
+                                            .foregroundStyle(WPStyles.secondaryText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
                                 }
 
                                 Spacer()
@@ -156,9 +191,13 @@ struct EarlyOtterDetailsView: View {
                             }
 
                             Divider().overlay(WPStyles.cardBorder)
-
-                            timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
-                            timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
+                            
+                            if plan.reason == .manualOverride {
+                                timelineRow(icon: "pencil", label: "Manually adjusted", value: "")
+                            } else {
+                                timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
+                                timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
+                            }
 
                             Divider().overlay(WPStyles.cardBorder)
 
@@ -171,7 +210,7 @@ struct EarlyOtterDetailsView: View {
                                     .lineLimit(1)
                                 Spacer()
                                 Text(event.startDate, style: .time)
-                                    .font(.headline)
+                                    .font(.title3.weight(.semibold))
                                     .foregroundStyle(WPStyles.primaryText)
                             }
                         } else {
@@ -243,11 +282,33 @@ struct EarlyOtterDetailsView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal, 20)
                     }
+
+                    if isEditableDay {
+                        editAlarmButton
+                    }
                 }
             }
         }
-        .presentationDetents([.fraction(0.6), .large])
-        .presentationDragIndicator(.visible)
+    }
+
+    private var editAlarmButton: some View {
+        Button {
+            // Crossfade the content to the editor.
+            withAnimation(.easeInOut(duration: 0.28)) {
+                isEditing = true
+            }
+        } label: {
+            Label(plan.reason == .manualSkip ? "Enable Alarm" : "Edit Alarm", systemImage: plan.reason == .manualSkip ? "bell.fill" : "pencil")
+        }
+        .buttonStyle(PrimaryButtonStyle())
+        .padding(.horizontal, 20)
+        .padding(.top, 4)
+    }
+
+    private func closeEditor() {
+        withAnimation(.easeInOut(duration: 0.28)) {
+            isEditing = false
+        }
     }
 
     @ViewBuilder
@@ -307,24 +368,16 @@ struct EarlyOtterDetailsView: View {
     }
 
     private func standaloneEventRow(_ event: ParsedEvent) -> some View {
-        HStack(alignment: .center) {
+        HStack {
             Image(systemName: "calendar")
                 .foregroundStyle(WPStyles.secondaryBlue)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("First Event")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WPStyles.secondaryText)
-                Text(event.title)
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            Text(event.startDate, style: .time)
+            Text(event.title)
                 .font(.headline)
+                .foregroundStyle(WPStyles.primaryText)
+                .lineLimit(1)
+            Spacer()
+            Text(event.startDate, style: .time)
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(WPStyles.primaryText)
         }
     }

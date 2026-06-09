@@ -13,7 +13,7 @@ struct DashboardViewModel {
 
         var alarmDate: Date? {
             switch plan.reason {
-            case .disabled, .inactiveDay, .noSchedule, .systemDisabled:
+            case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
                 return nil
             case .event, .fallback, .authorizationMissing, .manualOverride:
                 return plan.calculatedWakeTime
@@ -282,6 +282,8 @@ struct DashboardViewModel {
             return "\(day), EarlyOtter is disabled."
         case .noSchedule:
             return "\(day), no event or fallback alarm is scheduled."
+        case .manualSkip:
+            return "\(day), alarm turned off for this day."
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return day
         }
@@ -340,7 +342,7 @@ struct DashboardViewModel {
         switch plan.reason {
         case .noSchedule:
             return .notScheduled
-        case .disabled, .inactiveDay, .systemDisabled:
+        case .disabled, .inactiveDay, .systemDisabled, .manualSkip:
             return .disabled
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return nil

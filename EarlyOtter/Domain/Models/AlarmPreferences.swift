@@ -1,5 +1,19 @@
 import Foundation
 
+/// A one-off manual adjustment for a single calendar date, set from the week view.
+/// Keyed by `yyyy-MM-dd` so it survives plan recomputation, and always wins over
+/// the recurring weekly schedule for that date only.
+struct DayAlarmOverride: Codable, Equatable, Sendable {
+    enum Kind: Codable, Equatable, Sendable {
+        /// Wake at this fixed clock time on this day, ignoring events.
+        case customTime(ClockTime)
+        /// No alarm at all on this day.
+        case skip
+    }
+
+    var kind: Kind
+}
+
 struct LocationRule: Codable, Equatable, Sendable {
     var label: String
     var triggerRadiusMeters: Double
@@ -69,19 +83,24 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
     var alarmRules: [AlarmRule]
     var isSystemEnabled: Bool
 
+    /// One-off per-date adjustments, keyed by `yyyy-MM-dd`. See `DayAlarmOverride`.
+    var dateOverrides: [String: DayAlarmOverride]
+
     init(
         schedule: ScheduleRules,
         timing: TimingRules,
         filters: EventFilterRules,
         locationRules: [LocationRule],
         alarmRules: [AlarmRule] = [],
-        isSystemEnabled: Bool = true
+        isSystemEnabled: Bool = true,
+        dateOverrides: [String: DayAlarmOverride] = [:]
     ) {
         self.schedule = schedule
         self.timing = timing
         self.filters = filters
         self.locationRules = locationRules
         self.isSystemEnabled = isSystemEnabled
+        self.dateOverrides = dateOverrides
         self.alarmRules = Self.normalizedAlarmRules(
             alarmRules,
             timing: timing,
@@ -182,6 +201,44 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         fallbackEnabledDays.isEmpty
     }
 
+    // MARK: Per-date overrides
+
+    /// The manual override (if any) for a specific calendar date.
+    func override(for targetDay: TargetDay, calendar: Calendar = .current) -> DayAlarmOverride? {
+        dateOverrides[Self.overrideKey(for: targetDay, calendar: calendar)]
+    }
+
+    /// Set (or clear, when `override` is `nil`) the manual override for a date.
+    mutating func setOverride(
+        _ override: DayAlarmOverride?,
+        for targetDay: TargetDay,
+        calendar: Calendar = .current
+    ) {
+        let key = Self.overrideKey(for: targetDay, calendar: calendar)
+        if let override {
+            dateOverrides[key] = override
+        } else {
+            dateOverrides.removeValue(forKey: key)
+        }
+    }
+
+    /// Drop overrides for dates that have already passed so storage doesn't grow unbounded.
+    mutating func pruneExpiredOverrides(asOf now: Date = Date(), calendar: Calendar = .current) {
+        let todayKey = Self.overrideKey(for: TargetDay(date: now, calendar: calendar), calendar: calendar)
+        dateOverrides = dateOverrides.filter { $0.key >= todayKey }
+    }
+
+    /// Stable, lexicographically sortable `yyyy-MM-dd` key for a target day.
+    static func overrideKey(for targetDay: TargetDay, calendar: Calendar = .current) -> String {
+        let components = calendar.dateComponents([.year, .month, .day], from: targetDay.date)
+        return String(
+            format: "%04d-%02d-%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
+    }
+
     /// The single default rule (always present, matches any event).
     var defaultAlarmRule: AlarmRule {
         alarmRules.first(where: { $0.isDefault }) ?? AlarmRule.makeDefault(
@@ -236,6 +293,7 @@ extension AlarmPreferences {
         case locationRules
         case alarmRules
         case isSystemEnabled
+        case dateOverrides
 
         case isEnabled
         case prepTime
@@ -264,6 +322,7 @@ extension AlarmPreferences {
             locationRules = try container.decodeIfPresent([LocationRule].self, forKey: .locationRules) ?? []
             let decoded = try container.decodeIfPresent([AlarmRule].self, forKey: .alarmRules) ?? []
             isSystemEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSystemEnabled) ?? true
+            dateOverrides = try container.decodeIfPresent([String: DayAlarmOverride].self, forKey: .dateOverrides) ?? [:]
             alarmRules = Self.normalizedAlarmRules(
                 decoded,
                 timing: decodedTiming,
@@ -273,6 +332,7 @@ extension AlarmPreferences {
         }
 
         isSystemEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSystemEnabled) ?? true
+        dateOverrides = try container.decodeIfPresent([String: DayAlarmOverride].self, forKey: .dateOverrides) ?? [:]
 
         let decodedActiveDays = try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays
         schedule = ScheduleRules(
@@ -314,5 +374,6 @@ extension AlarmPreferences {
         try container.encode(locationRules, forKey: .locationRules)
         try container.encode(alarmRules, forKey: .alarmRules)
         try container.encode(isSystemEnabled, forKey: .isSystemEnabled)
+        try container.encode(dateOverrides, forKey: .dateOverrides)
     }
 }

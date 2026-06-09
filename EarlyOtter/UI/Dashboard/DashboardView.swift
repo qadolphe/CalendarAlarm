@@ -77,7 +77,7 @@ struct DashboardView: View {
             await appState.loadIfNeeded()
         }
         .sheet(item: $selectedDayDetails) { item in
-            EarlyOtterDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus)
+            EarlyOtterDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus, appState: appState)
         }
     }
 
@@ -206,6 +206,8 @@ struct DashboardView: View {
             return "Automatic alarms are turned off."
         case .systemDisabled:
             return "EarlyOtter is disabled."
+        case .manualSkip:
+            return "You turned off the alarm for this day."
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return "No alarm is currently scheduled."
         }
@@ -213,7 +215,7 @@ struct DashboardView: View {
 
     private func showsNoAlarmCard(for plan: WakeUpPlan) -> Bool {
         switch plan.reason {
-        case .disabled, .inactiveDay, .noSchedule, .systemDisabled:
+        case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
             return true
         case .fallback, .authorizationMissing, .manualOverride, .event:
             return false

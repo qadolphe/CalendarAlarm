@@ -53,6 +53,62 @@ struct EarlyOtterCalculator {
             )
         }
 
+        // A one-off manual override for this exact date wins over the recurring
+        // weekly schedule (it can even force an alarm on an otherwise-off day),
+        // but still respects the master system switch handled above.
+        if let override = preferences.override(for: targetDay, calendar: calendar) {
+            let validEventsForDay = events
+                .filter { eventFilter.shouldInclude($0, preferences: preferences) }
+                .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
+            let firstEventOfDay = validEventsForDay.min(by: { $0.startDate < $1.startDate })
+
+            switch override.kind {
+            case .skip:
+                return WakeUpPlan(
+                    id: hasher.makeID(
+                        kind: "manual-skip",
+                        components: [timestamp(targetDay.date)]
+                    ),
+                    targetDay: targetDay,
+                    targetEvent: nil,
+                    firstEventOfDay: firstEventOfDay,
+                    calculatedWakeTime: fallbackWakeTime,
+                    eventStartTime: nil,
+                    prepTime: timingRules.prepTime,
+                    commuteTime: timingRules.defaultCommuteTime,
+                    alarmSettings: fallbackAlarmSettings,
+                    isFallback: false,
+                    reason: .manualSkip,
+                    appliedRuleName: nil,
+                    matchedRuleNames: []
+                )
+            case .customTime(let time):
+                let wakeTime = time.date(on: targetDay, calendar: calendar)
+                return WakeUpPlan(
+                    id: hasher.makeID(
+                        kind: "manual-override",
+                        components: [
+                            timestamp(targetDay.date),
+                            "\(time.hour)",
+                            "\(time.minute)"
+                        ]
+                    ),
+                    targetDay: targetDay,
+                    targetEvent: nil,
+                    firstEventOfDay: firstEventOfDay,
+                    calculatedWakeTime: wakeTime,
+                    eventStartTime: nil,
+                    prepTime: timingRules.prepTime,
+                    commuteTime: timingRules.defaultCommuteTime,
+                    alarmSettings: fallbackAlarmSettings,
+                    isFallback: false,
+                    reason: .manualOverride,
+                    appliedRuleName: nil,
+                    matchedRuleNames: []
+                )
+            }
+        }
+
         if !scheduleRules.activeDays.contains(weekday) {
             if isFallbackEnabled {
                 return makeFallbackPlan(

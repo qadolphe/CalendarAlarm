@@ -37,14 +37,6 @@ enum AppConfiguration {
     static let staleSyncReminderBody =
         "Open the app to keep tomorrow's alarm up to date."
 
-    static func alarmTitle(for eventTitle: String?) -> String {
-        guard let eventTitle, !eventTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return genericAlarmTitle
-        }
-
-        return "Wake up for \(eventTitle)"
-    }
-
     static func testAlarmScheduledMessage(for wakeTime: Date) -> String {
         "Test alarm scheduled for \(wakeTime.formatted(date: .omitted, time: .shortened))."
     }

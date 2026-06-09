@@ -96,7 +96,14 @@ final class AppState {
         settingsAlertMessage = nil
 
         do {
-            preferences = try preferencesStore.load()
+            let loaded = try preferencesStore.load()
+            // Drop overrides for dates that have already passed so storage doesn't grow unbounded.
+            var pruned = loaded
+            pruned.pruneExpiredOverrides()
+            if pruned != loaded {
+                try? preferencesStore.save(pruned)
+            }
+            preferences = pruned
             try await refreshDashboard(reason: .appOpen)
         } catch {
             dashboardState = .error(format(error))
@@ -126,6 +133,12 @@ final class AppState {
         var copy = preferences
         mutate(&copy)
         await updatePreferences(copy)
+    }
+
+    /// Set or clear a one-off manual alarm override for a single date (from the week view).
+    /// Passing `nil` reverts that day to the automatic schedule.
+    func setDayOverride(_ override: DayAlarmOverride?, for targetDay: TargetDay) async {
+        await mutatePreferences { $0.setOverride(override, for: targetDay) }
     }
 
     func refreshPlan() async {
@@ -458,7 +471,8 @@ final class AppState {
             || plan.reason == .disabled
             || plan.reason == .systemDisabled
             || plan.reason == .inactiveDay
-            || plan.reason == .noSchedule {
+            || plan.reason == .noSchedule
+            || plan.reason == .manualSkip {
             dashboardState = .emptyFallback(viewState)
             return
         }
@@ -531,7 +545,7 @@ final class AppState {
         switch plan.reason {
         case .noSchedule:
             return .notScheduled
-        case .disabled, .inactiveDay, .systemDisabled:
+        case .disabled, .inactiveDay, .systemDisabled, .manualSkip:
             return .disabled
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return .failed("Alarm status unavailable.")

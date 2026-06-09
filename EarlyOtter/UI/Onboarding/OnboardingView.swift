@@ -655,7 +655,7 @@ struct OnboardingView: View {
             return Text("Standby alarm at \(Text(timeString).bold()).")
         case .authorizationMissing:
             return Text("Alarm access is still off.")
-        case .noSchedule, .inactiveDay:
+        case .noSchedule, .inactiveDay, .manualSkip:
             return Text("No alarm for tomorrow.")
         case .disabled, .systemDisabled:
             return Text("Automatic alarms are currently paused.")
@@ -670,7 +670,7 @@ struct OnboardingView: View {
             return nil
         case .authorizationMissing:
             return nil
-        case .noSchedule, .inactiveDay:
+        case .noSchedule, .inactiveDay, .manualSkip:
             return nil
         case .disabled, .systemDisabled:
             return nil

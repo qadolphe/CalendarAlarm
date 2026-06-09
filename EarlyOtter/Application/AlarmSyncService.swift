@@ -260,7 +260,7 @@ private extension AlarmSyncService {
         switch plan.reason {
         case .noSchedule:
             return .notScheduled
-        case .disabled, .systemDisabled, .inactiveDay:
+        case .disabled, .systemDisabled, .inactiveDay, .manualSkip:
             return .disabled
         case .event, .fallback, .authorizationMissing, .manualOverride:
             return nil

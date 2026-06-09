@@ -8,6 +8,7 @@ enum EarlyOtterReason: String, Codable, Equatable, Sendable {
     case inactiveDay
     case authorizationMissing
     case manualOverride
+    case manualSkip
     case systemDisabled
 }
 
