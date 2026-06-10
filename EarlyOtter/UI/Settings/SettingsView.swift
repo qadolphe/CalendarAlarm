@@ -34,13 +34,12 @@ struct SettingsView: View {
             navRow(title: "Accounts", icon: "person.crop.circle.badge.plus") {
                 AccountsView(appState: appState)
             }
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
+            Divider().padding(.leading, 56)
             navRow(title: "Permissions", icon: "lock.shield") {
                 PermissionsView(appState: appState)
             }
         }
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
     }
 
     private func navRow<D: View, Subtitle: View>(

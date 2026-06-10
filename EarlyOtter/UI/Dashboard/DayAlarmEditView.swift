@@ -65,10 +65,9 @@ struct DayAlarmEditView: View {
                             .font(.headline)
                             .padding(.vertical, 16)
                             .frame(maxWidth: .infinity)
-                            .background(WPStyles.surface)
-                            .foregroundStyle(WPStyles.secondaryText)
+                            .background(WPStyles.surfaceRaised)
+                            .foregroundStyle(Color(red: 0.8, green: 0.8, blue: 0.8))
                             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
                 }
@@ -134,7 +133,7 @@ struct DayAlarmEditView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
 
-            Divider().overlay(WPStyles.cardBorder)
+            Divider()
 
             DatePicker(
                 "Wake Time",
@@ -149,7 +148,6 @@ struct DayAlarmEditView: View {
         }
         .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         .opacity(isSkipped ? 0.4 : 1)
         .disabled(isSkipped)
         .animation(.easeInOut(duration: 0.2), value: isSkipped)
@@ -172,7 +170,6 @@ struct DayAlarmEditView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
     }
 
     // MARK: Derived

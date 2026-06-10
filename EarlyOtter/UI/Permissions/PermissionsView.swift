@@ -36,7 +36,7 @@ struct PermissionsView: View {
                             action: { Task { await appState.requestCalendarAccess() } }
                         )
 
-                        Divider().overlay(WPStyles.cardBorder).padding(.leading, 48)
+                        Divider().padding(.leading, 48)
 
                         permissionRow(
                             title: "Alarms",
@@ -48,7 +48,7 @@ struct PermissionsView: View {
                             action: { Task { await appState.requestAlarmAccess() } }
                         )
 
-                        Divider().overlay(WPStyles.cardBorder).padding(.leading, 48)
+                        Divider().padding(.leading, 48)
 
                         permissionRow(
                             title: "Notifications",

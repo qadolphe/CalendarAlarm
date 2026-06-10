@@ -27,7 +27,7 @@ struct DaySettingsView: View {
                         )
 
                         if appState.preferences.fallbackEnabledDays.contains(weekdayOption.weekday) {
-                            Divider().overlay(WPStyles.cardBorder)
+                            Divider()
                             DatePicker(
                                 "Wake Time",
                                 selection: fallbackTimeBinding,

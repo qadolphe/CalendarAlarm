@@ -8,8 +8,8 @@ public enum WPStyles {
     public static let background = Color(red: 0.07, green: 0.07, blue: 0.07)
     public static let bgGradientStart = Color(red: 0.04, green: 0.04, blue: 0.04)
     public static let bgGradientEnd = Color(red: 0.11, green: 0.11, blue: 0.11)
-    public static let surface = Color(red: 0.12, green: 0.12, blue: 0.12)
-    public static let surfaceRaised = Color(red: 0.16, green: 0.16, blue: 0.16)
+    public static let surface = Color(red: 0.14, green: 0.14, blue: 0.14)
+    public static let surfaceRaised = Color(red: 0.20, green: 0.20, blue: 0.20)
     public static let surfaceOutline = Color(red: 0.32, green: 0.27, blue: 0.20)
     public static let primaryText = Color(red: 0.89, green: 0.89, blue: 0.89)
     public static let secondaryText = Color(red: 0.85, green: 0.76, blue: 0.68)
@@ -66,10 +66,6 @@ public extension View {
                 RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous)
                     .fill(WPStyles.surface)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous)
-                    .stroke(WPStyles.cardBorder, lineWidth: 1)
-            )
     }
 
     func insetSurfaceStyle(cornerRadius: CGFloat = 24) -> some View {
@@ -77,10 +73,6 @@ public extension View {
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(WPStyles.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(WPStyles.cardBorder, lineWidth: 1)
             )
     }
 }

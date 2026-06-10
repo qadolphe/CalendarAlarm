@@ -81,7 +81,6 @@ struct RulesView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .background(WPStyles.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 .listRowBackground(Color.clear)
@@ -163,7 +162,6 @@ struct RulesView: View {
         }
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         .opacity(rule.isDefault || rule.isEnabled ? 1 : 0.72)
     }
 
@@ -407,13 +405,12 @@ struct RuleEditorView: View {
                             .buttonStyle(.plain)
 
                             if calendar.id != appState.calendars.last?.id {
-                                Divider().overlay(WPStyles.cardBorder).padding(.leading, 40)
+                                Divider().padding(.leading, 40)
                             }
                         }
                     }
                     .background(WPStyles.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
                 }
             }
         }
@@ -497,7 +494,7 @@ struct RuleEditorView: View {
                 .padding(.horizontal, 16)
 
                 if isExpanded {
-                    Divider().overlay(WPStyles.cardBorder)
+                    Divider()
                     
                     ForEach(accountCalendars) { calendar in
                         let isSelected = selectedCalendarIDs.isEmpty || selectedCalendarIDs.contains(calendar.id)
@@ -522,14 +519,13 @@ struct RuleEditorView: View {
                         .buttonStyle(.plain)
 
                         if calendar.id != accountCalendars.last?.id {
-                            Divider().overlay(WPStyles.cardBorder).padding(.leading, 56)
+                            Divider().padding(.leading, 56)
                         }
                     }
                 }
             }
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         }
     }
 
@@ -542,10 +538,6 @@ struct RuleEditorView: View {
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(WPStyles.surface)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(WPStyles.cardBorder, lineWidth: 1)
         )
     }
 
@@ -590,7 +582,7 @@ struct RuleEditorView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
 
-            Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+            Divider().padding(.leading, 16)
 
             HStack {
                 Text("Name")
@@ -607,9 +599,6 @@ struct RuleEditorView: View {
         }
         .background(WPStyles.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1)
-        )
     }
 
     private var conditionsSection: some View {
@@ -697,10 +686,6 @@ struct RuleEditorView: View {
             .padding(12)
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(WPStyles.cardBorder, lineWidth: 1)
-            )
         }
     }
 
@@ -710,14 +695,11 @@ struct RuleEditorView: View {
 
             VStack(spacing: 0) {
                 stepperRow(label: "Prep time", value: $prepTime, range: 0...180)
-                Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+                Divider().padding(.leading, 16)
                 stepperRow(label: "Commute", value: $commuteTime, range: 0...180)
             }
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1)
-            )
         }
     }
 
@@ -767,7 +749,7 @@ struct RuleEditorView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
 
-                Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+                Divider().padding(.leading, 16)
 
                 Toggle(isOn: $snoozeEnabled) {
                     Text("Enable Snooze")
@@ -779,15 +761,12 @@ struct RuleEditorView: View {
                 .padding(.vertical, 14)
 
                 if snoozeEnabled {
-                    Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+                    Divider().padding(.leading, 16)
                     stepperRow(label: "Snooze duration", value: $snoozeDuration, range: 1...60)
                 }
             }
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1)
-            )
         }
     }
 

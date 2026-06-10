@@ -162,7 +162,7 @@ struct EarlyOtterDetailsView: View {
                             }
 
                             if let standaloneEvent {
-                                Divider().overlay(WPStyles.cardBorder)
+                                Divider()
                                 standaloneEventRow(standaloneEvent)
                             }
                         } else if let event = plan.targetEvent {
@@ -191,7 +191,7 @@ struct EarlyOtterDetailsView: View {
                                     .contentTransition(.numericText())
                             }
 
-                            Divider().overlay(WPStyles.cardBorder)
+                            Divider()
                             
                             if plan.reason == .manualOverride {
                                 timelineRow(icon: "pencil", label: "Manually adjusted", value: "")
@@ -200,7 +200,7 @@ struct EarlyOtterDetailsView: View {
                                 timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
                             }
 
-                            Divider().overlay(WPStyles.cardBorder)
+                            Divider()
 
                             HStack {
                                 Image(systemName: "calendar")
@@ -240,7 +240,7 @@ struct EarlyOtterDetailsView: View {
                                     .contentTransition(.numericText())
                             }
 
-                            Divider().overlay(WPStyles.cardBorder)
+                            Divider()
 
                             if let standaloneEvent {
                                 standaloneEventRow(standaloneEvent)
@@ -259,7 +259,6 @@ struct EarlyOtterDetailsView: View {
                     .padding(20)
                     .background(WPStyles.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
                     .padding(.horizontal, 20)
 
                     alarmStatusCard()

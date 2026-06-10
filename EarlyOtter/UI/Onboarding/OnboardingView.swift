@@ -233,7 +233,7 @@ struct OnboardingView: View {
                     binding: prepTimeBinding
                 )
                 
-                Divider().overlay(WPStyles.cardBorder).padding(.leading, 16)
+                Divider().padding(.leading, 16)
                 
                 routineRow(
                     title: "Commute",
@@ -244,7 +244,6 @@ struct OnboardingView: View {
             }
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
         } footer: {
             nextButton(title: "Next") {
                 advanceToNextStep()
@@ -322,7 +321,6 @@ struct OnboardingView: View {
                             .frame(maxWidth: .infinity)
                             .background(WPStyles.surface)
                             .clipShape(RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: WPStyles.cardCornerRadius, style: .continuous).stroke(WPStyles.cardBorder, lineWidth: 1))
                         }
                         .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .bottom)), removal: .opacity.combined(with: .move(edge: .top))))
                     } else {
