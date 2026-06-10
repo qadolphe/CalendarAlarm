@@ -329,6 +329,8 @@ private struct DashboardHeroCardView: View {
                     .foregroundStyle(WPStyles.primaryText)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: plan.calculatedWakeTime)
 
                 if let event = plan.targetEvent {
                     HStack(spacing: 8) {

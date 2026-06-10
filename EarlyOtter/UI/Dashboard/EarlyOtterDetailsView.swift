@@ -188,6 +188,7 @@ struct EarlyOtterDetailsView: View {
                                 Text(plan.calculatedWakeTime, style: .time)
                                     .font(.title3.weight(.semibold))
                                     .foregroundStyle(WPStyles.primaryText)
+                                    .contentTransition(.numericText())
                             }
 
                             Divider().overlay(WPStyles.cardBorder)
@@ -236,6 +237,7 @@ struct EarlyOtterDetailsView: View {
                                 Text(plan.calculatedWakeTime, style: .time)
                                     .font(.title3.weight(.semibold))
                                     .foregroundStyle(WPStyles.primaryText)
+                                    .contentTransition(.numericText())
                             }
 
                             Divider().overlay(WPStyles.cardBorder)
@@ -289,6 +291,7 @@ struct EarlyOtterDetailsView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: plan)
     }
 
     private var editAlarmButton: some View {

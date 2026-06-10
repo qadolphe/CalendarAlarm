@@ -14,6 +14,8 @@ struct DayAlarmEditView: View {
 
     private let seedWakeDate: Date
     private let startedWithOverride: Bool
+    private let startedCustom: Bool
+    private let initialOverride: DayAlarmOverride?
 
     init(appState: AppState, plan: WakeUpPlan, onClose: @escaping () -> Void) {
         self.appState = appState
@@ -22,19 +24,19 @@ struct DayAlarmEditView: View {
 
         let existing = appState.preferences.override(for: plan.targetDay)
         startedWithOverride = existing != nil
+        startedCustom = existing?.customWakeTime != nil
+        initialOverride = existing
 
         let seed: Date
         let skip: Bool
-        switch existing?.kind {
-        case .customTime(let time):
-            seed = time.date(on: plan.targetDay)
-            skip = false
-        case .skip:
+        if let custom = existing?.customWakeTime {
+            // A user-chosen fixed time.
+            seed = custom.date(on: plan.targetDay)
+            skip = existing?.isSkipped ?? false
+        } else {
+            // Automatic (possibly skipped): the plan carries the real automatic time.
             seed = plan.calculatedWakeTime
-            skip = true
-        case nil:
-            seed = plan.calculatedWakeTime
-            skip = false
+            skip = existing?.isSkipped ?? false
         }
 
         seedWakeDate = seed
@@ -215,23 +217,28 @@ struct DayAlarmEditView: View {
     }
 
     private func save() {
-        // Don't create a redundant override when an untouched automatic day is saved.
-        if !startedWithOverride, !isSkipped, wakeDate == seedWakeDate {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: wakeDate)
+        let clock = ClockTime(hour: components.hour ?? 0, minute: components.minute ?? 0)
+
+        // The time only becomes a "custom" override if the user picked one before
+        // or changed it now; otherwise the day stays on the automatic schedule.
+        let seedComponents = Calendar.current.dateComponents([.hour, .minute], from: seedWakeDate)
+        let timeChanged = seedComponents.hour != components.hour || seedComponents.minute != components.minute
+        let customWakeTime: ClockTime? = (startedCustom || timeChanged) ? clock : nil
+
+        // Automatic + not skipped means there's nothing to override.
+        let newOverride: DayAlarmOverride? = (customWakeTime == nil && !isSkipped)
+            ? nil
+            : DayAlarmOverride(customWakeTime: customWakeTime, isSkipped: isSkipped)
+
+        // Skip the write (and refresh) when nothing actually changed.
+        guard newOverride != initialOverride else {
             onClose()
             return
         }
 
-        let override: DayAlarmOverride
-        if isSkipped {
-            override = DayAlarmOverride(kind: .skip)
-        } else {
-            let components = Calendar.current.dateComponents([.hour, .minute], from: wakeDate)
-            let clock = ClockTime(hour: components.hour ?? 0, minute: components.minute ?? 0)
-            override = DayAlarmOverride(kind: .customTime(clock))
-        }
-
         let targetDay = plan.targetDay
-        Task { await appState.setDayOverride(override, for: targetDay) }
+        Task { await appState.setDayOverride(newOverride, for: targetDay) }
         onClose()
     }
 

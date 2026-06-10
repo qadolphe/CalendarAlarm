@@ -4,14 +4,66 @@ import Foundation
 /// Keyed by `yyyy-MM-dd` so it survives plan recomputation, and always wins over
 /// the recurring weekly schedule for that date only.
 struct DayAlarmOverride: Codable, Equatable, Sendable {
-    enum Kind: Codable, Equatable, Sendable {
-        /// Wake at this fixed clock time on this day, ignoring events.
+    /// A fixed wake time the user chose for this day. `nil` means "follow the
+    /// automatic schedule" — so a skipped automatic day restores to automatic
+    /// (with its event/prep/commute) rather than a pinned time.
+    var customWakeTime: ClockTime?
+    /// When true, no alarm fires this day (the underlying time source is kept).
+    var isSkipped: Bool
+
+    init(customWakeTime: ClockTime?, isSkipped: Bool = false) {
+        self.customWakeTime = customWakeTime
+        self.isSkipped = isSkipped
+    }
+}
+
+extension DayAlarmOverride {
+    private enum CodingKeys: String, CodingKey {
+        case customWakeTime
+        case isSkipped
+        case wakeTime // legacy: a non-optional chosen time
+        case kind     // legacy: an either/or custom-time-or-skip enum
+    }
+
+    /// The original either/or shape, kept only to migrate the earliest saved overrides.
+    private enum LegacyKind: Codable {
         case customTime(ClockTime)
-        /// No alarm at all on this day.
         case skip
     }
 
-    var kind: Kind
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Oldest shape: `{ kind: .customTime | .skip }`.
+        if container.contains(.kind) {
+            switch try container.decode(LegacyKind.self, forKey: .kind) {
+            case .customTime(let time):
+                customWakeTime = time
+                isSkipped = false
+            case .skip:
+                customWakeTime = nil
+                isSkipped = true
+            }
+            return
+        }
+
+        // Previous shape: a non-optional `wakeTime` that always counted as custom.
+        if let wakeTime = try container.decodeIfPresent(ClockTime.self, forKey: .wakeTime) {
+            customWakeTime = wakeTime
+            isSkipped = try container.decodeIfPresent(Bool.self, forKey: .isSkipped) ?? false
+            return
+        }
+
+        // Current shape: optional `customWakeTime` (nil = automatic) + `isSkipped`.
+        customWakeTime = try container.decodeIfPresent(ClockTime.self, forKey: .customWakeTime)
+        isSkipped = try container.decodeIfPresent(Bool.self, forKey: .isSkipped) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(customWakeTime, forKey: .customWakeTime)
+        try container.encode(isSkipped, forKey: .isSkipped)
+    }
 }
 
 struct LocationRule: Codable, Equatable, Sendable {

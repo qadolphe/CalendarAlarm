@@ -53,62 +53,62 @@ struct EarlyOtterCalculator {
             )
         }
 
-        // A one-off manual override for this exact date wins over the recurring
-        // weekly schedule (it can even force an alarm on an otherwise-off day),
-        // but still respects the master system switch handled above.
-        if let override = preferences.override(for: targetDay, calendar: calendar) {
-            let validEventsForDay = events
-                .filter { eventFilter.shouldInclude($0, preferences: preferences) }
-                .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-            let firstEventOfDay = validEventsForDay.min(by: { $0.startDate < $1.startDate })
+        let override = preferences.override(for: targetDay, calendar: calendar)
 
-            switch override.kind {
-            case .skip:
-                return WakeUpPlan(
-                    id: hasher.makeID(
-                        kind: "manual-skip",
-                        components: [timestamp(targetDay.date)]
-                    ),
-                    targetDay: targetDay,
-                    targetEvent: nil,
-                    firstEventOfDay: firstEventOfDay,
-                    calculatedWakeTime: fallbackWakeTime,
-                    eventStartTime: nil,
-                    prepTime: timingRules.prepTime,
-                    commuteTime: timingRules.defaultCommuteTime,
-                    alarmSettings: fallbackAlarmSettings,
-                    isFallback: false,
-                    reason: .manualSkip,
-                    appliedRuleName: nil,
-                    matchedRuleNames: []
-                )
-            case .customTime(let time):
-                let wakeTime = time.date(on: targetDay, calendar: calendar)
-                return WakeUpPlan(
-                    id: hasher.makeID(
-                        kind: "manual-override",
-                        components: [
-                            timestamp(targetDay.date),
-                            "\(time.hour)",
-                            "\(time.minute)"
-                        ]
-                    ),
-                    targetDay: targetDay,
-                    targetEvent: nil,
-                    firstEventOfDay: firstEventOfDay,
-                    calculatedWakeTime: wakeTime,
-                    eventStartTime: nil,
-                    prepTime: timingRules.prepTime,
-                    commuteTime: timingRules.defaultCommuteTime,
-                    alarmSettings: fallbackAlarmSettings,
-                    isFallback: false,
-                    reason: .manualOverride,
-                    appliedRuleName: nil,
-                    matchedRuleNames: []
-                )
-            }
+        // A fixed custom time replaces the automatic computation for this date
+        // (it can even force an alarm on an otherwise-off day), still respecting
+        // the master system switch handled above.
+        if let override, let customTime = override.customWakeTime {
+            return makeManualTimePlan(
+                targetDay: targetDay,
+                customTime: customTime,
+                isSkipped: override.isSkipped,
+                events: events,
+                preferences: preferences,
+                timingRules: timingRules,
+                fallbackAlarmSettings: fallbackAlarmSettings,
+                calendar: calendar
+            )
         }
 
+        // Otherwise the day follows its normal automatic schedule...
+        let basePlan = automaticPlan(
+            events: events,
+            preferences: preferences,
+            targetDay: targetDay,
+            scheduleRules: scheduleRules,
+            timingRules: timingRules,
+            weekday: weekday,
+            dayFallback: dayFallback,
+            fallbackWakeTime: fallbackWakeTime,
+            isFallbackEnabled: isFallbackEnabled,
+            fallbackAlarmSettings: fallbackAlarmSettings,
+            calendar: calendar
+        )
+
+        // ...optionally skipped for this one day, while keeping the underlying
+        // automatic time/prep/commute so re-enabling restores it exactly.
+        if let override, override.isSkipped {
+            return makeSkippedPlan(base: basePlan, targetDay: targetDay)
+        }
+
+        return basePlan
+    }
+
+    /// The normal event-driven / fallback plan for a day, with no per-date override applied.
+    private func automaticPlan(
+        events: [ParsedEvent],
+        preferences: AlarmPreferences,
+        targetDay: TargetDay,
+        scheduleRules: ScheduleRules,
+        timingRules: TimingRules,
+        weekday: Int,
+        dayFallback: ClockTime,
+        fallbackWakeTime: Date,
+        isFallbackEnabled: Bool,
+        fallbackAlarmSettings: RuleAlarmSettings,
+        calendar: Calendar
+    ) -> WakeUpPlan {
         if !scheduleRules.activeDays.contains(weekday) {
             if isFallbackEnabled {
                 return makeFallbackPlan(
@@ -301,6 +301,70 @@ struct EarlyOtterCalculator {
             reason: .event,
             appliedRuleName: winningRule.name,
             matchedRuleNames: matchedRuleNames
+        )
+    }
+
+    /// A fixed-time manual override (optionally skipped) for a single date.
+    private func makeManualTimePlan(
+        targetDay: TargetDay,
+        customTime: ClockTime,
+        isSkipped: Bool,
+        events: [ParsedEvent],
+        preferences: AlarmPreferences,
+        timingRules: TimingRules,
+        fallbackAlarmSettings: RuleAlarmSettings,
+        calendar: Calendar
+    ) -> WakeUpPlan {
+        let validEvents = events
+            .filter { eventFilter.shouldInclude($0, preferences: preferences) }
+            .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
+        let firstEventOfDay = validEvents.min(by: { $0.startDate < $1.startDate })
+        let wakeTime = customTime.date(on: targetDay, calendar: calendar)
+
+        return WakeUpPlan(
+            id: hasher.makeID(
+                kind: isSkipped ? "manual-skip" : "manual-override",
+                components: [
+                    timestamp(targetDay.date),
+                    "\(customTime.hour)",
+                    "\(customTime.minute)"
+                ]
+            ),
+            targetDay: targetDay,
+            targetEvent: nil,
+            firstEventOfDay: firstEventOfDay,
+            calculatedWakeTime: wakeTime,
+            eventStartTime: nil,
+            prepTime: timingRules.prepTime,
+            commuteTime: timingRules.defaultCommuteTime,
+            alarmSettings: fallbackAlarmSettings,
+            isFallback: false,
+            reason: isSkipped ? .manualSkip : .manualOverride,
+            appliedRuleName: nil,
+            matchedRuleNames: []
+        )
+    }
+
+    /// Marks an automatically-computed plan as skipped for one day, preserving its
+    /// time/prep/commute so re-enabling restores the exact automatic alarm.
+    private func makeSkippedPlan(base: WakeUpPlan, targetDay: TargetDay) -> WakeUpPlan {
+        WakeUpPlan(
+            id: hasher.makeID(
+                kind: "manual-skip-auto",
+                components: [timestamp(targetDay.date)]
+            ),
+            targetDay: targetDay,
+            targetEvent: nil,
+            firstEventOfDay: base.firstEventOfDay,
+            calculatedWakeTime: base.calculatedWakeTime,
+            eventStartTime: nil,
+            prepTime: base.prepTime,
+            commuteTime: base.commuteTime,
+            alarmSettings: base.alarmSettings,
+            isFallback: false,
+            reason: .manualSkip,
+            appliedRuleName: nil,
+            matchedRuleNames: []
         )
     }
 
