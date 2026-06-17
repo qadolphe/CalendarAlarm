@@ -29,6 +29,14 @@ struct EarlyOtterCalculator {
         let isFallbackEnabled = scheduleRules.fallbackEnabledDays.contains(weekday)
         let fallbackAlarmSettings = preferences.fallbackAlarmSettings
 
+        // The blue event marker reflects whether an event exists that day, so it is
+        // computed once up front and threaded into every plan — including disabled,
+        // inactive, and skipped days where no alarm runs but the event is still there.
+        let firstEventOfDay = events
+            .filter { eventFilter.shouldInclude($0, preferences: preferences) }
+            .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
+            .min(by: { $0.startDate < $1.startDate })
+
         if !preferences.isSystemEnabled {
             return WakeUpPlan(
                 id: hasher.makeID(
@@ -41,6 +49,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
+                firstEventOfDay: firstEventOfDay,
                 calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -63,8 +72,7 @@ struct EarlyOtterCalculator {
                 targetDay: targetDay,
                 customTime: customTime,
                 isSkipped: override.isSkipped,
-                events: events,
-                preferences: preferences,
+                firstEventOfDay: firstEventOfDay,
                 timingRules: timingRules,
                 fallbackAlarmSettings: fallbackAlarmSettings,
                 calendar: calendar
@@ -83,6 +91,7 @@ struct EarlyOtterCalculator {
             fallbackWakeTime: fallbackWakeTime,
             isFallbackEnabled: isFallbackEnabled,
             fallbackAlarmSettings: fallbackAlarmSettings,
+            firstEventOfDay: firstEventOfDay,
             calendar: calendar
         )
 
@@ -107,6 +116,7 @@ struct EarlyOtterCalculator {
         fallbackWakeTime: Date,
         isFallbackEnabled: Bool,
         fallbackAlarmSettings: RuleAlarmSettings,
+        firstEventOfDay: ParsedEvent?,
         calendar: Calendar
     ) -> WakeUpPlan {
         if !scheduleRules.activeDays.contains(weekday) {
@@ -115,7 +125,8 @@ struct EarlyOtterCalculator {
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
                     timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings
+                    alarmSettings: fallbackAlarmSettings,
+                    firstEventOfDay: firstEventOfDay
                 )
             }
 
@@ -131,6 +142,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
+                firstEventOfDay: firstEventOfDay,
                 calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -149,7 +161,8 @@ struct EarlyOtterCalculator {
                     targetDay: targetDay,
                     wakeTime: fallbackWakeTime,
                     timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings
+                    alarmSettings: fallbackAlarmSettings,
+                    firstEventOfDay: firstEventOfDay
                 )
             }
 
@@ -164,6 +177,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
+                firstEventOfDay: firstEventOfDay,
                 calculatedWakeTime: fallbackWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -178,7 +192,6 @@ struct EarlyOtterCalculator {
         let validEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-        let firstEventOfDay = validEvents.min(by: { $0.startDate < $1.startDate })
 
         // Build every candidate: (event, matchingRule, calculatedWakeTime)
         // A rule matches an event if AlarmRule.matches returns true.
@@ -309,16 +322,11 @@ struct EarlyOtterCalculator {
         targetDay: TargetDay,
         customTime: ClockTime,
         isSkipped: Bool,
-        events: [ParsedEvent],
-        preferences: AlarmPreferences,
+        firstEventOfDay: ParsedEvent?,
         timingRules: TimingRules,
         fallbackAlarmSettings: RuleAlarmSettings,
         calendar: Calendar
     ) -> WakeUpPlan {
-        let validEvents = events
-            .filter { eventFilter.shouldInclude($0, preferences: preferences) }
-            .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-        let firstEventOfDay = validEvents.min(by: { $0.startDate < $1.startDate })
         let wakeTime = customTime.date(on: targetDay, calendar: calendar)
 
         return WakeUpPlan(

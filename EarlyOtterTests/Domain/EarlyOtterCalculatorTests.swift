@@ -98,6 +98,51 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertNil(plan.targetEvent)
     }
 
+    func testInactiveDayStillSurfacesEventForMarker() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.activeDays = [2, 3, 4, 5, 6] // Mon–Fri, so the Saturday target is inactive.
+        let morningEvent = event(
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar)
+        )
+
+        let plan = calculator.calculate(
+            events: [morningEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        // No alarm runs on an inactive day, but the event still exists — its blue
+        // marker must still appear, so firstEventOfDay is preserved.
+        XCTAssertNil(plan.targetEvent)
+        XCTAssertEqual(plan.firstEventOfDay?.id, morningEvent.id)
+    }
+
+    func testSkippedDayStillSurfacesEventForMarker() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.setOverride(DayAlarmOverride(customWakeTime: nil, isSkipped: true), for: targetDay, calendar: calendar)
+        let morningEvent = event(
+            startDate: makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar),
+            endDate: makeDate(year: 2026, month: 5, day: 2, hour: 10, minute: 0, calendar: calendar)
+        )
+
+        let plan = calculator.calculate(
+            events: [morningEvent],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        // Manually skipping a day's alarm must not hide its event marker.
+        XCTAssertEqual(plan.reason, .manualSkip)
+        XCTAssertEqual(plan.firstEventOfDay?.id, morningEvent.id)
+    }
+
     func testNoScheduleWhenNoEventsAndFallbackDisabled() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)

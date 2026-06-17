@@ -67,7 +67,7 @@ struct EarlyOtterDetailsView: View {
     private var unavailableStateTitle: String {
         switch plan.reason {
         case .inactiveDay:
-            return "Auto Alarms Paused"
+            return "Calendar Alarms Disabled"
         case .disabled:
             return "Automatic Alarms Off"
         case .systemDisabled:
@@ -84,7 +84,7 @@ struct EarlyOtterDetailsView: View {
     private var unavailableStateMessage: String {
         switch plan.reason {
         case .inactiveDay:
-            return "This weekday is currently inactive in your schedule, so EarlyOtter will not manage an alarm for it."
+            return ""
         case .disabled:
             return "Automatic alarms are turned off. Re-enable Auto Alarms from the schedule settings to resume managed alarms."
         case .systemDisabled:
@@ -300,7 +300,13 @@ struct EarlyOtterDetailsView: View {
                 isEditing = true
             }
         } label: {
-            Label(plan.reason == .manualSkip ? "Enable Alarm" : "Edit Alarm", systemImage: plan.reason == .manualSkip ? "bell.fill" : "pencil")
+            if plan.reason == .manualSkip {
+                Label("Enable Alarm", systemImage: "bell.fill")
+            } else if plan.reason == .inactiveDay || plan.reason == .noSchedule || plan.reason == .disabled {
+                Label("Add Alarm", systemImage: "plus")
+            } else {
+                Label("Edit Alarm", systemImage: "pencil")
+            }
         }
         .buttonStyle(PrimaryButtonStyle())
         .padding(.horizontal, 20)
