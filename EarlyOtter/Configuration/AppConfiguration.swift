@@ -5,6 +5,7 @@ enum AppConfiguration {
     static let nextAlarmWidgetKind = "com.quentinadolphe.wakeplan.nextAlarmWidget"
     static let widgetAppGroupIdentifier = "group.com.quentinadolphe.wakeplan.widget"
     static let genericAlarmTitle = "Wake up"
+    static let feedbackEndpointURL = URL(string: "https://earlyotter.com/api/feedback")!
     static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
     static let testAlarmDescription =
         "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
@@ -17,6 +18,22 @@ enum AppConfiguration {
     static let backgroundRefreshEarliestInterval: TimeInterval = 6 * 60 * 60
     static let staleSyncReminderIdentifier = "com.earlyotter.calendaralarm.stale-sync-reminder"
     static let staleSyncReminderHour = 19
+    /// Retire once the app is out of its early period; Settings keeps a permanent entry point.
+    static let showsHomeFeedbackFooter = true
+    static let reviewPromptQualifiedOpenCountStorageKey =
+        "earlyotter.reviewPrompt.qualifiedOpenCount"
+    static let reviewPromptLastRequestedVersionStorageKey =
+        "earlyotter.reviewPrompt.lastRequestedVersion"
+
+    static var currentAppVersion: String {
+        let version = Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String
+        let build = Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleVersion"
+        ) as? String
+        return version ?? build ?? "unknown"
+    }
 
     static let calendarPermissionExplanation =
         "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time."

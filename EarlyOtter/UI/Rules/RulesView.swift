@@ -92,15 +92,16 @@ struct RulesView: View {
         .scrollContentBackground(.hidden)
         .background(Color.clear.withAppBackground())
         .navigationTitle("Rules")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isShowingSettings = true
                 } label: {
                     Image(systemName: "gearshape.fill")
-                        .foregroundStyle(WPStyles.primaryOrange)
+                        .foregroundStyle(WPStyles.primaryText)
                 }
+                .accessibilityLabel("Settings")
             }
         }
         .sheet(isPresented: $isAddingRule) {
@@ -225,6 +226,7 @@ struct RuleEditorView: View {
     @FocusState private var focusedConditionField: ConditionField?
 
     @State private var selectedTab = 0 // 0 = Trigger Criteria, 1 = Alarm Actions
+    @Namespace private var editorTabUnderline
 
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
@@ -274,8 +276,8 @@ struct RuleEditorView: View {
                 }
 
                 editorTabSelector
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 16)
+                    .padding(.top, isDefaultRule ? 28 : 0)
+                    .padding(.bottom, 24)
                     .disabled(!isDefaultRule && !isEnabled)
 
                 ScrollView(showsIndicators: false) {
@@ -295,6 +297,8 @@ struct RuleEditorView: View {
                     .padding(.bottom, 40)
                     .disabled(!isDefaultRule && !isEnabled)
                     .opacity((!isDefaultRule && !isEnabled) ? 0.5 : 1.0)
+                    .id(selectedTab)
+                    .transition(.opacity)
                 }
             }
         }
@@ -308,8 +312,7 @@ struct RuleEditorView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") { trySave() }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .buttonStyle(PrimaryCapsuleButtonStyle())
             }
             if mode.isAdd {
                 ToolbarItem(placement: .topBarLeading) {
@@ -530,37 +533,41 @@ struct RuleEditorView: View {
     }
 
     private var editorTabSelector: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             editorTabButton(title: "Trigger Criteria", tag: 0)
             editorTabButton(title: "Alarm", tag: 1)
         }
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(WPStyles.surface)
-        )
     }
 
     private func editorTabButton(title: String, tag: Int) -> some View {
         let isSelected = selectedTab == tag
         return Button {
-            withAnimation(.easeInOut(duration: 0.18)) {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
                 selectedTab = tag
             }
         } label: {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.85))
-                .frame(maxWidth: .infinity)
-                .frame(height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(isSelected ? WPStyles.surfaceRaised : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.7) : Color.clear, lineWidth: 1)
-                )
+            VStack(spacing: 10) {
+                Text(title)
+                    .font(.subheadline.weight(isSelected ? .bold : .regular))
+                    .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText)
+
+                // Reserve the underline's height on both tabs so the labels never shift.
+                Capsule()
+                    .fill(isSelected ? Color.clear : WPStyles.surfaceRaised)
+                    .frame(height: 3)
+                    .overlay {
+                        if isSelected {
+                            Capsule()
+                                .fill(WPStyles.primaryOrange)
+                                .matchedGeometryEffect(id: "editorTabUnderline", in: editorTabUnderline)
+                        }
+                    }
+            }
+            // Size to the label so the underline tracks the text width, X-style.
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.top, 6)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -733,21 +740,26 @@ struct RuleEditorView: View {
             sectionLabel("Alarm")
 
             VStack(spacing: 0) {
-                HStack {
-                    Text("Sound")
-                        .font(.body)
-                        .foregroundStyle(WPStyles.primaryText)
-                    Spacer()
-                    Picker("Sound", selection: $sound) {
-                        ForEach(AlarmSoundOption.allCases, id: \.self) { option in
-                            Text(option.displayName).tag(option)
-                        }
+                NavigationLink {
+                    AlarmSoundPickerView(selection: $sound)
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("Sound")
+                            .font(.body)
+                            .foregroundStyle(WPStyles.primaryText)
+                        Spacer(minLength: 8)
+                        Text(sound.displayName)
+                            .font(.body)
+                            .foregroundStyle(WPStyles.secondaryText)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(WPStyles.tertiaryText)
                     }
-                    .pickerStyle(.menu)
-                    .tint(WPStyles.primaryOrange)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
+                .buttonStyle(.plain)
 
                 Divider().padding(.leading, 16)
 
@@ -1057,8 +1069,7 @@ struct GlobalEventFiltersView: View {
                         dismiss()
                     }
                 }
-                .fontWeight(.semibold)
-                .foregroundStyle(WPStyles.primaryOrange)
+                .buttonStyle(PrimaryCapsuleButtonStyle())
             }
         }
     }

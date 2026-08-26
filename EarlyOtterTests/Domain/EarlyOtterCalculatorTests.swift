@@ -32,10 +32,12 @@ final class EarlyOtterCalculatorTests: XCTestCase {
     func testFallsBackWhenNoValidEvents() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = AlarmPreferences.default
+        preferences.fallbackEnabledDays = Set(1...7)
 
         let plan = calculator.calculate(
             events: [],
-            preferences: .default,
+            preferences: preferences,
             targetDay: targetDay,
             calendar: calendar
         )
@@ -75,8 +77,8 @@ final class EarlyOtterCalculatorTests: XCTestCase {
             calendar: calendar
         )
 
-        XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertTrue(plan.isFallback)
+        XCTAssertEqual(plan.reason, .disabled)
+        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
     }
 
@@ -93,8 +95,8 @@ final class EarlyOtterCalculatorTests: XCTestCase {
             calendar: calendar
         )
 
-        XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertTrue(plan.isFallback)
+        XCTAssertEqual(plan.reason, .inactiveDay)
+        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
     }
 
@@ -165,6 +167,7 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
         var preferences = AlarmPreferences.default
+        preferences.fallbackEnabledDays = Set(1...7)
         preferences.schedule.fallbackWakeTimes[calendar.component(.weekday, from: targetDay.date)] = ClockTime(hour: 8, minute: 0)
 
         let eventStart = makeDate(year: 2026, month: 5, day: 2, hour: 15, minute: 0, calendar: calendar)
@@ -272,6 +275,7 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
         var preferences = AlarmPreferences.default
+        preferences.fallbackEnabledDays = Set(1...7)
         preferences.alarmRules = [
             AlarmRule.makeDefault(
                 prepTime: Minutes(45),

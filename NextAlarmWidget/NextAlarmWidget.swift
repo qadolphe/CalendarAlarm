@@ -34,11 +34,7 @@ struct NextAlarmWidgetProvider: TimelineProvider {
     }
 
     private func nextRefreshDate(for snapshot: NextAlarmWidgetSnapshot, from now: Date) -> Date {
-        let defaultRefreshDate = now.addingTimeInterval(30 * 60)
-        guard let nextAlarmDate = snapshot.nextAlarmDate, nextAlarmDate > now else {
-            return defaultRefreshDate
-        }
-        return min(defaultRefreshDate, nextAlarmDate.addingTimeInterval(60))
+        NextAlarmWidgetDisplayPolicy.nextTimelineDate(for: snapshot, from: now)
     }
 
     private static let previewSnapshot = NextAlarmWidgetSnapshot.scheduled(
@@ -64,6 +60,7 @@ struct NextAlarmWidget: Widget {
 
 private struct NextAlarmWidgetEntryView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetContentMargins) private var widgetContentMargins
     let entry: NextAlarmWidgetEntry
 
     var body: some View {
@@ -188,74 +185,93 @@ private struct NextAlarmWidgetEntryView: View {
 
     private var inlineView: some View {
         Group {
-            if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
-                Text("\(Image(systemName: stateIconName)) \(formattedAlarmTime(for: alarmDate))")
+            if showsLockScreenAlarm, let alarmDate = entry.snapshot.nextAlarmDate {
+                Text("\(Image(systemName: lockScreenIconName)) \(formattedAlarmTime(for: alarmDate))")
                     .font(.headline)
-            } else {
+            } else if entry.snapshot.state == .stale {
                 Text(inlineFallbackText)
+            } else {
+                Text("\(Image(systemName: NextAlarmWidgetDisplayPolicy.emptySymbolName)) Sleeping in")
             }
         }
     }
 
     private var circularView: some View {
         ZStack {
+            // Must live in the content, not `containerBackground`: the Lock Screen
+            // strips container backgrounds for accessory families.
             AccessoryWidgetBackground()
-            if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
+                .clipShape(.circle)
+
+            if showsLockScreenAlarm, let alarmDate = entry.snapshot.nextAlarmDate {
                 VStack(spacing: 1) {
-                    Image(systemName: stateIconName)
+                    lockScreenSymbol(lockScreenIconName)
                         .font(.caption2.weight(.bold))
                         .widgetAccentable()
                     Text(formattedAlarmTime(for: alarmDate))
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.6)
+                        .lineLimit(1)
                         .widgetAccentable()
                 }
-                .padding(4)
             } else {
-                Image(systemName: "alarm.slash")
-                    .font(.title3)
-                    .widgetAccentable()
+                VStack(spacing: 1) {
+                    lockScreenSymbol(NextAlarmWidgetDisplayPolicy.emptySymbolName)
+                        .font(.caption.weight(.bold))
+                        .widgetAccentable()
+                    Text("No Alarm")
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
+                        .widgetAccentable()
+                }
             }
         }
+        .padding(invertedCircularMargins)
+    }
+
+    private var invertedCircularMargins: EdgeInsets {
+        EdgeInsets(
+            top: -widgetContentMargins.top,
+            leading: -widgetContentMargins.leading,
+            bottom: -widgetContentMargins.bottom,
+            trailing: -widgetContentMargins.trailing
+        )
     }
 
     private var rectangularView: some View {
-        ZStack {
-            AccessoryWidgetBackground()
-            HStack(alignment: .center, spacing: 6) {
-                Image(systemName: stateIconName)
-                    .font(.body.weight(.semibold))
-                    .widgetAccentable()
+        HStack(alignment: .center, spacing: 6) {
+            lockScreenSymbol(lockScreenIconName)
+                .font(.body.weight(.semibold))
+                .widgetAccentable()
 
-                VStack(alignment: .leading, spacing: 2) {
-                    if let alarmDate = entry.snapshot.nextAlarmDate, entry.snapshot.state != .empty {
-                        Text(formattedAlarmTime(for: alarmDate))
-                            .font(.system(.body, design: .rounded).weight(.bold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                            .widgetAccentable()
+            VStack(alignment: .leading, spacing: 2) {
+                if showsLockScreenAlarm, let alarmDate = entry.snapshot.nextAlarmDate {
+                    Text(formattedAlarmTime(for: alarmDate))
+                        .font(.system(.body, design: .rounded).weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .widgetAccentable()
+                } else {
+                    Text(lockScreenEmptyTitle)
+                        .font(.subheadline)
+                        .lineLimit(1)
+                        .widgetAccentable()
+                }
+
+                Group {
+                    if showsLockScreenAlarm, let title = entry.snapshot.eventTitle {
+                        Text(title).font(.caption2.weight(.semibold)).lineLimit(1)
                     } else {
-                        Text(stateDescription)
-                            .font(.subheadline)
-                            .lineLimit(1)
-                            .widgetAccentable()
-                    }
-
-                    Group {
-                        if let title = entry.snapshot.eventTitle {
-                            Text(title).font(.caption2.weight(.semibold)).lineLimit(1)
-                        } else {
-                            Text("Next Alarm").font(.caption2.weight(.semibold)).lineLimit(1)
-                        }
+                        Text("Next Alarm").font(.caption2.weight(.semibold)).lineLimit(1)
                     }
                 }
-                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            Spacer(minLength: 0)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 
     private var containerBackgroundView: some View {
@@ -271,16 +287,49 @@ private struct NextAlarmWidgetEntryView: View {
 
                     SmallWidgetAtmosphere()
                 }
+            case .accessoryCircular, .accessoryRectangular:
+                // Circular draws its own background inline; the Lock Screen ignores
+                // whatever is supplied here for accessory families.
+                EmptyView()
             default:
                 EmptyView()
             }
         }
     }
 
+    private func lockScreenSymbol(_ name: String) -> Image {
+        Image(systemName: name)
+            .symbolRenderingMode(.monochrome)
+    }
+
+    private var showsLockScreenAlarm: Bool {
+        NextAlarmWidgetDisplayPolicy.hasLockScreenUpcomingAlarm(entry.snapshot, now: entry.date)
+    }
+
+    private var lockScreenIconName: String {
+        if showsLockScreenAlarm {
+            return stateIconName
+        }
+
+        if entry.snapshot.state == .stale {
+            return "exclamationmark.arrow.circlepath"
+        }
+
+        return NextAlarmWidgetDisplayPolicy.emptySymbolName
+    }
+
+    private var lockScreenEmptyTitle: String {
+        if entry.snapshot.state == .stale {
+            return stateDescription
+        }
+
+        return "Sleeping in"
+    }
+
     private var stateIconName: String {
         switch entry.snapshot.state {
         case .scheduled: return "alarm.fill"
-        case .empty: return "moon.zzz.fill"
+        case .empty: return NextAlarmWidgetDisplayPolicy.emptySymbolName
         case .stale: return "exclamationmark.arrow.circlepath"
         }
     }

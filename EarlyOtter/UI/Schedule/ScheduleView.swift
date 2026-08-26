@@ -23,7 +23,7 @@ struct ScheduleView: View {
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .navigationTitle("Schedule")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .sheet(item: $selectedWeekday) { option in
             DaySettingsView(appState: appState, weekdayOption: option)
         }

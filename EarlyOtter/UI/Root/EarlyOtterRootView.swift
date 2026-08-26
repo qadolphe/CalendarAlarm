@@ -1,10 +1,17 @@
+import StoreKit
 import SwiftUI
 
 struct EarlyOtterRootView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.requestReview) private var requestReview
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage(AppConfiguration.reviewPromptQualifiedOpenCountStorageKey)
+    private var reviewPromptQualifiedOpenCount = 0
+    @AppStorage(AppConfiguration.reviewPromptLastRequestedVersionStorageKey)
+    private var reviewPromptLastRequestedVersion = ""
     @Bindable var appState: AppState
     @State private var forceOnboardingThisLaunch: Bool
+    @State private var hasEvaluatedReviewPromptThisLaunch = false
     @State private var selectedTab: MainTab = .home
 
     init(appState: AppState) {
@@ -34,6 +41,7 @@ struct EarlyOtterRootView: View {
         }
         .task {
             await appState.loadIfNeeded()
+            await evaluateReviewPrompt()
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
@@ -66,6 +74,42 @@ struct EarlyOtterRootView: View {
         forceOnboardingThisLaunch || !hasCompletedOnboarding
     }
 
+    @MainActor
+    private func evaluateReviewPrompt() async {
+        guard !hasEvaluatedReviewPromptThisLaunch else { return }
+        hasEvaluatedReviewPromptThisLaunch = true
+
+        let evaluation = AppReviewPromptPolicy.evaluate(
+            qualifiedOpenCount: reviewPromptQualifiedOpenCount,
+            lastRequestedVersion: reviewPromptLastRequestedVersion,
+            currentVersion: AppConfiguration.currentAppVersion,
+            isQualifiedOpen: !shouldShowOnboarding && hasScheduledAlarm
+        )
+        reviewPromptQualifiedOpenCount = evaluation.qualifiedOpenCount
+
+        guard evaluation.shouldRequestReview else { return }
+
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled,
+              scenePhase == .active,
+              selectedTab == .home else {
+            return
+        }
+
+        reviewPromptQualifiedOpenCount = 0
+        reviewPromptLastRequestedVersion = AppConfiguration.currentAppVersion
+        requestReview()
+    }
+
+    private var hasScheduledAlarm: Bool {
+        appState.alarmStatusesByPlanID.values.contains { status in
+            if case .scheduled = status {
+                return true
+            }
+            return false
+        }
+    }
+
     private var mainTabView: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
@@ -86,7 +130,7 @@ struct EarlyOtterRootView: View {
             .tag(MainTab.rules)
             .tabItem { Label("Rules", systemImage: "gearshape.fill") }
         }
-        .tint(WPStyles.primaryOrange)
+        .tint(WPStyles.tabSelection)
         .toolbarBackground(WPStyles.background, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
     }

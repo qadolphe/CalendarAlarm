@@ -1,5 +1,6 @@
 import GoogleSignIn
 import SwiftUI
+import UIKit
 
 #if canImport(WidgetKit)
 import WidgetKit
@@ -16,6 +17,8 @@ struct EarlyOtterApp: App {
     private let alarmStore: UserDefaultsScheduledAlarmStore
 
     init() {
+        Self.configureNavigationAppearance()
+
         let launchArguments = ProcessInfo.processInfo.arguments
         let environment = EarlyOtterEnvironment.live()
 
@@ -41,6 +44,18 @@ struct EarlyOtterApp: App {
             alarmScheduler: environment.alarmScheduler,
             alarmStore: environment.alarmStore
         )
+    }
+
+    private static func configureNavigationAppearance() {
+        let baseFont = UIFont.systemFont(ofSize: 34, weight: .bold)
+        let roundedFont = baseFont.fontDescriptor.withDesign(.rounded).map {
+            UIFont(descriptor: $0, size: baseFont.pointSize)
+        } ?? baseFont
+
+        UINavigationBar.appearance().largeTitleTextAttributes = [
+            .font: roundedFont,
+            .foregroundColor: UIColor(WPStyles.primaryText)
+        ]
     }
 
     var body: some Scene {
@@ -100,6 +115,12 @@ struct EarlyOtterApp: App {
         try? refreshResultStore.clear()
         try? widgetSnapshotStore.clear()
         UserDefaults.standard.removeObject(forKey: Self.onboardingStorageKey)
+        UserDefaults.standard.removeObject(
+            forKey: AppConfiguration.reviewPromptQualifiedOpenCountStorageKey
+        )
+        UserDefaults.standard.removeObject(
+            forKey: AppConfiguration.reviewPromptLastRequestedVersionStorageKey
+        )
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: [AppConfiguration.staleSyncReminderIdentifier]
         )

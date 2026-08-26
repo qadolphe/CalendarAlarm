@@ -38,6 +38,10 @@ struct SettingsView: View {
             navRow(title: "Permissions", icon: "lock.shield") {
                 PermissionsView(appState: appState)
             }
+            Divider().padding(.leading, 56)
+            navRow(title: "Send Feedback", icon: "bubble.left.and.bubble.right") {
+                FeedbackView(appState: appState)
+            }
         }
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
     }

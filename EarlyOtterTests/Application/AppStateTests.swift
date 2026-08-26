@@ -276,6 +276,7 @@ final class AppStateTests: XCTestCase {
 
         let originalPlan = try XCTUnwrap(appState.tomorrowPlanPreview)
         XCTAssertEqual(originalPlan.reason, .noSchedule)
+        let originalDashboardState = appState.dashboardState
 
         var updatedPreferences = appState.preferences
         let tomorrowWeekday = Calendar.current.component(
@@ -292,7 +293,9 @@ final class AppStateTests: XCTestCase {
 
         await provider.waitUntilSuspended()
 
-        XCTAssertEqual(appState.dashboardState, .loading)
+        // updatePreferences refreshes in place, so the dashboard holds its previous
+        // content rather than flashing the loading screen for small edits.
+        XCTAssertEqual(appState.dashboardState, originalDashboardState)
         XCTAssertEqual(appState.tomorrowPlanPreview, originalPlan)
 
         await provider.resumeSuspendedRequest()

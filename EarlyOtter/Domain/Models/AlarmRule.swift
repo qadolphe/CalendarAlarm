@@ -1,90 +1,72 @@
 import Foundation
 
 enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
+    // Resolved by the system alarm process when the alarm fires, so it has no
+    // file this app can reach. Kept first in the list as the standard choice.
     case `default`
-    case basso
+    case bloom
     case blow
-    case bottle
-    case frog
-    case funk
+    case dawn
     case glass
     case hero
     case morse
     case ping
-    case pop
-    case purr
+    case ripple
     case sosumi
     case submarine
-    case tink
+
+    // Where settings saved against a retired tone land.
+    static let standard: AlarmSoundOption = .default
 
     var displayName: String {
         switch self {
-        case .default:
-            return "Default"
-        case .basso:
-            return "Basso"
-        case .blow:
-            return "Blow"
-        case .bottle:
-            return "Bottle"
-        case .frog:
-            return "Frog"
-        case .funk:
-            return "Funk"
-        case .glass:
-            return "Glass"
-        case .hero:
-            return "Hero"
-        case .morse:
-            return "Morse"
-        case .ping:
-            return "Ping"
-        case .pop:
-            return "Pop"
-        case .purr:
-            return "Purr"
-        case .sosumi:
-            return "Sosumi"
-        case .submarine:
-            return "Submarine"
-        case .tink:
-            return "Tink"
+        case .default:      return "Default"
+        case .bloom:        return "Bloom"
+        case .blow:         return "Blow"
+        case .dawn:         return "Dawn"
+        case .glass:        return "Glass"
+        case .hero:         return "Hero"
+        case .morse:        return "Morse"
+        case .ping:         return "Ping"
+        case .ripple:       return "Ripple"
+        case .sosumi:       return "Sosumi"
+        case .submarine:    return "Submarine"
         }
     }
 
+    // File name handed to AlarmKit's `AlertSound.named(_:)` and to the picker's
+    // preview player, both of which resolve it against the app bundle. `nil`
+    // means the system alarm sound, which only iOS itself can play.
     var resourceName: String? {
         switch self {
-        case .default:
-            return nil
-        case .basso:
-            return "Basso.aiff"
-        case .blow:
-            return "Blow.aiff"
-        case .bottle:
-            return "Bottle.aiff"
-        case .frog:
-            return "Frog.aiff"
-        case .funk:
-            return "Funk.aiff"
-        case .glass:
-            return "Glass.aiff"
-        case .hero:
-            return "Hero.aiff"
-        case .morse:
-            return "Morse.aiff"
-        case .ping:
-            return "Ping.aiff"
-        case .pop:
-            return "Pop.aiff"
-        case .purr:
-            return "Purr.aiff"
-        case .sosumi:
-            return "Sosumi.aiff"
-        case .submarine:
-            return "Submarine.aiff"
-        case .tink:
-            return "Tink.aiff"
+        case .default:      return nil
+        case .bloom:        return "AlarmBloom.wav"
+        case .blow:         return "Blow.aiff"
+        case .dawn:         return "AlarmDawn.wav"
+        case .glass:        return "Glass.aiff"
+        case .hero:         return "Hero.aiff"
+        case .morse:        return "Morse.aiff"
+        case .ping:         return "Ping.aiff"
+        case .ripple:       return "AlarmRipple.wav"
+        case .sosumi:       return "Sosumi.aiff"
+        case .submarine:    return "Submarine.aiff"
         }
+    }
+
+    // Shown under the row name to explain why tapping it stays silent.
+    var subtitle: String? {
+        switch self {
+        case .default:  return "Played by iOS when the alarm fires"
+        default:        return nil
+        }
+    }
+
+    // Preferences saved before the sound list was trimmed may still name a tone
+    // that no longer ships, so decode unknown names to the standard tone rather
+    // than failing the whole preferences load.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = AlarmSoundOption(rawValue: raw) ?? .standard
     }
 }
 
@@ -94,7 +76,7 @@ struct RuleAlarmSettings: Codable, Equatable, Sendable {
     var snoozeDuration: Minutes
 
     static let `default` = RuleAlarmSettings(
-        sound: .default,
+        sound: .standard,
         snoozeEnabled: true,
         snoozeDuration: Minutes(10)
     )

@@ -40,6 +40,7 @@ final class AppState {
     private let permissionService: PermissionService
     private let alarmSyncService: AlarmSyncService
     private let refreshService: EarlyOtterRefreshService
+    private let feedbackSubmitter: (any FeedbackSubmitting)?
     private let openAppSettings: @MainActor () -> Void
     private var hasLoaded = false
     private var refreshGeneration = 0
@@ -68,6 +69,7 @@ final class AppState {
         permissionService: PermissionService,
         alarmSyncService: AlarmSyncService,
         refreshService: EarlyOtterRefreshService,
+        feedbackSubmitter: (any FeedbackSubmitting)? = nil,
         openAppSettings: @escaping @MainActor () -> Void = { AppState.defaultOpenAppSettings() }
     ) {
         self.accountStore = accountStore
@@ -76,6 +78,7 @@ final class AppState {
         self.permissionService = permissionService
         self.alarmSyncService = alarmSyncService
         self.refreshService = refreshService
+        self.feedbackSubmitter = feedbackSubmitter
         self.openAppSettings = openAppSettings
     }
 
@@ -253,6 +256,16 @@ final class AppState {
         } catch {
             dashboardState = .error(format(error))
         }
+    }
+
+    func submitFeedback(category: FeedbackCategory, message: String) async throws {
+        guard let feedbackSubmitter else {
+            throw FeedbackSubmissionError.unavailable
+        }
+
+        try await feedbackSubmitter.submit(
+            AppFeedback(category: category, message: message)
+        )
     }
 
 #if DEBUG

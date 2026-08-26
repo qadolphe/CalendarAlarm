@@ -51,6 +51,8 @@
 		AA0000000000000000000225 /* UI/Onboarding/OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000125 /* UI/Onboarding/OnboardingView.swift */; };
 		AA0000000000000000000226 /* UI/Root/EarlyOtterRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000126 /* UI/Root/EarlyOtterRootView.swift */; };
 		AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000127 /* UI/Rules/RulesView.swift */; };
+		AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */; };
+		AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */; };
 		AA0000000000000000000228 /* UI/Settings/TimingSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000128 /* UI/Settings/TimingSettingsView.swift */; };
 		AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */; };
 		AA0000000000000000000230 /* Domain/Models/AlarmRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */; };
@@ -59,20 +61,13 @@
 		AA0000000000000000000233 /* Resources/AlarmSounds/AlarmDawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000133 /* Resources/AlarmSounds/AlarmDawn.wav */; };
 		AA0000000000000000000234 /* Resources/AlarmSounds/AlarmRipple.wav in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000134 /* Resources/AlarmSounds/AlarmRipple.wav */; };
 		AA0000000000000000000235 /* Resources/AlarmSounds/AlarmBloom.wav in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000135 /* Resources/AlarmSounds/AlarmBloom.wav */; };
-		AA0000000000000000000236 /* Resources/AlarmSounds/Basso.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000136 /* Resources/AlarmSounds/Basso.aiff */; };
 		AA0000000000000000000237 /* Resources/AlarmSounds/Blow.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000137 /* Resources/AlarmSounds/Blow.aiff */; };
-		AA0000000000000000000238 /* Resources/AlarmSounds/Bottle.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000138 /* Resources/AlarmSounds/Bottle.aiff */; };
-		AA0000000000000000000239 /* Resources/AlarmSounds/Frog.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000139 /* Resources/AlarmSounds/Frog.aiff */; };
-		AA000000000000000000023A /* Resources/AlarmSounds/Funk.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013A /* Resources/AlarmSounds/Funk.aiff */; };
 		AA000000000000000000023B /* Resources/AlarmSounds/Glass.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013B /* Resources/AlarmSounds/Glass.aiff */; };
 		AA000000000000000000023C /* Resources/AlarmSounds/Hero.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013C /* Resources/AlarmSounds/Hero.aiff */; };
 		AA000000000000000000023D /* Resources/AlarmSounds/Morse.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013D /* Resources/AlarmSounds/Morse.aiff */; };
 		AA000000000000000000023E /* Resources/AlarmSounds/Ping.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013E /* Resources/AlarmSounds/Ping.aiff */; };
-		AA000000000000000000023F /* Resources/AlarmSounds/Pop.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000013F /* Resources/AlarmSounds/Pop.aiff */; };
-		AA0000000000000000000240 /* Resources/AlarmSounds/Purr.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000140 /* Resources/AlarmSounds/Purr.aiff */; };
 		AA0000000000000000000241 /* Resources/AlarmSounds/Sosumi.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */; };
 		AA0000000000000000000242 /* Resources/AlarmSounds/Submarine.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */; };
-		AA0000000000000000000243 /* Resources/AlarmSounds/Tink.aiff in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */; };
 		AA0000000000000000000244 /* Application/EarlyOtterRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000144 /* Application/EarlyOtterRefreshService.swift */; };
 		AA0000000000000000000245 /* Application/EarlyOtterEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000145 /* Application/EarlyOtterEnvironment.swift */; };
 		AA0000000000000000000246 /* Domain/Models/NextAlarmWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000146 /* Domain/Models/NextAlarmWidgetSnapshot.swift */; };
@@ -97,6 +92,17 @@
 		AA0000000000000000000406 /* Application/EarlyOtterRefreshServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000306 /* Application/EarlyOtterRefreshServiceTests.swift */; };
 		AA0000000000000000000407 /* Domain/WakeUpGreetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000307 /* Domain/WakeUpGreetingTests.swift */; };
 		AA0000000000000000000701 /* UI/Dashboard/DayAlarmEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000700 /* UI/Dashboard/DayAlarmEditView.swift */; };
+		AA0000000000000000000810 /* Domain/Models/AppFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000800 /* Domain/Models/AppFeedback.swift */; };
+		AA0000000000000000000811 /* Application/Ports/FeedbackSubmitting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000801 /* Application/Ports/FeedbackSubmitting.swift */; };
+		AA0000000000000000000812 /* Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000802 /* Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift */; };
+		AA0000000000000000000813 /* UI/Settings/FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000803 /* UI/Settings/FeedbackView.swift */; };
+		AA0000000000000000000814 /* Domain/AppFeedbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000804 /* Domain/AppFeedbackTests.swift */; };
+		AA0000000000000000000815 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000805 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift */; };
+		AA0000000000000000000910 /* Domain/Services/AppReviewPromptPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000900 /* Domain/Services/AppReviewPromptPolicy.swift */; };
+		AA0000000000000000000911 /* Domain/AppReviewPromptPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000901 /* Domain/AppReviewPromptPolicyTests.swift */; };
+		AA0000000000000000000A10 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000A00 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift */; };
+		AA0000000000000000000A11 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000A01 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift */; };
+		AA0000000000000000000A12 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000A00 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -176,6 +182,8 @@
 		AA0000000000000000000125 /* UI/Onboarding/OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000126 /* UI/Root/EarlyOtterRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Root/EarlyOtterRootView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000127 /* UI/Rules/RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/RulesView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/AlarmSoundPickerView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Audio/AlarmSoundPreviewPlayer.swift; sourceTree = "<group>"; };
 		AA0000000000000000000128 /* UI/Settings/TimingSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/TimingSettingsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/DaySettingsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmRule.swift; sourceTree = "<group>"; };
@@ -184,20 +192,13 @@
 		AA0000000000000000000133 /* Resources/AlarmSounds/AlarmDawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Resources/AlarmSounds/AlarmDawn.wav; sourceTree = "<group>"; };
 		AA0000000000000000000134 /* Resources/AlarmSounds/AlarmRipple.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Resources/AlarmSounds/AlarmRipple.wav; sourceTree = "<group>"; };
 		AA0000000000000000000135 /* Resources/AlarmSounds/AlarmBloom.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Resources/AlarmSounds/AlarmBloom.wav; sourceTree = "<group>"; };
-		AA0000000000000000000136 /* Resources/AlarmSounds/Basso.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Basso.aiff; sourceTree = "<group>"; };
 		AA0000000000000000000137 /* Resources/AlarmSounds/Blow.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Blow.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000138 /* Resources/AlarmSounds/Bottle.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Bottle.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000139 /* Resources/AlarmSounds/Frog.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Frog.aiff; sourceTree = "<group>"; };
-		AA000000000000000000013A /* Resources/AlarmSounds/Funk.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Funk.aiff; sourceTree = "<group>"; };
 		AA000000000000000000013B /* Resources/AlarmSounds/Glass.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Glass.aiff; sourceTree = "<group>"; };
 		AA000000000000000000013C /* Resources/AlarmSounds/Hero.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Hero.aiff; sourceTree = "<group>"; };
 		AA000000000000000000013D /* Resources/AlarmSounds/Morse.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Morse.aiff; sourceTree = "<group>"; };
 		AA000000000000000000013E /* Resources/AlarmSounds/Ping.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Ping.aiff; sourceTree = "<group>"; };
-		AA000000000000000000013F /* Resources/AlarmSounds/Pop.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Pop.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000140 /* Resources/AlarmSounds/Purr.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Purr.aiff; sourceTree = "<group>"; };
 		AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Sosumi.aiff; sourceTree = "<group>"; };
 		AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Submarine.aiff; sourceTree = "<group>"; };
-		AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Resources/AlarmSounds/Tink.aiff; sourceTree = "<group>"; };
 		AA0000000000000000000144 /* Application/EarlyOtterRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/EarlyOtterRefreshService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000145 /* Application/EarlyOtterEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/EarlyOtterEnvironment.swift; sourceTree = "<group>"; };
 		AA0000000000000000000146 /* Domain/Models/NextAlarmWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/NextAlarmWidgetSnapshot.swift; sourceTree = "<group>"; };
@@ -222,6 +223,16 @@
 		AA0000000000000000000306 /* Application/EarlyOtterRefreshServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/EarlyOtterRefreshServiceTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000307 /* Domain/WakeUpGreetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/WakeUpGreetingTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000700 /* UI/Dashboard/DayAlarmEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DayAlarmEditView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000800 /* Domain/Models/AppFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AppFeedback.swift; sourceTree = "<group>"; };
+		AA0000000000000000000801 /* Application/Ports/FeedbackSubmitting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/Ports/FeedbackSubmitting.swift; sourceTree = "<group>"; };
+		AA0000000000000000000802 /* Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift; sourceTree = "<group>"; };
+		AA0000000000000000000803 /* UI/Settings/FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/FeedbackView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000804 /* Domain/AppFeedbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/AppFeedbackTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000805 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/WebsiteFeedbackSubmitterTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000900 /* Domain/Services/AppReviewPromptPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/AppReviewPromptPolicy.swift; sourceTree = "<group>"; };
+		AA0000000000000000000901 /* Domain/AppReviewPromptPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/AppReviewPromptPolicyTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000A00 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/NextAlarmWidgetDisplayPolicy.swift; sourceTree = "<group>"; };
+		AA0000000000000000000A01 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/NextAlarmWidgetDisplayPolicyTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -300,6 +311,7 @@
 			children = (
 				AA0000000000000000000600 /* Application */,
 				AA0000000000000000000601 /* Domain */,
+				AA0000000000000000000821 /* Infrastructure */,
 			);
 			path = EarlyOtterTests;
 			sourceTree = "<group>";
@@ -338,12 +350,22 @@
 			name = Domain;
 			sourceTree = "<group>";
 		};
+		AA0000000000000000000539 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */,
+			);
+			name = Audio;
+			sourceTree = "<group>";
+		};
 		AA0000000000000000000503 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000520 /* Alarm */,
+				AA0000000000000000000539 /* Audio */,
 				AA0000000000000000000523 /* Auth */,
 				AA0000000000000000000521 /* Calendar */,
+				AA0000000000000000000820 /* Feedback */,
 				AA0000000000000000000522 /* Persistence */,
 			);
 			name = Infrastructure;
@@ -372,20 +394,13 @@
 				AA0000000000000000000133 /* Resources/AlarmSounds/AlarmDawn.wav */,
 				AA0000000000000000000134 /* Resources/AlarmSounds/AlarmRipple.wav */,
 				AA0000000000000000000135 /* Resources/AlarmSounds/AlarmBloom.wav */,
-				AA0000000000000000000136 /* Resources/AlarmSounds/Basso.aiff */,
 				AA0000000000000000000137 /* Resources/AlarmSounds/Blow.aiff */,
-				AA0000000000000000000138 /* Resources/AlarmSounds/Bottle.aiff */,
-				AA0000000000000000000139 /* Resources/AlarmSounds/Frog.aiff */,
-				AA000000000000000000013A /* Resources/AlarmSounds/Funk.aiff */,
 				AA000000000000000000013B /* Resources/AlarmSounds/Glass.aiff */,
 				AA000000000000000000013C /* Resources/AlarmSounds/Hero.aiff */,
 				AA000000000000000000013D /* Resources/AlarmSounds/Morse.aiff */,
 				AA000000000000000000013E /* Resources/AlarmSounds/Ping.aiff */,
-				AA000000000000000000013F /* Resources/AlarmSounds/Pop.aiff */,
-				AA0000000000000000000140 /* Resources/AlarmSounds/Purr.aiff */,
 				AA0000000000000000000141 /* Resources/AlarmSounds/Sosumi.aiff */,
 				AA0000000000000000000142 /* Resources/AlarmSounds/Submarine.aiff */,
-				AA0000000000000000000143 /* Resources/AlarmSounds/Tink.aiff */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -395,6 +410,7 @@
 			children = (
 				AA0000000000000000000113 /* Application/Ports/AlarmScheduling.swift */,
 				AA0000000000000000000114 /* Application/Ports/CalendarReading.swift */,
+				AA0000000000000000000801 /* Application/Ports/FeedbackSubmitting.swift */,
 				AA0000000000000000000117 /* Application/Ports/PreferencesStoring.swift */,
 				AA0000000000000000000118 /* Application/Ports/ScheduledAlarmStoring.swift */,
 			);
@@ -406,6 +422,7 @@
 			children = (
 				AA0000000000000000000105 /* Domain/Models/AlarmPreferences.swift */,
 				AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */,
+				AA0000000000000000000800 /* Domain/Models/AppFeedback.swift */,
 				AA0000000000000000000106 /* Domain/Models/CalendarSource.swift */,
 				AA0000000000000000000146 /* Domain/Models/NextAlarmWidgetSnapshot.swift */,
 				AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */,
@@ -418,6 +435,8 @@
 		AA0000000000000000000511 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000900 /* Domain/Services/AppReviewPromptPolicy.swift */,
+				AA0000000000000000000A00 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift */,
 				AA000000000000000000010A /* Domain/Services/EventFilter.swift */,
 				AA000000000000000000010B /* Domain/Services/EarlyOtterCalculator.swift */,
 				AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */,
@@ -507,6 +526,7 @@
 		AA0000000000000000000533 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000803 /* UI/Settings/FeedbackView.swift */,
 				AA0000000000000000000121 /* UI/Settings/SettingsView.swift */,
 				AA0000000000000000000122 /* UI/Settings/SettingsViewModel.swift */,
 				AA0000000000000000000128 /* UI/Settings/TimingSettingsView.swift */,
@@ -535,6 +555,7 @@
 			children = (
 				AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */,
 				AA0000000000000000000127 /* UI/Rules/RulesView.swift */,
+				AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */,
 			);
 			name = Rules;
 			sourceTree = "<group>";
@@ -572,12 +593,31 @@
 		AA0000000000000000000601 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000804 /* Domain/AppFeedbackTests.swift */,
+				AA0000000000000000000901 /* Domain/AppReviewPromptPolicyTests.swift */,
+				AA0000000000000000000A01 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift */,
 				AA0000000000000000000300 /* Domain/ClockTimeTests.swift */,
 				AA0000000000000000000301 /* Domain/EventFilterTests.swift */,
 				AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */,
 				AA0000000000000000000307 /* Domain/WakeUpGreetingTests.swift */,
 			);
 			name = Domain;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000820 /* Feedback */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000802 /* Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift */,
+			);
+			name = Feedback;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000821 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000805 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift */,
+			);
+			name = Infrastructure;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -708,20 +748,13 @@
 				AA0000000000000000000233 /* Resources/AlarmSounds/AlarmDawn.wav in Resources */,
 				AA0000000000000000000234 /* Resources/AlarmSounds/AlarmRipple.wav in Resources */,
 				AA0000000000000000000235 /* Resources/AlarmSounds/AlarmBloom.wav in Resources */,
-				AA0000000000000000000236 /* Resources/AlarmSounds/Basso.aiff in Resources */,
 				AA0000000000000000000237 /* Resources/AlarmSounds/Blow.aiff in Resources */,
-				AA0000000000000000000238 /* Resources/AlarmSounds/Bottle.aiff in Resources */,
-				AA0000000000000000000239 /* Resources/AlarmSounds/Frog.aiff in Resources */,
-				AA000000000000000000023A /* Resources/AlarmSounds/Funk.aiff in Resources */,
 				AA000000000000000000023B /* Resources/AlarmSounds/Glass.aiff in Resources */,
 				AA000000000000000000023C /* Resources/AlarmSounds/Hero.aiff in Resources */,
 				AA000000000000000000023D /* Resources/AlarmSounds/Morse.aiff in Resources */,
 				AA000000000000000000023E /* Resources/AlarmSounds/Ping.aiff in Resources */,
-				AA000000000000000000023F /* Resources/AlarmSounds/Pop.aiff in Resources */,
-				AA0000000000000000000240 /* Resources/AlarmSounds/Purr.aiff in Resources */,
 				AA0000000000000000000241 /* Resources/AlarmSounds/Sosumi.aiff in Resources */,
 				AA0000000000000000000242 /* Resources/AlarmSounds/Submarine.aiff in Resources */,
-				AA0000000000000000000243 /* Resources/AlarmSounds/Tink.aiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -749,6 +782,7 @@
 				AA0000000000000000000204 /* Configuration/AppConfiguration.swift in Sources */,
 				AA0000000000000000000205 /* Domain/Models/AlarmPreferences.swift in Sources */,
 				AA0000000000000000000230 /* Domain/Models/AlarmRule.swift in Sources */,
+				AA0000000000000000000810 /* Domain/Models/AppFeedback.swift in Sources */,
 				AA0000000000000000000206 /* Domain/Models/CalendarSource.swift in Sources */,
 				AA0000000000000000000246 /* Domain/Models/NextAlarmWidgetSnapshot.swift in Sources */,
 				AA0000000000000000000207 /* Domain/Models/ParsedEvent.swift in Sources */,
@@ -757,6 +791,8 @@
 				AA000000000000000000020A /* Domain/Services/EventFilter.swift in Sources */,
 				AA000000000000000000020B /* Domain/Services/EarlyOtterCalculator.swift in Sources */,
 				AA000000000000000000020C /* Domain/Services/EarlyOtterHasher.swift in Sources */,
+				AA0000000000000000000910 /* Domain/Services/AppReviewPromptPolicy.swift in Sources */,
+				AA0000000000000000000A10 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift in Sources */,
 				AA000000000000000000020D /* Domain/ValueObjects/ClockTime.swift in Sources */,
 				AA000000000000000000020E /* Domain/ValueObjects/Minutes.swift in Sources */,
 				AA000000000000000000020F /* Domain/ValueObjects/TargetDay.swift in Sources */,
@@ -766,8 +802,10 @@
 				AA0000000000000000000250 /* Infrastructure/Alarm/EarlyOtterAlarmMetadata.swift in Sources */,
 				AA0000000000000000000213 /* Application/Ports/AlarmScheduling.swift in Sources */,
 				AA0000000000000000000214 /* Application/Ports/CalendarReading.swift in Sources */,
+				AA0000000000000000000811 /* Application/Ports/FeedbackSubmitting.swift in Sources */,
 				AA0000000000000000000215 /* Infrastructure/Calendar/EventKitCalendarReader.swift in Sources */,
 				AA0000000000000000000216 /* Infrastructure/Calendar/EventKitMappers.swift in Sources */,
+				AA0000000000000000000812 /* Infrastructure/Feedback/WebsiteFeedbackSubmitter.swift in Sources */,
 				AA0000000000000000000217 /* Application/Ports/PreferencesStoring.swift in Sources */,
 				AA0000000000000000000218 /* Application/Ports/ScheduledAlarmStoring.swift in Sources */,
 				AA0000000000000000000232 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift in Sources */,
@@ -784,6 +822,7 @@
 				AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */,
 				AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */,
 				AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */,
+				AA0000000000000000000813 /* UI/Settings/FeedbackView.swift in Sources */,
 				AA0000000000000000000221 /* UI/Settings/SettingsView.swift in Sources */,
 				775180112FA6F5EB00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift in Sources */,
 				AA0000000000000000000701 /* UI/Dashboard/DayAlarmEditView.swift in Sources */,
@@ -792,6 +831,8 @@
 				AA0000000000000000000225 /* UI/Onboarding/OnboardingView.swift in Sources */,
 				AA0000000000000000000226 /* UI/Root/EarlyOtterRootView.swift in Sources */,
 				AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */,
+				AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */,
+				AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */,
 				AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */,
 				AA0000000000000000000228 /* UI/Settings/TimingSettingsView.swift in Sources */,
 				9363927702F16CFA0B76D76F /* DesignSystem.swift in Sources */,
@@ -806,10 +847,14 @@
 				AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */,
 				AA0000000000000000000405 /* Application/AppStateTests.swift in Sources */,
 				AA0000000000000000000406 /* Application/EarlyOtterRefreshServiceTests.swift in Sources */,
+				AA0000000000000000000814 /* Domain/AppFeedbackTests.swift in Sources */,
+				AA0000000000000000000911 /* Domain/AppReviewPromptPolicyTests.swift in Sources */,
+				AA0000000000000000000A11 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift in Sources */,
 				AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */,
 				AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */,
 				AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */,
 				AA0000000000000000000407 /* Domain/WakeUpGreetingTests.swift in Sources */,
+				AA0000000000000000000815 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -821,6 +866,7 @@
 				AA0000000000000000000249 /* NextAlarmWidget.swift in Sources */,
 				AA000000000000000000024B /* Configuration/AppConfiguration.swift in Sources */,
 				AA000000000000000000024C /* Domain/Models/NextAlarmWidgetSnapshot.swift in Sources */,
+				AA0000000000000000000A12 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift in Sources */,
 				AA000000000000000000024D /* Infrastructure/Persistence/UserDefaultsNextAlarmWidgetSnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -890,7 +936,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -927,7 +973,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -1003,7 +1049,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1033,7 +1079,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.6;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";

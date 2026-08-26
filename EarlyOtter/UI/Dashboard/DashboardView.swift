@@ -13,6 +13,7 @@ struct DashboardView: View {
     var onOpenSchedule: () -> Void = {}
     @State private var selectedDayDetails: DayDetailsPresentation? = nil
     @AppStorage("hasDismissedStandbyPrompt") private var hasDismissedStandbyPrompt = false
+    @State private var isShowingFeedback = false
 
     private var isLoading: Bool {
         if case .loading = appState.dashboardState { return true }
@@ -38,26 +39,26 @@ struct DashboardView: View {
                             topBar
 
                             if !appState.preferences.isSystemEnabled {
-                                systemDisabledBanner
+                                disabledContent(viewModel: viewModel)
+                            } else {
+                                VStack(alignment: .leading, spacing: 24) {
+                                    if let permissionBanner = viewModel.permissionBanner {
+                                        banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
+                                    }
+
+                                    if let noticeMessage = appState.noticeMessage {
+                                        banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
+                                    }
+
+                                    if let errorMessage = appState.errorMessage {
+                                        banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
+                                    }
+
+                                    content(viewModel: viewModel)
+                                }
                             }
 
-                            VStack(alignment: .leading, spacing: 24) {
-                                if let permissionBanner = viewModel.permissionBanner {
-                                    banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
-                                }
-
-                                if let noticeMessage = appState.noticeMessage {
-                                    banner(noticeMessage, tint: .green, icon: "checkmark.circle.fill")
-                                }
-
-                                if let errorMessage = appState.errorMessage {
-                                    banner(errorMessage, tint: .red, icon: "exclamationmark.triangle.fill")
-                                }
-
-                                content(viewModel: viewModel)
-                            }
-                            .opacity(appState.preferences.isSystemEnabled ? 1 : 0.4)
-                            .disabled(!appState.preferences.isSystemEnabled)
+                            feedbackFooter
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 12)
@@ -78,6 +79,72 @@ struct DashboardView: View {
         }
         .sheet(item: $selectedDayDetails) { item in
             EarlyOtterDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus, appState: appState)
+        }
+        .sheet(isPresented: $isShowingFeedback) {
+            NavigationStack {
+                FeedbackView(appState: appState)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { isShowingFeedback = false }
+                                .fontWeight(.bold)
+                                .foregroundStyle(WPStyles.primaryOrange)
+                        }
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var feedbackFooter: some View {
+        if AppConfiguration.showsHomeFeedbackFooter {
+            VStack(spacing: 8) {
+                Divider()
+                    .overlay(WPStyles.cardBorder)
+                    .padding(.bottom, 4)
+
+                Button {
+                    isShowingFeedback = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                        Text("Send feedback")
+                    }
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(WPStyles.tertiaryText)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Send feedback")
+            }
+            .frame(maxWidth: .infinity)
+            // Pull back most of the parent VStack's 24pt spacing so the footer tucks
+            // under the weekly card, then hold it clear of the floating tab bar.
+            .padding(.top, -12)
+            .padding(.bottom, 20)
+        }
+    }
+
+    @ViewBuilder
+    private func disabledContent(viewModel: DashboardViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ZStack(alignment: .topTrailing) {
+                systemDisabledBanner
+                otterOverlook
+            }
+            .padding(.top, 16)
+
+            switch appState.dashboardState {
+            case .needsAlarmPermission(_),
+                 .ready(_),
+                 .emptyFallback(_):
+                DashboardWeeklyCardView(viewModel: viewModel) { entry in
+                    selectedDayDetails = DayDetailsPresentation(entry: entry)
+                }
+                .opacity(0.4)
+                .disabled(true)
+                .accessibilityHidden(true)
+            case .loading, .needsCalendarPermission, .error:
+                EmptyView()
+            }
         }
     }
 
@@ -114,11 +181,7 @@ struct DashboardView: View {
                         )
                     }
 
-                    Image("OtterOverlook")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 88)
-                        .offset(x: -20, y: -70)
+                    otterOverlook
                 }
                 .padding(.top, 16)
 
@@ -131,6 +194,16 @@ struct DashboardView: View {
                 }
             }
         }
+    }
+
+    private var otterOverlook: some View {
+        Image("OtterOverlook")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 88)
+            .offset(x: -20, y: -70)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     private var hasNoFixedAlarms: Bool {
@@ -269,33 +342,36 @@ struct DashboardView: View {
     }
 
     private var systemDisabledBanner: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "power.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.red)
-                Text("System Disabled")
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-            }
-            Text("EarlyOtter is completely disabled. No alarms will run.")
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-            
+        HStack(spacing: 10) {
+            Image(systemName: "power")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.red)
+
+            Text("System disabled")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(WPStyles.primaryText)
+
+            Spacer(minLength: 8)
+
             Button {
                 Task { await appState.mutatePreferences { $0.isSystemEnabled = true } }
             } label: {
                 Text("Reactivate")
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
                     .background(WPStyles.primaryOrange)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(Capsule())
             }
-            .padding(.top, 4)
         }
-        .cardStyle()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(WPStyles.surface)
+        )
     }
 }
 

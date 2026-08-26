@@ -18,6 +18,10 @@ public enum WPStyles {
     public static let pillText = Color(red: 1.0, green: 0.78, blue: 0.53)
     public static let warningBanner = primaryOrange
     public static let cardBorder = surfaceOutline.opacity(0.75)
+    /// Toolbar glyphs sit on the system's glass capsule, so they stay white rather
+    /// than taking the brand orange.
+    public static let toolbarIcon = Color.white
+    public static let tabSelection = Color.white
 
     public static let cardCornerRadius: CGFloat = 28
     public static let timeDisplayFont = Font.system(size: 72, weight: .bold, design: .rounded)
@@ -90,5 +94,18 @@ struct PrimaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .opacity(configuration.isPressed ? 0.9 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+struct PrimaryCapsuleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.black)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(WPStyles.primaryOrange)
+            .clipShape(Capsule())
+            .opacity(configuration.isPressed ? 0.9 : 1)
     }
 }

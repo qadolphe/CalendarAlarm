@@ -108,6 +108,7 @@ struct EarlyOtterEnvironment {
     let refreshService: EarlyOtterRefreshService
     let backgroundRefreshService: BackgroundAlarmRefreshService
     let staleSyncReminderService: StaleSyncReminderService
+    let feedbackSubmitter: WebsiteFeedbackSubmitter
 
     @MainActor
     static func live() -> EarlyOtterEnvironment {
@@ -142,6 +143,9 @@ struct EarlyOtterEnvironment {
             alarmStore: alarmStore
         )
         let staleSyncReminderService = StaleSyncReminderService()
+        let feedbackSubmitter = WebsiteFeedbackSubmitter(
+            endpoint: AppConfiguration.feedbackEndpointURL
+        )
         let backgroundRefreshService = BackgroundAlarmRefreshService {
             EarlyOtterEnvironment.live().refreshService
         }
@@ -169,7 +173,8 @@ struct EarlyOtterEnvironment {
             alarmSyncService: alarmSyncService,
             refreshService: refreshService,
             backgroundRefreshService: backgroundRefreshService,
-            staleSyncReminderService: staleSyncReminderService
+            staleSyncReminderService: staleSyncReminderService,
+            feedbackSubmitter: feedbackSubmitter
         )
     }
 
@@ -181,7 +186,8 @@ struct EarlyOtterEnvironment {
             preferencesStore: preferencesStore,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
-            refreshService: refreshService
+            refreshService: refreshService,
+            feedbackSubmitter: feedbackSubmitter
         )
     }
 }
