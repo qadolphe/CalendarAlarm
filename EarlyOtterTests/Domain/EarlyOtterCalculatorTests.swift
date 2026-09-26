@@ -145,6 +145,36 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.firstEventOfDay?.id, morningEvent.id)
     }
 
+    func testEditedDayUsesRetainedCustomAlarmTime() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(
+            date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar),
+            calendar: calendar
+        )
+        var preferences = AlarmPreferences.default
+        preferences.setOverride(
+            DayAlarmOverride(
+                customWakeTime: ClockTime(hour: 6, minute: 45),
+                isSkipped: false
+            ),
+            for: targetDay,
+            calendar: calendar
+        )
+
+        let plan = calculator.calculate(
+            events: [],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .manualOverride)
+        XCTAssertEqual(
+            plan.calculatedWakeTime,
+            makeDate(year: 2026, month: 5, day: 2, hour: 6, minute: 45, calendar: calendar)
+        )
+    }
+
     func testNoScheduleWhenNoEventsAndFallbackDisabled() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
@@ -539,6 +569,108 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         calendar: Calendar
     ) -> Date {
         let components = DateComponents(
+            timeZone: calendar.timeZone,
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute
+        )
+
+        return calendar.date(from: components)!
+    }
+}
+
+final class AlarmPreferencesOverrideRetentionTests: XCTestCase {
+    func testPruningPreservesSkippedAndEditedAlarmsInWeeklyHistory() {
+        let calendar = configuredCalendar()
+        let now = makeDate(
+            year: 2026,
+            month: 8,
+            day: 28,
+            hour: 12,
+            minute: 0,
+            calendar: calendar
+        )
+        let skippedDay = TargetDay(
+            date: makeDate(year: 2026, month: 8, day: 23, hour: 0, minute: 0, calendar: calendar),
+            calendar: calendar
+        )
+        let editedDay = TargetDay(
+            date: makeDate(year: 2026, month: 8, day: 24, hour: 0, minute: 0, calendar: calendar),
+            calendar: calendar
+        )
+        let expiredDay = TargetDay(
+            date: makeDate(year: 2026, month: 8, day: 21, hour: 0, minute: 0, calendar: calendar),
+            calendar: calendar
+        )
+        let skippedOverride = DayAlarmOverride(customWakeTime: nil, isSkipped: true)
+        let editedOverride = DayAlarmOverride(
+            customWakeTime: ClockTime(hour: 6, minute: 45),
+            isSkipped: false
+        )
+        var preferences = AlarmPreferences.default
+        preferences.setOverride(skippedOverride, for: skippedDay, calendar: calendar)
+        preferences.setOverride(editedOverride, for: editedDay, calendar: calendar)
+        preferences.setOverride(skippedOverride, for: expiredDay, calendar: calendar)
+
+        preferences.pruneExpiredOverrides(
+            asOf: now,
+            retainingPreviousDays: AppConfiguration.dashboardWeekLength - 1,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(preferences.override(for: skippedDay, calendar: calendar), skippedOverride)
+        XCTAssertEqual(preferences.override(for: editedDay, calendar: calendar), editedOverride)
+        XCTAssertNil(preferences.override(for: expiredDay, calendar: calendar))
+    }
+
+    func testPruningTreatsNegativeRetentionAsTodayOnly() {
+        let calendar = configuredCalendar()
+        let now = makeDate(
+            year: 2026,
+            month: 8,
+            day: 28,
+            hour: 12,
+            minute: 0,
+            calendar: calendar
+        )
+        let yesterday = TargetDay(
+            date: makeDate(year: 2026, month: 8, day: 27, hour: 0, minute: 0, calendar: calendar),
+            calendar: calendar
+        )
+        var preferences = AlarmPreferences.default
+        preferences.setOverride(
+            DayAlarmOverride(customWakeTime: nil, isSkipped: true),
+            for: yesterday,
+            calendar: calendar
+        )
+
+        preferences.pruneExpiredOverrides(
+            asOf: now,
+            retainingPreviousDays: -1,
+            calendar: calendar
+        )
+
+        XCTAssertNil(preferences.override(for: yesterday, calendar: calendar))
+    }
+
+    private func configuredCalendar() -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Detroit")!
+        return calendar
+    }
+
+    private func makeDate(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        calendar: Calendar
+    ) -> Date {
+        let components = DateComponents(
+            calendar: calendar,
             timeZone: calendar.timeZone,
             year: year,
             month: month,

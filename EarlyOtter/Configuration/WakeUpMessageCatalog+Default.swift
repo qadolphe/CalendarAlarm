@@ -8,7 +8,7 @@ extension WakeUpMessageCatalog {
     static let `default` = WakeUpMessageCatalog(
         // 5:00 AM or earlier — brutally early, so be kind about it.
         predawn: WakeUpMessages(
-            "Yikes, it's early — you've got this.",
+            "It's early but you've got this.",
             "Before the sun? Respect.",
             "Brutal hour, but you're built for it."
         ),

@@ -100,9 +100,12 @@ final class AppState {
 
         do {
             let loaded = try preferencesStore.load()
-            // Drop overrides for dates that have already passed so storage doesn't grow unbounded.
+            // Keep every date that can still appear earlier in the current weekly dashboard.
+            // Without this history window, skipped and edited alarms revert visually after reload.
             var pruned = loaded
-            pruned.pruneExpiredOverrides()
+            pruned.pruneExpiredOverrides(
+                retainingPreviousDays: AppConfiguration.dashboardWeekLength - 1
+            )
             if pruned != loaded {
                 try? preferencesStore.save(pruned)
             }

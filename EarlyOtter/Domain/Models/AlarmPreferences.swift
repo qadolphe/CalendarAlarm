@@ -274,10 +274,24 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         }
     }
 
-    /// Drop overrides for dates that have already passed so storage doesn't grow unbounded.
-    mutating func pruneExpiredOverrides(asOf now: Date = Date(), calendar: Calendar = .current) {
-        let todayKey = Self.overrideKey(for: TargetDay(date: now, calendar: calendar), calendar: calendar)
-        dateOverrides = dateOverrides.filter { $0.key >= todayKey }
+    /// Drop overrides older than the retained history window so storage doesn't grow unbounded.
+    /// Retaining previous days allows elapsed dashboard entries to preserve their one-off state.
+    mutating func pruneExpiredOverrides(
+        asOf now: Date = Date(),
+        retainingPreviousDays: Int = 0,
+        calendar: Calendar = .current
+    ) {
+        let retentionDays = max(retainingPreviousDays, 0)
+        let earliestRetainedDate = calendar.date(
+            byAdding: .day,
+            value: -retentionDays,
+            to: now
+        ) ?? now
+        let earliestRetainedKey = Self.overrideKey(
+            for: TargetDay(date: earliestRetainedDate, calendar: calendar),
+            calendar: calendar
+        )
+        dateOverrides = dateOverrides.filter { $0.key >= earliestRetainedKey }
     }
 
     /// Stable, lexicographically sortable `yyyy-MM-dd` key for a target day.
