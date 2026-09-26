@@ -95,7 +95,7 @@ final class WebsiteFeedbackSubmitterTests: XCTestCase {
         return WebsiteFeedbackSubmitter(
             endpoint: URL(string: "https://earlyotter.com/api/feedback")!,
             session: URLSession(configuration: configuration),
-            metadata: FeedbackClientMetadata(
+            metadata: ClientMetadata(
                 appVersion: "1.2.3",
                 buildNumber: "45",
                 iosVersion: "26.0.0"

@@ -48,11 +48,13 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             alarmScheduler: alarmScheduler
         )
         let widgetSnapshotStore = InMemoryWidgetSnapshotStore()
+        let telemetry = SpyTelemetryRecorder()
         let service = EarlyOtterRefreshService(
             earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             widgetSnapshotStore: widgetSnapshotStore,
+            telemetry: telemetry,
             planningWindowCount: 3
         )
 
@@ -60,6 +62,19 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             reason: .manual,
             now: now,
             calendar: calendar
+        )
+        _ = try await service.refreshAndSync(reason: .appOpen, now: now, calendar: calendar)
+
+        let activeCount = outcome.snapshot.syncResult.records.count
+        let permissionEvents = TelemetryEvent.permissionEvents(for: outcome.snapshot.permissions)
+        XCTAssertGreaterThan(activeCount, 0)
+        XCTAssertEqual(
+            telemetry.events,
+            permissionEvents + [
+                .alarmsSynced(activeAlarmCount: activeCount, reason: .manual),
+                .alarmsSynced(activeAlarmCount: activeCount, reason: .appOpen),
+            ],
+            "Unchanged permissions are recorded only once"
         )
 
         let widgetSnapshot = try XCTUnwrap(widgetSnapshotStore.snapshot)
@@ -157,11 +172,13 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             calendarReader: StubCalendarReader(),
             alarmScheduler: alarmScheduler
         )
+        let telemetry = SpyTelemetryRecorder()
         let service = EarlyOtterRefreshService(
             earlyOtterService: earlyOtterService,
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
-            widgetSnapshotStore: widgetSnapshotStore
+            widgetSnapshotStore: widgetSnapshotStore,
+            telemetry: telemetry
         )
 
         await XCTAssertThrowsErrorAsync(
@@ -171,6 +188,7 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
                 calendar: calendar
             )
         )
+        XCTAssertEqual(telemetry.events, [.syncFailed(reason: .manual)])
 
         let widgetSnapshot = try XCTUnwrap(widgetSnapshotStore.snapshot)
 
@@ -334,6 +352,22 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             notes: nil
         )
     }
+}
+
+final class SpyTelemetryRecorder: TelemetryRecording, @unchecked Sendable {
+    private let lock = NSLock()
+    private var recorded: [TelemetryEvent] = []
+
+    var events: [TelemetryEvent] {
+        lock.withLock { recorded }
+    }
+
+    var isEnabled: Bool { true }
+    func setEnabled(_ isEnabled: Bool) async {}
+    func record(_ event: TelemetryEvent) {
+        lock.withLock { recorded.append(event) }
+    }
+    func flush() async {}
 }
 
 private enum TestFailure: LocalizedError {

@@ -31,6 +31,7 @@ struct EarlyOtterRootView: View {
                 OnboardingView(
                     appState: appState,
                     onFinish: {
+                        appState.recordOnboardingCompleted()
                         hasCompletedOnboarding = true
                         forceOnboardingThisLaunch = false
                     }
@@ -41,6 +42,11 @@ struct EarlyOtterRootView: View {
         }
         .task {
             await appState.loadIfNeeded()
+            // Covers installs that finished onboarding before telemetry existed;
+            // the server keeps only the first completion.
+            if hasCompletedOnboarding {
+                appState.recordOnboardingCompleted()
+            }
             await evaluateReviewPrompt()
         }
         .onChange(of: scenePhase) { _, newPhase in

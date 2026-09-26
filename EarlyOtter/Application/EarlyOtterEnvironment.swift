@@ -109,6 +109,13 @@ struct EarlyOtterEnvironment {
     let backgroundRefreshService: BackgroundAlarmRefreshService
     let staleSyncReminderService: StaleSyncReminderService
     let feedbackSubmitter: WebsiteFeedbackSubmitter
+    let telemetry: WebsiteTelemetryRecorder
+
+    /// One recorder per process: the background refresh builds its own environment,
+    /// and two recorders writing the same queue file could lose events.
+    private static let sharedTelemetry = WebsiteTelemetryRecorder(
+        endpoint: AppConfiguration.telemetryEndpointURL
+    )
 
     @MainActor
     static func live() -> EarlyOtterEnvironment {
@@ -156,7 +163,8 @@ struct EarlyOtterEnvironment {
             resultStore: refreshResultStore,
             widgetSnapshotStore: widgetSnapshotStore,
             backgroundRefreshScheduler: backgroundRefreshService,
-            staleSyncReminderScheduler: staleSyncReminderService
+            staleSyncReminderScheduler: staleSyncReminderService,
+            telemetry: sharedTelemetry
         )
 
         return EarlyOtterEnvironment(
@@ -174,7 +182,8 @@ struct EarlyOtterEnvironment {
             refreshService: refreshService,
             backgroundRefreshService: backgroundRefreshService,
             staleSyncReminderService: staleSyncReminderService,
-            feedbackSubmitter: feedbackSubmitter
+            feedbackSubmitter: feedbackSubmitter,
+            telemetry: sharedTelemetry
         )
     }
 
@@ -187,7 +196,8 @@ struct EarlyOtterEnvironment {
             permissionService: permissionService,
             alarmSyncService: alarmSyncService,
             refreshService: refreshService,
-            feedbackSubmitter: feedbackSubmitter
+            feedbackSubmitter: feedbackSubmitter,
+            telemetry: telemetry
         )
     }
 }

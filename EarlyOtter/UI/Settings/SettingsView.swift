@@ -13,6 +13,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     systemToggleCard
                     refreshReliabilityCard
+                    usageSharingCard
 
                     VStack(alignment: .leading, spacing: 0) {
                         appSettingsLinks
@@ -110,6 +111,33 @@ struct SettingsView: View {
                 .foregroundStyle(WPStyles.secondaryText)
         }
         .cardStyle()
+    }
+
+    private var usageSharingCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Share Anonymous Usage Data")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                Toggle("", isOn: usageSharingBinding)
+                    .labelsHidden()
+                    .tint(WPStyles.primaryOrange)
+            }
+            Text(AppConfiguration.usageSharingExplanation)
+                .font(.subheadline)
+                .foregroundStyle(WPStyles.secondaryText)
+        }
+        .cardStyle()
+    }
+
+    private var usageSharingBinding: Binding<Bool> {
+        Binding(
+            get: { appState.isUsageSharingEnabled },
+            set: { isOn in
+                Task { await appState.setUsageSharingEnabled(isOn) }
+            }
+        )
     }
 
     private var isSystemEnabledBinding: Binding<Bool> {

@@ -71,6 +71,9 @@ struct EarlyOtterApp: App {
                             alarmStore: alarmStore
                         )
                     }
+                    if newPhase == .active || newPhase == .background {
+                        Task { await appState.flushTelemetry() }
+                    }
                 }
         }
         .backgroundTask(.appRefresh(AppConfiguration.backgroundRefreshTaskIdentifier)) {

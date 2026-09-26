@@ -1,6 +1,6 @@
 import Foundation
 
-struct FeedbackClientMetadata: Equatable, Sendable {
+struct ClientMetadata: Equatable, Sendable {
     let appVersion: String
     let buildNumber: String
     let iosVersion: String
@@ -8,9 +8,9 @@ struct FeedbackClientMetadata: Equatable, Sendable {
     static func live(
         bundle: Bundle = .main,
         processInfo: ProcessInfo = .processInfo
-    ) -> FeedbackClientMetadata {
+    ) -> ClientMetadata {
         let version = processInfo.operatingSystemVersion
-        return FeedbackClientMetadata(
+        return ClientMetadata(
             appVersion: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown",
             buildNumber: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "Unknown",
             iosVersion: "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
@@ -21,12 +21,12 @@ struct FeedbackClientMetadata: Equatable, Sendable {
 struct WebsiteFeedbackSubmitter: FeedbackSubmitting {
     private let endpoint: URL
     private let session: URLSession
-    private let metadata: FeedbackClientMetadata
+    private let metadata: ClientMetadata
 
     init(
         endpoint: URL,
         session: URLSession = .shared,
-        metadata: FeedbackClientMetadata = .live()
+        metadata: ClientMetadata = .live()
     ) {
         self.endpoint = endpoint
         self.session = session

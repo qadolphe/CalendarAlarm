@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA0000000000000000000C0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C0D /* PrivacyInfo.xcprivacy */; };
+		AA0000000000000000000C0C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C0B /* PrivacyInfo.xcprivacy */; };
+		AA0000000000000000000C0A /* Infrastructure/WebsiteTelemetryRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C09 /* Infrastructure/WebsiteTelemetryRecorderTests.swift */; };
+		AA0000000000000000000C08 /* Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C07 /* Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift */; };
+		AA0000000000000000000C06 /* Infrastructure/Telemetry/TelemetryWireEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C05 /* Infrastructure/Telemetry/TelemetryWireEvent.swift */; };
+		AA0000000000000000000C04 /* Application/Ports/TelemetryRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C03 /* Application/Ports/TelemetryRecording.swift */; };
+		AA0000000000000000000C02 /* Application/Telemetry/TelemetryEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000C01 /* Application/Telemetry/TelemetryEvent.swift */; };
 		7751800D2FA6E38600B73F60 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7751800C2FA6E38600B73F60 /* GoogleSignIn */; };
 		7751800F2FA6E38600B73F60 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 7751800E2FA6E38600B73F60 /* GoogleSignInSwift */; };
 		775180112FA6F5EB00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 775180102FA6F5EA00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift */; };
@@ -137,6 +144,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA0000000000000000000C0D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA0000000000000000000C0B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA0000000000000000000C09 /* Infrastructure/WebsiteTelemetryRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/WebsiteTelemetryRecorderTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000C07 /* Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift; sourceTree = "<group>"; };
+		AA0000000000000000000C05 /* Infrastructure/Telemetry/TelemetryWireEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Telemetry/TelemetryWireEvent.swift; sourceTree = "<group>"; };
+		AA0000000000000000000C03 /* Application/Ports/TelemetryRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/Ports/TelemetryRecording.swift; sourceTree = "<group>"; };
+		AA0000000000000000000C01 /* Application/Telemetry/TelemetryEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/Telemetry/TelemetryEvent.swift; sourceTree = "<group>"; };
 		6FD00B900BE3339748DDD940 /* DesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		775180102FA6F5EA00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/EarlyOtterDetailsView.swift; sourceTree = "<group>"; };
 		77BF3AF82FA662C0004F4896 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -262,6 +276,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA0000000000000000000C00 /* Telemetry */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000C07 /* Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift */,
+				AA0000000000000000000C05 /* Infrastructure/Telemetry/TelemetryWireEvent.swift */,
+			);
+			name = Telemetry;
+			sourceTree = "<group>";
+		};
 		0D5AD69CE17087D801EF78B3 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
@@ -293,6 +316,7 @@
 		AA0000000000000000000004 /* EarlyOtter */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C0B /* PrivacyInfo.xcprivacy */,
 				77BF3AF82FA662C0004F4896 /* Info.plist */,
 				AA000000000000000000014C /* EarlyOtter/EarlyOtter.entitlements */,
 				AA0000000000000000000500 /* Application */,
@@ -319,6 +343,7 @@
 		AA0000000000000000000500 /* Application */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C01 /* Application/Telemetry/TelemetryEvent.swift */,
 				AA0000000000000000000131 /* Application/AccountService.swift */,
 				AA0000000000000000000100 /* Application/AlarmSyncService.swift */,
 				AA0000000000000000000101 /* Application/AppState.swift */,
@@ -361,6 +386,7 @@
 		AA0000000000000000000503 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C00 /* Telemetry */,
 				AA0000000000000000000520 /* Alarm */,
 				AA0000000000000000000539 /* Audio */,
 				AA0000000000000000000523 /* Auth */,
@@ -408,6 +434,7 @@
 		AA0000000000000000000506 /* Ports */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C03 /* Application/Ports/TelemetryRecording.swift */,
 				AA0000000000000000000113 /* Application/Ports/AlarmScheduling.swift */,
 				AA0000000000000000000114 /* Application/Ports/CalendarReading.swift */,
 				AA0000000000000000000801 /* Application/Ports/FeedbackSubmitting.swift */,
@@ -563,6 +590,7 @@
 		AA0000000000000000000537 /* NextAlarmWidget */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C0D /* PrivacyInfo.xcprivacy */,
 				AA0000000000000000000148 /* Info.plist */,
 				AA000000000000000000014B /* NextAlarmWidget.entitlements */,
 				AA000000000000000000014A /* NextAlarmWidgetBundle.swift */,
@@ -615,6 +643,7 @@
 		AA0000000000000000000821 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000C09 /* Infrastructure/WebsiteTelemetryRecorderTests.swift */,
 				AA0000000000000000000805 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift */,
 			);
 			name = Infrastructure;
@@ -744,6 +773,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000000000000000000C0C /* PrivacyInfo.xcprivacy in Resources */,
 				AA0000000000000000000224 /* Resources/Assets.xcassets in Resources */,
 				AA0000000000000000000233 /* Resources/AlarmSounds/AlarmDawn.wav in Resources */,
 				AA0000000000000000000234 /* Resources/AlarmSounds/AlarmRipple.wav in Resources */,
@@ -762,6 +792,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000000000000000000C0E /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,6 +803,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000000000000000000C08 /* Infrastructure/Telemetry/WebsiteTelemetryRecorder.swift in Sources */,
+				AA0000000000000000000C06 /* Infrastructure/Telemetry/TelemetryWireEvent.swift in Sources */,
+				AA0000000000000000000C04 /* Application/Ports/TelemetryRecording.swift in Sources */,
+				AA0000000000000000000C02 /* Application/Telemetry/TelemetryEvent.swift in Sources */,
 				AA0000000000000000000231 /* Application/AccountService.swift in Sources */,
 				AA0000000000000000000200 /* Application/AlarmSyncService.swift in Sources */,
 				AA0000000000000000000201 /* Application/AppState.swift in Sources */,
@@ -843,6 +878,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000000000000000000C0A /* Infrastructure/WebsiteTelemetryRecorderTests.swift in Sources */,
 				AA0000000000000000000404 /* Application/AccountServiceTests.swift in Sources */,
 				AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */,
 				AA0000000000000000000405 /* Application/AppStateTests.swift in Sources */,

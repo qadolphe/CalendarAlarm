@@ -56,7 +56,9 @@ actor EarlyOtterRefreshService {
     private let widgetSnapshotStore: NextAlarmWidgetSnapshotStoring?
     private let backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling?
     private let staleSyncReminderScheduler: StaleSyncReminderScheduling?
+    private let telemetry: any TelemetryRecording
     private let planningWindowCount: Int
+    private var lastRecordedPermissions: PermissionSnapshot?
 
     init(
         earlyOtterService: EarlyOtterService,
@@ -66,6 +68,7 @@ actor EarlyOtterRefreshService {
         widgetSnapshotStore: NextAlarmWidgetSnapshotStoring? = nil,
         backgroundRefreshScheduler: BackgroundAlarmRefreshScheduling? = nil,
         staleSyncReminderScheduler: StaleSyncReminderScheduling? = nil,
+        telemetry: any TelemetryRecording = NoOpTelemetryRecorder(),
         planningWindowCount: Int = AppConfiguration.managedAlarmPlanningCount
     ) {
         self.earlyOtterService = earlyOtterService
@@ -75,6 +78,7 @@ actor EarlyOtterRefreshService {
         self.widgetSnapshotStore = widgetSnapshotStore
         self.backgroundRefreshScheduler = backgroundRefreshScheduler
         self.staleSyncReminderScheduler = staleSyncReminderScheduler
+        self.telemetry = telemetry
         self.planningWindowCount = planningWindowCount
     }
 
@@ -83,8 +87,6 @@ actor EarlyOtterRefreshService {
         now: Date = Date(),
         calendar: Calendar = .current
     ) async throws -> EarlyOtterRefreshOutcome {
-        _ = reason
-
         do {
             let permissions = await permissionService.currentStatus()
             let accounts = try await earlyOtterService.accounts()
@@ -133,16 +135,38 @@ actor EarlyOtterRefreshService {
             publishWidgetSnapshot(from: snapshot, syncedAt: now)
             await staleSyncReminderScheduler?.updateReminder(for: result)
             await backgroundRefreshScheduler?.scheduleNextRefresh(after: now)
+            await recordTelemetry(for: syncResult, permissions: permissions, reason: reason)
 
             return EarlyOtterRefreshOutcome(snapshot: snapshot, result: result)
         } catch {
             publishStaleWidgetSnapshot(lastUpdatedAt: now, detailText: error.localizedDescription)
+            if !(error is CancellationError) {
+                telemetry.record(.syncFailed(reason: reason))
+            }
             throw error
         }
     }
 }
 
 extension EarlyOtterRefreshService {
+    /// Permissions are recorded only when they change, so each edit's refresh does
+    /// not resend them. The server keeps the first grant time.
+    private func recordTelemetry(
+        for syncResult: AlarmSyncResult,
+        permissions: PermissionSnapshot,
+        reason: RefreshReason
+    ) async {
+        if permissions != lastRecordedPermissions {
+            lastRecordedPermissions = permissions
+            TelemetryEvent.permissionEvents(for: permissions).forEach(telemetry.record)
+        }
+        telemetry.record(.alarmsSynced(activeAlarmCount: syncResult.records.count, reason: reason))
+
+        if reason == .background {
+            await telemetry.flush()
+        }
+    }
+
     func startOfDashboardWeek(
         containing date: Date,
         calendar: Calendar

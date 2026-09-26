@@ -33,6 +33,7 @@ final class AppState {
     var alarmStatusesByPlanID: [EarlyOtterID: AlarmScheduleStatus] = [:]
     var noticeMessage: String?
     var settingsAlertMessage: String?
+    var isUsageSharingEnabled: Bool
 
     private let accountStore: AccountStoring
     private let accountService: AccountService
@@ -41,6 +42,7 @@ final class AppState {
     private let alarmSyncService: AlarmSyncService
     private let refreshService: EarlyOtterRefreshService
     private let feedbackSubmitter: (any FeedbackSubmitting)?
+    private let telemetry: any TelemetryRecording
     private let openAppSettings: @MainActor () -> Void
     private var hasLoaded = false
     private var refreshGeneration = 0
@@ -70,6 +72,7 @@ final class AppState {
         alarmSyncService: AlarmSyncService,
         refreshService: EarlyOtterRefreshService,
         feedbackSubmitter: (any FeedbackSubmitting)? = nil,
+        telemetry: any TelemetryRecording = NoOpTelemetryRecorder(),
         openAppSettings: @escaping @MainActor () -> Void = { AppState.defaultOpenAppSettings() }
     ) {
         self.accountStore = accountStore
@@ -79,6 +82,8 @@ final class AppState {
         self.alarmSyncService = alarmSyncService
         self.refreshService = refreshService
         self.feedbackSubmitter = feedbackSubmitter
+        self.telemetry = telemetry
+        self.isUsageSharingEnabled = telemetry.isEnabled
         self.openAppSettings = openAppSettings
     }
 
@@ -89,6 +94,7 @@ final class AppState {
 
     func load() async {
         hasLoaded = true
+        telemetry.record(.appOpened)
         dashboardState = .loading
         tomorrowPlanPreview = nil
         dailyPlans = []
@@ -122,8 +128,12 @@ final class AppState {
         settingsAlertMessage = nil
 
         do {
+            let previousRules = preferences.alarmRules
             preferences = newPreferences
             try preferencesStore.save(newPreferences)
+            for rule in newPreferences.alarmRules where !previousRules.contains(rule) {
+                telemetry.record(.ruleSaved(isDefault: rule.isDefault))
+            }
             // Refresh in place — keep the current dashboard visible instead of
             // flashing the loading screen for small edits like day toggles.
             try await refreshDashboard(reason: .manual)
@@ -144,6 +154,7 @@ final class AppState {
     /// Set or clear a one-off manual alarm override for a single date (from the week view).
     /// Passing `nil` reverts that day to the automatic schedule.
     func setDayOverride(_ override: DayAlarmOverride?, for targetDay: TargetDay) async {
+        telemetry.record(.dayOverrideSet(TelemetryDayOverrideKind(override)))
         await mutatePreferences { $0.setOverride(override, for: targetDay) }
     }
 
@@ -163,6 +174,7 @@ final class AppState {
 
     func refreshOnAppOpen() async {
         guard hasLoaded else { return }
+        telemetry.record(.appOpened)
 
         let previousDashboardState = dashboardState
         noticeMessage = nil
@@ -269,6 +281,20 @@ final class AppState {
         try await feedbackSubmitter.submit(
             AppFeedback(category: category, message: message)
         )
+        telemetry.record(.feedbackSubmitted(category))
+    }
+
+    func recordOnboardingCompleted() {
+        telemetry.record(.onboardingCompleted)
+    }
+
+    func setUsageSharingEnabled(_ isEnabled: Bool) async {
+        isUsageSharingEnabled = isEnabled
+        await telemetry.setEnabled(isEnabled)
+    }
+
+    func flushTelemetry() async {
+        await telemetry.flush()
     }
 
 #if DEBUG
@@ -283,6 +309,7 @@ final class AppState {
             case .needsPermission:
                 noticeMessage = AppConfiguration.alarmPermissionExplanation
             case .scheduled(let record):
+                telemetry.record(.testAlarmScheduled)
                 noticeMessage = AppConfiguration.testAlarmScheduledMessage(
                     for: record.scheduledWakeTime
                 )
@@ -333,6 +360,7 @@ final class AppState {
 
         do {
             accounts = try await accountService.connectGoogleAccount()
+            telemetry.record(.calendarAccountConnected(.google))
             try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))
@@ -378,6 +406,7 @@ final class AppState {
                 ))
             }
             try accountStore.save(stored)
+            telemetry.record(.calendarAccountConnected(.apple))
             try await refreshDashboard(reason: .manual)
         } catch {
             dashboardState = .error(format(error))

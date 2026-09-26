@@ -6,6 +6,11 @@ enum AppConfiguration {
     static let widgetAppGroupIdentifier = "group.com.quentinadolphe.wakeplan.widget"
     static let genericAlarmTitle = "Wake up"
     static let feedbackEndpointURL = URL(string: "https://earlyotter.com/api/feedback")!
+    static let telemetryEndpointURL = URL(string: "https://earlyotter.com/api/telemetry")!
+    static let telemetryConsentStorageKey = "earlyotter.telemetry.shareUsageData"
+    static let telemetryInstallIDStorageKey = "earlyotter.telemetry.installID"
+    static let usageSharingExplanation =
+        "Sends anonymous counts to EarlyOtter, such as finished setup steps and how many alarms are scheduled. Never your calendar events or account details."
     static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
     static let testAlarmDescription =
         "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
