@@ -64,3 +64,5 @@ stitch-downloads/
 
 # === promo ====
 promo/
+# App Store Connect API keys
+*.p8

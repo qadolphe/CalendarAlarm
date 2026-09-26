@@ -411,6 +411,22 @@ final class AlarmSyncServiceTests: XCTestCase {
     }
 #endif
 
+    func testCancelsPendingNativeAlarmsWithoutActiveRecord() async throws {
+        let alarmScheduler = FakeAlarmScheduler()
+        alarmScheduler.pendingIDs = ["stale-alarm"]
+
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: FakeScheduledAlarmStore()
+        )
+
+        // All alarms disabled: nothing should stay scheduled.
+        let result = try await service.sync(plans: [])
+
+        XCTAssertEqual(alarmScheduler.canceledIDs, ["stale-alarm"])
+        XCTAssertEqual(result.canceledCount, 1)
+    }
+
     private func makePlan(startOffset: TimeInterval) -> WakeUpPlan {
         let targetDay = TargetDay(date: Date(timeIntervalSince1970: 1_000_000))
 
@@ -565,6 +581,11 @@ private final class FakeAlarmScheduler: AlarmScheduling {
     }
 
     var cancelError: Error?
+    var pendingIDs: [String] = []
+
+    func pendingNativeAlarmIDs() async throws -> [String] {
+        pendingIDs
+    }
 }
 
 private final class FakeScheduledAlarmStore: ScheduledAlarmStoring {

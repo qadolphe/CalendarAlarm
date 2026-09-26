@@ -13,6 +13,8 @@ protocol AlarmScheduling {
 
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord
     func cancel(nativeAlarmID: String) async throws
+    /// IDs of alarms the system still has pending, including any the record store lost track of.
+    func pendingNativeAlarmIDs() async throws -> [String]
 
     /// Ends any Live Activities owned by AlarmKit that are not associated with
     /// the supplied set of currently-scheduled native alarm IDs. This is used
@@ -22,5 +24,6 @@ protocol AlarmScheduling {
 }
 
 extension AlarmScheduling {
+    func pendingNativeAlarmIDs() async throws -> [String] { [] }
     func endOrphanedLiveActivities(keepingNativeAlarmIDs: Set<String>) async {}
 }

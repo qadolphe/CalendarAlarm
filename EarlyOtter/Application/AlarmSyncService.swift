@@ -24,6 +24,9 @@ actor AlarmSyncService {
     private let alarmScheduler: AlarmScheduling
     private let alarmStore: ScheduledAlarmStoring
     private let syncLock = AsyncLock()
+#if DEBUG
+    private var testAlarmIDs: Set<String> = []
+#endif
 
     init(
         alarmScheduler: AlarmScheduling,
@@ -144,6 +147,20 @@ actor AlarmSyncService {
         let activeRecords = retainedRecords.values.sorted(by: Self.sortRecords)
         try saveRecords(activeRecords)
 
+        // The store only tracks what it saved; expired records are dropped without
+        // cancelling their alarm, so AlarmKit can still hold (and later ring) alarms
+        // for past events. Cancel anything pending that isn't an active record.
+        var keptIDs = Set(activeRecords.map(\.nativeAlarmID))
+#if DEBUG
+        keptIDs.formUnion(testAlarmIDs)
+#endif
+        for nativeAlarmID in (try? await alarmScheduler.pendingNativeAlarmIDs()) ?? []
+        where !keptIDs.contains(nativeAlarmID) {
+            if (try? await alarmScheduler.cancel(nativeAlarmID: nativeAlarmID)) != nil {
+                canceledCount += 1
+            }
+        }
+
         // Ensure no stray AlarmKit Live Activities are left over for alarms
         // that no longer exist. This guards against the iOS 26 "zombie" Live
         // Activity behaviour where a swipe-dismissed alert leaves an empty
@@ -173,6 +190,7 @@ actor AlarmSyncService {
         do {
             let plan = makeTestAlarmPlan(now: now, calendar: calendar)
             let record = try await alarmScheduler.schedule(plan: plan)
+            testAlarmIDs.insert(record.nativeAlarmID)
             return .scheduled(record)
         } catch {
             return .failed(error.localizedDescription)

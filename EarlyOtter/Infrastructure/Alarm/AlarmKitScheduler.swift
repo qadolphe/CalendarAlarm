@@ -78,6 +78,12 @@ final class AlarmKitScheduler: AlarmScheduling {
         await endLiveActivities(matching: [nativeAlarmID])
     }
 
+    func pendingNativeAlarmIDs() async throws -> [String] {
+        try AlarmManager.shared.alarms
+            .filter { $0.state == .scheduled }
+            .map(\.id.uuidString)
+    }
+
     func endOrphanedLiveActivities(keepingNativeAlarmIDs: Set<String>) async {
         let activities = Activity<AlarmAttributes<EarlyOtterAlarmMetadata>>.activities
         let normalizedKeep = Set(keepingNativeAlarmIDs.map { $0.lowercased() })
