@@ -54,6 +54,9 @@ def upsert(kind, existing, parent_rel, parent_id, attributes):
 
 
 def replace_screenshots(localization_id, files):
+    if DRY_RUN and localization_id == "dry-run":
+        print(f"  [dry-run] upload {len(files)} screenshots")
+        return
     sets = api("GET", f"/v1/appStoreVersionLocalizations/{localization_id}/appScreenshotSets")["data"]
     shot_set = next((s for s in sets if s["attributes"]["screenshotDisplayType"] == DISPLAY_TYPE), None)
     if shot_set:
@@ -94,20 +97,23 @@ def main():
         sys.exit("No editable version. Create one in App Store Connect, or wait for the version in review.")
     print(f"Updating {version['attributes']['versionString']} ({version['attributes']['appStoreState']})")
 
-    info_locs = {l["attributes"]["locale"]: l for l in
-                 api("GET", f"/v1/appInfos/{info['id']}/appInfoLocalizations")["data"]}
-    version_locs = {l["attributes"]["locale"]: l for l in
-                    api("GET", f"/v1/appStoreVersions/{version['id']}/appStoreVersionLocalizations")["data"]}
+    def localizations(path):
+        return {l["attributes"]["locale"]: l for l in api("GET", path)["data"]}
+
+    info_locs = localizations(f"/v1/appInfos/{info['id']}/appInfoLocalizations")
 
     for locale in listing["locales"]:
         print(locale)
         info_attrs = {"name": copy["name"], "subtitle": copy["subtitle"]}
-        version_attrs = {k: copy[k] for k in ("keywords", "promotionalText", "description", "whatsNew")}
         if locale not in info_locs:
             info_attrs["locale"] = locale
+        upsert("appInfoLocalizations", info_locs.get(locale), "appInfo", info["id"], info_attrs)
+
+        # Adding a language creates its version localization too, so read them after.
+        version_locs = localizations(f"/v1/appStoreVersions/{version['id']}/appStoreVersionLocalizations")
+        version_attrs = {k: copy[k] for k in ("keywords", "promotionalText", "description", "whatsNew")}
         if locale not in version_locs:
             version_attrs["locale"] = locale
-        upsert("appInfoLocalizations", info_locs.get(locale), "appInfo", info["id"], info_attrs)
         localization_id = upsert("appStoreVersionLocalizations", version_locs.get(locale),
                                  "appStoreVersion", version["id"], version_attrs)
         replace_screenshots(localization_id, screenshots)

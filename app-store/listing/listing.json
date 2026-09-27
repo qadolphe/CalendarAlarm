@@ -11,7 +11,7 @@
     "keywords": "college,student,school,career,job,wake,up,clock,smart,morning,routine,schedule,meeting,commute,sleep",
     "promotionalText": "Your alarm, set by your calendar. EarlyOtter finds your first event, subtracts prep and commute, and wakes you right on time. No early plans? Sleep in.",
     "description": "EarlyOtter sets your alarm from your calendar.\n\nIt finds your first event of the day, subtracts your prep time and commute, and schedules a real alarm, so you wake up exactly when you need to. No early plans? It lets you sleep in until your latest wake-up time.\n\n• Works with Apple Calendar and Google Calendar\n• Prep and commute time built in\n• Custom rules for classes, flights, the gym or work\n• Standby alarms for quiet mornings; days off stay silent\n• Real alarms that ring even on silent\n• Private by design: your calendar is read on your iPhone and never uploaded",
-    "whatsNew": "• A cleaner, simpler Settings screen\n• Rate EarlyOtter right from Settings\n• Reliability improvements"
+    "whatsNew": "• A new look, inspired by a starry night swim\n• See your wake-up time, prep, commute and first event at a glance\n• Rules get icons and a simpler one-page editor\n• A cleaner Settings screen, and you can now rate EarlyOtter from it\n• Fixed an issue where an old alarm could ring after restarting your phone, even with alarms turned off\n• New: Share Usage Data (Settings → Permissions) sends anonymous counts, like whether setup finished and how many alarms are scheduled, so we can improve EarlyOtter. Never your calendar events or account details. You can turn it off at any time."
   },
   "locales": [
     "en-US",
