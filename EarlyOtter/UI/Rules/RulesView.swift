@@ -13,7 +13,7 @@ struct RulesView: View {
             Section {
                 NavigationLink(destination: GlobalEventFiltersView(appState: appState)) {
                     HStack(spacing: 14) {
-                        iconTile("line.3.horizontal.decrease", tint: WPStyles.primaryText)
+                        IconTile("line.3.horizontal.decrease", tint: WPStyles.primaryText)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Ignored Events")
@@ -134,9 +134,9 @@ struct RulesView: View {
     private func ruleCard(_ rule: AlarmRule) -> some View {
         HStack(spacing: 14) {
             if rule.isDefault {
-                iconTile("star.fill", tint: WPStyles.accent, fill: WPStyles.accent.opacity(0.15))
+                IconTile("star.fill", tint: WPStyles.accent, fill: WPStyles.accent.opacity(0.15))
             } else {
-                iconTile(rule.symbol.systemImage, tint: WPStyles.primaryText)
+                IconTile(rule.symbol.systemImage, tint: WPStyles.primaryText)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -157,14 +157,6 @@ struct RulesView: View {
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(WPStyles.surface))
         .opacity(rule.isDefault || rule.isEnabled ? 1 : 0.72)
-    }
-
-    private func iconTile(_ systemImage: String, tint: Color, fill: Color = WPStyles.surfaceRaised) -> some View {
-        Image(systemName: systemImage)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(tint)
-            .frame(width: 42, height: 42)
-            .background(fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var filterSummary: String {

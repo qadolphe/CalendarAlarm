@@ -364,6 +364,8 @@ final class SpyTelemetryRecorder: TelemetryRecording, @unchecked Sendable {
 
     var isEnabled: Bool { true }
     func setEnabled(_ isEnabled: Bool) async {}
+    var isInternalDevice: Bool { false }
+    func setInternalDevice(_ isInternal: Bool) async {}
     func record(_ event: TelemetryEvent) {
         lock.withLock { recorded.append(event) }
     }

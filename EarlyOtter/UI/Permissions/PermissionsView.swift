@@ -2,143 +2,118 @@ import SwiftUI
 
 struct PermissionsView: View {
     @Bindable var appState: AppState
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
-        let viewModel = PermissionsViewModel(appState: appState)
+        SettingsPage(title: "Permissions") {
+            if let errorMessage = appState.errorMessage {
+                StatusBanner(text: errorMessage, kind: .error)
+            }
+            if let noticeMessage = appState.noticeMessage {
+                StatusBanner(text: noticeMessage, kind: .notice)
+            }
 
-        ZStack {
-            Color.clear
-                .withAppBackground()
+            SettingsSection("Access") {
+                permissionRow(
+                    icon: "calendar",
+                    title: "Calendar",
+                    access: PermissionAccess(appState.permissions.calendar)
+                ) { await appState.requestCalendarAccess() }
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text("EarlyOtter keeps your alarm plan on-device and only requests the access it needs.")
-                        .font(.body)
-                        .foregroundStyle(WPStyles.secondaryText)
-                        .padding(.top, 20)
+                permissionRow(
+                    icon: "alarm.fill",
+                    title: "Alarms",
+                    access: PermissionAccess(appState.permissions.alarm)
+                ) { await appState.requestAlarmAccess() }
 
-                    if let errorMessage = appState.errorMessage {
-                        statusBanner(errorMessage, tint: .red)
+                permissionRow(
+                    icon: "bell.fill",
+                    title: "Notifications",
+                    access: PermissionAccess(appState.permissions.notification)
+                ) { await appState.requestNotificationAccess() }
+            }
+
+            SettingsSection("Privacy", footer: "Counts only. Never your calendar details.") {
+                SettingsToggleRow(
+                    icon: "chart.bar.fill",
+                    title: "Share Usage Data",
+                    isOn: Binding(
+                        get: { appState.isUsageSharingEnabled },
+                        set: { isOn in Task { await appState.setUsageSharingEnabled(isOn) } }
+                    )
+                )
+                Button {
+                    openURL(AppConfiguration.privacyPolicyURL)
+                } label: {
+                    SettingsRow(icon: "doc.text", title: "Privacy Policy") {
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(WPStyles.tertiaryText)
                     }
-
-                    if let noticeMessage = appState.noticeMessage {
-                        statusBanner(noticeMessage, tint: WPStyles.accent)
-                    }
-
-                    VStack(spacing: 0) {
-                        permissionRow(
-                            title: "Calendar",
-                            description: "Needed to view your upcoming events.",
-                            status: viewModel.calendarStatus,
-                            icon: "calendar",
-                            isAuthorized: appState.permissions.calendar == .authorized,
-                            actionTitle: "Allow",
-                            action: { Task { await appState.requestCalendarAccess() } }
-                        )
-
-                        Divider().padding(.leading, 48)
-
-                        permissionRow(
-                            title: "Alarms",
-                            description: "Needed to schedule wake-up routines.",
-                            status: viewModel.alarmStatus,
-                            icon: "alarm.fill",
-                            isAuthorized: appState.permissions.alarm == .authorized,
-                            actionTitle: "Allow",
-                            action: { Task { await appState.requestAlarmAccess() } }
-                        )
-
-                        Divider().padding(.leading, 48)
-
-                        permissionRow(
-                            title: "Notifications",
-                            description: "Needed to alert you when alarms sync or fail.",
-                            status: viewModel.notificationStatus,
-                            icon: "bell.fill",
-                            isAuthorized: appState.permissions.notification == .authorized,
-                            actionTitle: "Allow",
-                            action: { Task { await appState.requestNotificationAccess() } }
-                        )
-                    }
-                    .cardStyle()
                 }
-                .padding(24)
+                .buttonStyle(.plain)
             }
         }
-        .navigationTitle("Permissions")
-        .navigationBarTitleDisplayMode(.inline)
         .task {
             await appState.refreshPermissions()
         }
     }
 
     private func permissionRow(
-        title: String,
-        description: String,
-        status: String,
         icon: String,
-        isAuthorized: Bool,
-        actionTitle: String,
-        action: @escaping () -> Void
+        title: String,
+        access: PermissionAccess,
+        request: @escaping () async -> Void
     ) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(WPStyles.accent)
-                .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
+        SettingsRow(icon: icon, title: title) {
+            switch access {
+            case .allowed:
+                Text("Allowed")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(WPStyles.successGreen)
+            case .requestable:
+                Button("Allow") { Task { await request() } }
+                    .buttonStyle(PrimaryCapsuleButtonStyle())
+            case .denied:
+                Button("Open Settings") { appState.openSettings() }
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.primaryText)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(WPStyles.secondaryText)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                HStack {
-                    Text(status)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(isAuthorized ? WPStyles.successGreen : WPStyles.secondaryText)
-                        
-                    Spacer()
-                    
-                    if !isAuthorized {
-                        Button(actionTitle) {
-                            action()
-                        }
-                        .font(.caption.weight(.bold))
-                        .buttonStyle(.bordered)
-                        .tint(WPStyles.accent)
-                        .controlSize(.small)
-                    }
-                }
-                .padding(.top, 2)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(WPStyles.surfaceRaised, in: Capsule())
+                    .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 16)
+    }
+}
+
+/// How a permission row should present itself, independent of the source framework.
+private enum PermissionAccess {
+    case allowed
+    case requestable
+    case denied
+
+    init(_ state: CalendarAuthorizationState) {
+        switch state {
+        case .authorized: self = .allowed
+        case .denied, .restricted: self = .denied
+        case .notDetermined, .unknown: self = .requestable
+        }
     }
 
-    private func statusBanner(_ text: String, tint: Color) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(tint)
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.primaryText)
+    init(_ state: AlarmAuthorizationState) {
+        switch state {
+        case .authorized: self = .allowed
+        case .denied: self = .denied
+        case .notDetermined, .unknown: self = .requestable
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(tint.opacity(0.12))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(tint.opacity(0.25), lineWidth: 1)
-        )
+    }
+
+    init(_ state: NotificationAuthorizationState) {
+        switch state {
+        case .authorized: self = .allowed
+        case .denied: self = .denied
+        case .notDetermined, .unknown: self = .requestable
+        }
     }
 }

@@ -34,6 +34,7 @@ final class AppState {
     var noticeMessage: String?
     var settingsAlertMessage: String?
     var isUsageSharingEnabled: Bool
+    var isInternalDevice: Bool
 
     private let accountStore: AccountStoring
     private let accountService: AccountService
@@ -84,6 +85,7 @@ final class AppState {
         self.feedbackSubmitter = feedbackSubmitter
         self.telemetry = telemetry
         self.isUsageSharingEnabled = telemetry.isEnabled
+        self.isInternalDevice = telemetry.isInternalDevice
         self.openAppSettings = openAppSettings
     }
 
@@ -291,6 +293,11 @@ final class AppState {
     func setUsageSharingEnabled(_ isEnabled: Bool) async {
         isUsageSharingEnabled = isEnabled
         await telemetry.setEnabled(isEnabled)
+    }
+
+    func setInternalDevice(_ isInternal: Bool) async {
+        isInternalDevice = isInternal
+        await telemetry.setInternalDevice(isInternal)
     }
 
     func flushTelemetry() async {

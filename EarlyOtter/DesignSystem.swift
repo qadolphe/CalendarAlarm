@@ -71,6 +71,27 @@ public extension View {
     }
 }
 
+/// A rounded square holding an SF Symbol, used as the leading icon of list rows.
+struct IconTile: View {
+    let systemImage: String
+    let tint: Color
+    let fill: Color
+
+    init(_ systemImage: String, tint: Color = WPStyles.primaryText, fill: Color = WPStyles.surfaceRaised) {
+        self.systemImage = systemImage
+        self.tint = tint
+        self.fill = fill
+    }
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(tint)
+            .frame(width: 42, height: 42)
+            .background(fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

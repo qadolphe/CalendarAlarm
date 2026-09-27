@@ -4,140 +4,95 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var appState: AppState
+    @Environment(\.openURL) private var openURL
+    @State private var versionTapCount = 0
 
     var body: some View {
-        ZStack {
-            Color.clear.withAppBackground()
+        SettingsPage(title: "Settings") {
+            SettingsSection(
+                "Alarms",
+                footer: "Tip: add “Refresh Alarms” to a Shortcut automation to keep alarms synced."
+            ) {
+                SettingsToggleRow(
+                    icon: "alarm.fill",
+                    title: "EarlyOtter Alarms",
+                    subtitle: appState.preferences.isSystemEnabled ? nil : "No alarms will ring",
+                    isOn: isSystemEnabledBinding
+                )
+            }
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
-                    systemToggleCard
-                    refreshReliabilityCard
-                    usageSharingCard
+            SettingsSection("Calendars") {
+                SettingsNavRow(icon: "person.crop.circle", title: "Accounts", value: accountsValue) {
+                    AccountsView(appState: appState)
+                }
+                SettingsNavRow(
+                    icon: "lock.shield",
+                    title: "Permissions",
+                    value: permissionsValue,
+                    valueTint: missingPermissionCount == 0 ? WPStyles.secondaryText : WPStyles.accent
+                ) {
+                    PermissionsView(appState: appState)
+                }
+            }
 
-                    VStack(alignment: .leading, spacing: 0) {
-                        appSettingsLinks
+            SettingsSection("Support") {
+                SettingsNavRow(icon: "bubble.left.and.bubble.right", title: "Send Feedback") {
+                    FeedbackView(appState: appState)
+                }
+                Button {
+                    openURL(AppConfiguration.writeReviewURL)
+                } label: {
+                    SettingsRow(icon: "star.fill", iconTint: WPStyles.accent, title: "Rate EarlyOtter") {
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(WPStyles.tertiaryText)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 28)
+                .buttonStyle(.plain)
             }
+
+            versionFooter
         }
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: App settings nav links
-
-    private var appSettingsLinks: some View {
-        VStack(spacing: 0) {
-            navRow(title: "Accounts", icon: "person.crop.circle.badge.plus") {
-                AccountsView(appState: appState)
-            }
-            Divider().padding(.leading, 56)
-            navRow(title: "Permissions", icon: "lock.shield") {
-                PermissionsView(appState: appState)
-            }
-            Divider().padding(.leading, 56)
-            navRow(title: "Send Feedback", icon: "bubble.left.and.bubble.right") {
-                FeedbackView(appState: appState)
+    /// Tapping the version seven times marks this phone as internal, so its
+    /// telemetry is tagged and kept out of the real numbers.
+    private var versionFooter: some View {
+        VStack(spacing: 4) {
+            Text("\(AppConfiguration.appName) \(AppConfiguration.appVersionWithBuild)")
+            if appState.isInternalDevice {
+                Text("Internal device")
+                    .foregroundStyle(WPStyles.accent)
             }
         }
-        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(WPStyles.surface))
-    }
-
-    private func navRow<D: View, Subtitle: View>(
-        title: String,
-        icon: String,
-        @ViewBuilder destination: () -> D,
-        @ViewBuilder subtitle: () -> Subtitle = { EmptyView() }
-    ) -> some View {
-        NavigationLink(destination: destination()) {
-            HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .foregroundStyle(WPStyles.secondaryText)
-                    .frame(width: 24)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .foregroundStyle(WPStyles.primaryText)
-                    subtitle()
-                        .font(.subheadline)
-                        .foregroundStyle(WPStyles.secondaryText)
-                        .lineLimit(2)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(WPStyles.tertiaryText)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .contentShape(Rectangle())
+        .font(.footnote)
+        .foregroundStyle(WPStyles.tertiaryText)
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            versionTapCount += 1
+            guard versionTapCount >= 7 else { return }
+            versionTapCount = 0
+            Task { await appState.setInternalDevice(!appState.isInternalDevice) }
         }
-        .buttonStyle(.plain)
     }
 
-    private var systemToggleCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("System Active")
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-                Spacer()
-                Toggle("", isOn: isSystemEnabledBinding)
-                    .labelsHidden()
-                    .tint(WPStyles.accent)
-            }
-            Text(appState.preferences.isSystemEnabled ? "EarlyOtter will schedule alarms based on your rules." : "EarlyOtter is completely disabled. No alarms will run.")
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-        }
-        .cardStyle()
+    private var accountsValue: String {
+        let count = appState.accounts.filter(\.isEnabled).count
+        return count == 0 ? "None" : "\(count) connected"
     }
 
-    private var refreshReliabilityCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Refresh Reliability")
-                .font(.headline)
-                .foregroundStyle(WPStyles.primaryText)
-
-            Text(AppConfiguration.refreshReliabilityExplanation)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-
-            Text(AppConfiguration.shortcutsExplanation)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-        }
-        .cardStyle()
+    private var missingPermissionCount: Int {
+        let permissions = appState.permissions
+        return [
+            permissions.calendar == .authorized,
+            permissions.alarm == .authorized,
+            permissions.notification == .authorized
+        ].filter { !$0 }.count
     }
 
-    private var usageSharingCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Share Anonymous Usage Data")
-                    .font(.headline)
-                    .foregroundStyle(WPStyles.primaryText)
-                Spacer()
-                Toggle("", isOn: usageSharingBinding)
-                    .labelsHidden()
-                    .tint(WPStyles.accent)
-            }
-            Text(AppConfiguration.usageSharingExplanation)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-        }
-        .cardStyle()
-    }
-
-    private var usageSharingBinding: Binding<Bool> {
-        Binding(
-            get: { appState.isUsageSharingEnabled },
-            set: { isOn in
-                Task { await appState.setUsageSharingEnabled(isOn) }
-            }
-        )
+    private var permissionsValue: String {
+        missingPermissionCount == 0 ? "All set" : "\(missingPermissionCount) needed"
     }
 
     private var isSystemEnabledBinding: Binding<Bool> {
@@ -150,8 +105,11 @@ struct SettingsView: View {
     }
 }
 
+// MARK: - Accounts
+
 struct AccountsView: View {
     @Bindable var appState: AppState
+    @State private var pendingRemovalID: CalendarAccountID?
 
     private var appleAccount: ConnectedCalendarAccount? {
         appState.accounts.first(where: { $0.provider == .apple })
@@ -162,136 +120,82 @@ struct AccountsView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.clear.withAppBackground()
+        SettingsPage(title: "Accounts") {
+            if let notice = appState.noticeMessage {
+                StatusBanner(text: notice, kind: .notice)
+            }
 
-            List {
-                if appleAccount != nil || !googleAccounts.isEmpty {
-                    Section(header: sectionHeader("Connected Accounts"), footer: Text("EarlyOtter keeps event logic behind one normalized pipeline. Accounts only control which external sources are available to that pipeline.").font(.caption).foregroundStyle(WPStyles.secondaryText)) {
-                        if let appleAccount {
-                        accountToggleRow(appleAccount, icon: "apple.logo")
-                            .listRowBackground(WPStyles.surface)
-                        }
-
-                        ForEach(googleAccounts) { account in
-                            accountToggleRow(account, icon: "G")
-                                .listRowBackground(WPStyles.surface)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                    Button(role: .destructive) {
-                                        Task { await appState.removeAccount(id: account.id) }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                }
-                        }
+            if appleAccount != nil || !googleAccounts.isEmpty {
+                SettingsSection(
+                    "Connected",
+                    footer: googleAccounts.isEmpty ? nil : "Long-press a Google account to remove it."
+                ) {
+                    if let appleAccount {
+                        accountRow(appleAccount)
                     }
-                }
-
-                Section {
-                    if appleAccount == nil {
-                        Button {
-                            Task { await appState.connectAppleCalendar() }
-                        } label: {
-                            HStack(spacing: 14) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(WPStyles.accent)
-                                    .frame(width: 24)
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Apple Calendar")
-                                        .foregroundStyle(WPStyles.primaryText)
-                                    Text("Connect Apple Calendar")
-                                        .font(.subheadline)
-                                        .foregroundStyle(WPStyles.secondaryText)
-                                }
-                            }
-                        }
-                        .listRowBackground(WPStyles.surface)
+                    ForEach(googleAccounts) { account in
+                        accountRow(account)
                     }
-
-                    Button {
-                        Task { await appState.addGoogleAccount() }
-                    } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(WPStyles.accent)
-                                .frame(width: 24)
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Google")
-                                    .foregroundStyle(WPStyles.primaryText)
-                                Text("Add Google Account")
-                                    .font(.subheadline)
-                                    .foregroundStyle(WPStyles.secondaryText)
-                            }
-                        }
-                    }
-                    .listRowBackground(WPStyles.surface)
                 }
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            
-            if let notice = appState.noticeMessage {
-                VStack {
-                    Spacer()
-                    Text(notice)
-                        .font(.subheadline)
-                        .padding()
-                        .background(Color.green.opacity(0.1))
-                        .foregroundStyle(.green)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .padding(.bottom, 20)
+
+            SettingsSection("Add") {
+                if appleAccount == nil {
+                    addRow(title: "Apple Calendar") {
+                        await appState.connectAppleCalendar()
+                    }
+                }
+                addRow(title: "Google Account") {
+                    await appState.addGoogleAccount()
                 }
             }
         }
-        .navigationTitle("Accounts")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(WPStyles.secondaryText)
-            .textCase(nil)
-    }
+    @ViewBuilder
+    private func accountRow(_ account: ConnectedCalendarAccount) -> some View {
+        let icon = account.provider == .apple ? "apple.logo" : "g.circle.fill"
 
-    private func accountToggleRow(_ account: ConnectedCalendarAccount, icon: String) -> some View {
-        HStack(spacing: 14) {
-            if account.provider == .apple {
-                Image(systemName: "apple.logo")
-                    .foregroundStyle(WPStyles.primaryText)
-                    .frame(width: 24)
-            } else {
-                Text("G")
-                    .font(.headline.weight(.black))
-                    .foregroundStyle(WPStyles.primaryText)
-                    .frame(width: 24)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(account.displayName)
-                    .foregroundStyle(WPStyles.primaryText)
-                Text(account.isEnabled ? "Enabled" : "Disabled")
-                    .font(.subheadline)
+        if pendingRemovalID == account.id {
+            SettingsRow(icon: icon, title: account.displayName, subtitle: "Remove this account?") {
+                Button("Cancel") { pendingRemovalID = nil }
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.secondaryText)
+                Button("Remove") {
+                    pendingRemovalID = nil
+                    Task { await appState.removeAccount(id: account.id) }
+                }
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.red)
             }
-
-            Spacer()
-
-            Toggle(
-                "",
+            .buttonStyle(.plain)
+        } else {
+            SettingsToggleRow(
+                icon: icon,
+                title: account.displayName,
                 isOn: Binding(
                     get: { account.isEnabled },
-                    set: { newValue in
-                        Task { await appState.setAccountEnabled(id: account.id, isEnabled: newValue) }
+                    set: { isOn in
+                        Task { await appState.setAccountEnabled(id: account.id, isEnabled: isOn) }
                     }
                 )
             )
-            .labelsHidden()
-            .tint(WPStyles.accent)
+            .contextMenu {
+                if account.provider == .google {
+                    Button("Remove Account", systemImage: "trash", role: .destructive) {
+                        pendingRemovalID = account.id
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+    }
+
+    private func addRow(title: String, action: @escaping () async -> Void) -> some View {
+        Button {
+            Task { await action() }
+        } label: {
+            SettingsRow(icon: "plus", iconTint: WPStyles.accent, title: title)
+        }
+        .buttonStyle(.plain)
     }
 }

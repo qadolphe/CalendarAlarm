@@ -56,6 +56,9 @@ struct EarlyOtterApp: App {
             .font: roundedFont,
             .foregroundColor: UIColor(WPStyles.primaryText)
         ]
+        UINavigationBar.appearance().titleTextAttributes = [
+            .foregroundColor: UIColor(WPStyles.primaryText)
+        ]
     }
 
     var body: some Scene {

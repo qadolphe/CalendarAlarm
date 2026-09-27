@@ -15,7 +15,9 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
     // UserDefaults is documented as thread-safe but not yet annotated Sendable.
     private nonisolated(unsafe) let defaults: UserDefaults
     private let queueURL: URL
-    private let resolveChannel: @Sendable () async -> String
+    private nonisolated let internalDeviceFlag: any FlagStoring
+    /// Returns nil when the install source can't be determined.
+    private let resolveChannel: @Sendable () async -> String?
     private let encoder = JSONEncoder()
     private var queue: [TelemetryWireEvent]?
     private var channel: String?
@@ -28,13 +30,17 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
         metadata: ClientMetadata = .live(),
         defaults: UserDefaults = .standard,
         queueURL: URL = WebsiteTelemetryRecorder.defaultQueueURL,
-        resolveChannel: @escaping @Sendable () async -> String = WebsiteTelemetryRecorder.currentChannel
+        internalDeviceFlag: any FlagStoring = KeychainFlagStore(
+            account: AppConfiguration.telemetryInternalDeviceKeychainAccount
+        ),
+        resolveChannel: @escaping @Sendable () async -> String? = WebsiteTelemetryRecorder.currentChannel
     ) {
         self.endpoint = endpoint
         self.session = session
         self.metadata = metadata
         self.defaults = defaults
         self.queueURL = queueURL
+        self.internalDeviceFlag = internalDeviceFlag
         self.resolveChannel = resolveChannel
     }
 
@@ -49,6 +55,14 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
         queue = []
         try? FileManager.default.removeItem(at: queueURL)
         defaults.removeObject(forKey: AppConfiguration.telemetryInstallIDStorageKey)
+    }
+
+    nonisolated var isInternalDevice: Bool {
+        internalDeviceFlag.isSet()
+    }
+
+    func setInternalDevice(_ isInternal: Bool) {
+        internalDeviceFlag.set(isInternal)
     }
 
     nonisolated func record(_ event: TelemetryEvent) {
@@ -121,8 +135,11 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
     }
 
     private func resolvedChannel() async -> String {
+        if isInternalDevice { return "internal" }
         if let channel { return channel }
-        let resolved = await resolveChannel()
+        // An unknown source is never counted as a real App Store user. It isn't
+        // cached, so the next batch tries again.
+        guard let resolved = await resolveChannel() else { return "testflight" }
         channel = resolved
         return resolved
     }
@@ -161,11 +178,11 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
     }
 
     @Sendable
-    static func currentChannel() async -> String {
+    static func currentChannel() async -> String? {
 #if DEBUG
         return "debug"
 #else
-        guard let transaction = try? await AppTransaction.shared else { return "appstore" }
+        guard let transaction = try? await AppTransaction.shared else { return nil }
         switch transaction.unsafePayloadValue.environment {
         case .production: return "appstore"
         case .sandbox: return "testflight"

@@ -213,9 +213,52 @@ final class WebsiteTelemetryRecorderTests: XCTestCase {
         XCTAssertEqual(requestCount, 1)
     }
 
+    // MARK: Channel
+
+    func testInternalDeviceIsTaggedInternal() async throws {
+        var channels: [String] = []
+        TelemetryStubURLProtocol.handler = { request in
+            let json = try JSONSerialization.jsonObject(with: request.bodyData()) as? [String: Any]
+            channels.append(json?["channel"] as? String ?? "")
+            return (Self.response(for: request, status: 202), Data())
+        }
+        let flag = InMemoryFlagStore()
+        let recorder = makeRecorder(internalDeviceFlag: flag, resolveChannel: { "appstore" })
+
+        await recorder.enqueue(TelemetryWireEvent(.appOpened, at: Date()))
+        await recorder.flush()
+        await recorder.setInternalDevice(true)
+        await recorder.enqueue(TelemetryWireEvent(.appOpened, at: Date()))
+        await recorder.flush()
+
+        XCTAssertEqual(channels, ["appstore", "internal"])
+        XCTAssertTrue(recorder.isInternalDevice)
+    }
+
+    func testUnknownInstallSourceIsNeverCountedAsAppStore() async throws {
+        var channels: [String] = []
+        TelemetryStubURLProtocol.handler = { request in
+            let json = try JSONSerialization.jsonObject(with: request.bodyData()) as? [String: Any]
+            channels.append(json?["channel"] as? String ?? "")
+            return (Self.response(for: request, status: 202), Data())
+        }
+        let resolver = ChannelSequence(["unknown", "appstore"])
+        let recorder = makeRecorder(resolveChannel: { await resolver.next() })
+
+        await recorder.enqueue(TelemetryWireEvent(.appOpened, at: Date()))
+        await recorder.flush()
+        await recorder.enqueue(TelemetryWireEvent(.appOpened, at: Date()))
+        await recorder.flush()
+
+        XCTAssertEqual(channels, ["testflight", "appstore"], "An unknown source is retried, not cached")
+    }
+
     // MARK: Helpers
 
-    private func makeRecorder() -> WebsiteTelemetryRecorder {
+    private func makeRecorder(
+        internalDeviceFlag: InMemoryFlagStore = InMemoryFlagStore(),
+        resolveChannel: @escaping @Sendable () async -> String? = { "debug" }
+    ) -> WebsiteTelemetryRecorder {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [TelemetryStubURLProtocol.self]
 
@@ -225,7 +268,8 @@ final class WebsiteTelemetryRecorderTests: XCTestCase {
             metadata: ClientMetadata(appVersion: "1.2.3", buildNumber: "45", iosVersion: "26.0.0"),
             defaults: defaults,
             queueURL: queueURL,
-            resolveChannel: { "debug" }
+            internalDeviceFlag: internalDeviceFlag,
+            resolveChannel: resolveChannel
         )
     }
 
@@ -279,5 +323,25 @@ private extension URLRequest {
         }
 
         return data
+    }
+}
+
+final class InMemoryFlagStore: FlagStoring, @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = false
+
+    func isSet() -> Bool { lock.withLock { value } }
+    func set(_ isSet: Bool) { lock.withLock { value = isSet } }
+}
+
+/// Returns each channel in turn; "unknown" stands in for an unresolvable source.
+private actor ChannelSequence {
+    private var values: [String]
+
+    init(_ values: [String]) { self.values = values }
+
+    func next() -> String? {
+        let value = values.removeFirst()
+        return value == "unknown" ? nil : value
     }
 }

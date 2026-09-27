@@ -9,8 +9,6 @@ enum AppConfiguration {
     static let telemetryEndpointURL = URL(string: "https://earlyotter.com/api/telemetry")!
     static let telemetryConsentStorageKey = "earlyotter.telemetry.shareUsageData"
     static let telemetryInstallIDStorageKey = "earlyotter.telemetry.installID"
-    static let usageSharingExplanation =
-        "Sends anonymous counts to EarlyOtter, such as finished setup steps and how many alarms are scheduled. Never your calendar events or account details."
     static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
     static let testAlarmDescription =
         "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
@@ -30,6 +28,18 @@ enum AppConfiguration {
     static let reviewPromptLastRequestedVersionStorageKey =
         "earlyotter.reviewPrompt.lastRequestedVersion"
 
+    static let privacyPolicyURL = URL(string: "https://earlyotter.com/privacy")!
+    static let writeReviewURL = URL(string: "https://apps.apple.com/app/id6766083287?action=write-review")!
+    static let telemetryInternalDeviceKeychainAccount = "telemetry.internalDevice"
+
+    /// For display, e.g. "1.0.9 (5)".
+    static var appVersionWithBuild: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
     static var currentAppVersion: String {
         let version = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleShortVersionString"
@@ -48,12 +58,6 @@ enum AppConfiguration {
 
     static let onboardingAlarmPermissionExplanation =
         "These are optional during setup. Enable them now to let \(appName) schedule alarms and notify you on updates automatically."
-
-    static let refreshReliabilityExplanation =
-        "\(appName) keeps alarms updated when you open the app and can refresh automatically in the background when iOS allows."
-
-    static let shortcutsExplanation =
-        "Add \"Refresh Alarms\" to a Siri Shortcut or automation to keep your alarms synced on your schedule."
 
     static let staleSyncReminderTitle = "\(appName) may need to refresh your alarms"
     static let staleSyncReminderBody =
