@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PermissionsView: View {
     @Bindable var appState: AppState
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         SettingsPage(title: "Permissions") {
@@ -42,16 +41,7 @@ struct PermissionsView: View {
                         set: { isOn in Task { await appState.setUsageSharingEnabled(isOn) } }
                     )
                 )
-                Button {
-                    openURL(AppConfiguration.privacyPolicyURL)
-                } label: {
-                    SettingsRow(icon: "doc.text", title: "Privacy Policy") {
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(WPStyles.tertiaryText)
-                    }
-                }
-                .buttonStyle(.plain)
+                SettingsLinkRow(icon: "doc.text", title: "Privacy Policy", url: AppConfiguration.privacyPolicyURL)
             }
         }
         .task {
@@ -76,12 +66,7 @@ struct PermissionsView: View {
                     .buttonStyle(PrimaryCapsuleButtonStyle())
             case .denied:
                 Button("Open Settings") { appState.openSettings() }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(WPStyles.primaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(WPStyles.surfaceRaised, in: Capsule())
-                    .buttonStyle(.plain)
+                    .buttonStyle(SecondaryCapsuleButtonStyle())
             }
         }
     }

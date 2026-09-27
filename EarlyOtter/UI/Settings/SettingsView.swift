@@ -4,7 +4,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var appState: AppState
-    @Environment(\.openURL) private var openURL
     @State private var versionTapCount = 0
 
     var body: some View {
@@ -39,16 +38,12 @@ struct SettingsView: View {
                 SettingsNavRow(icon: "bubble.left.and.bubble.right", title: "Send Feedback") {
                     FeedbackView(appState: appState)
                 }
-                Button {
-                    openURL(AppConfiguration.writeReviewURL)
-                } label: {
-                    SettingsRow(icon: "star.fill", iconTint: WPStyles.accent, title: "Rate EarlyOtter") {
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(WPStyles.tertiaryText)
-                    }
-                }
-                .buttonStyle(.plain)
+                SettingsLinkRow(
+                    icon: "star.fill",
+                    iconTint: WPStyles.accent,
+                    title: "Rate EarlyOtter",
+                    url: AppConfiguration.writeReviewURL
+                )
             }
 
             versionFooter

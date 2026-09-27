@@ -135,6 +135,25 @@ struct SettingsNavRow<Destination: View>: View {
     }
 }
 
+/// A row that opens a URL outside the app.
+struct SettingsLinkRow: View {
+    let icon: String
+    var iconTint: Color = WPStyles.primaryText
+    let title: String
+    let url: URL
+
+    var body: some View {
+        Link(destination: url) {
+            SettingsRow(icon: icon, iconTint: iconTint, title: title) {
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(WPStyles.tertiaryText)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct SettingsToggleRow: View {
     let icon: String
     let title: String

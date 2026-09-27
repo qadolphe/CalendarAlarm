@@ -110,13 +110,29 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct PrimaryCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
+        CapsuleButtonLabel(configuration: configuration, foreground: WPStyles.onAccent, fill: WPStyles.accent)
+    }
+}
+
+/// The quieter sibling of `PrimaryCapsuleButtonStyle`, for secondary actions.
+struct SecondaryCapsuleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        CapsuleButtonLabel(configuration: configuration, foreground: WPStyles.primaryText, fill: WPStyles.surfaceRaised)
+    }
+}
+
+private struct CapsuleButtonLabel: View {
+    let configuration: ButtonStyleConfiguration
+    let foreground: Color
+    let fill: Color
+
+    var body: some View {
         configuration.label
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(WPStyles.onAccent)
+            .foregroundStyle(foreground)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(WPStyles.accent)
-            .clipShape(Capsule())
+            .background(fill, in: Capsule())
             .opacity(configuration.isPressed ? 0.9 : 1)
     }
 }
