@@ -34,11 +34,15 @@ def api(method, path, body=None):
         "https://api.appstoreconnect.apple.com" + path, method=method,
         data=json.dumps(body).encode() if body else None,
         headers={"Authorization": "Bearer " + token(), "Content-Type": "application/json"})
-    try:
-        raw = urllib.request.urlopen(req).read()
-    except urllib.error.HTTPError as error:
-        sys.exit(f"{method} {path} failed: {error.code} {error.read().decode()[:400]}")
-    return json.loads(raw) if raw else {}
+    for attempt in range(4):
+        try:
+            raw = urllib.request.urlopen(req).read()
+            return json.loads(raw) if raw else {}
+        except urllib.error.HTTPError as error:
+            # App Store Connect returns intermittent 500s; retry those with a short backoff.
+            if error.code < 500 or attempt == 3:
+                sys.exit(f"{method} {path} failed: {error.code} {error.read().decode()[:400]}")
+            time.sleep(5 * (attempt + 1))
 
 
 def upsert(kind, existing, parent_rel, parent_id, attributes):
@@ -60,7 +64,11 @@ def replace_screenshots(localization_id, files):
     sets = api("GET", f"/v1/appStoreVersionLocalizations/{localization_id}/appScreenshotSets")["data"]
     shot_set = next((s for s in sets if s["attributes"]["screenshotDisplayType"] == DISPLAY_TYPE), None)
     if shot_set:
-        for shot in api("GET", f"/v1/appScreenshotSets/{shot_set['id']}/appScreenshots")["data"]:
+        existing = api("GET", f"/v1/appScreenshotSets/{shot_set['id']}/appScreenshots")["data"]
+        checksums = [shot["attributes"]["sourceFileChecksum"] for shot in existing]
+        if checksums == [hashlib.md5(path.read_bytes()).hexdigest() for path in files]:
+            return
+        for shot in existing:
             api("DELETE", f"/v1/appScreenshots/{shot['id']}")
         set_id = shot_set["id"]
     else:
