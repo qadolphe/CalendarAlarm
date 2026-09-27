@@ -165,22 +165,6 @@ struct DashboardViewModel {
         return VisibleTimeWindow(startSeconds: start, endSeconds: end)
     }
 
-    var timeUntilWake: String? {
-        guard let plan else { return nil }
-
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .full
-        formatter.maximumUnitCount = 2
-
-        let interval = max(plan.calculatedWakeTime.timeIntervalSinceNow, 0)
-        guard let formatted = formatter.string(from: interval), !formatted.isEmpty else {
-            return nil
-        }
-
-        return "In \(formatted)"
-    }
-
     var statusMessage: String? {
         guard let viewState else { return nil }
         let plan = viewState.plan
@@ -230,6 +214,12 @@ struct DashboardViewModel {
             plan: plan,
             alarmStatus: alarmStatus ?? self.alarmStatus(for: plan)
         )
+    }
+
+    /// Wake time shown under each week column, e.g. "7:55"; "—" when no alarm.
+    func wakeLabel(for entry: WeekEntry) -> String {
+        guard let alarmDate = entry.alarmDate else { return "—" }
+        return alarmDate.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
     }
 
     func daySymbol(for date: Date) -> String {

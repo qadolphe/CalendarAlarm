@@ -120,7 +120,7 @@ struct DayAlarmEditView: View {
             HStack(spacing: 12) {
                 Image(systemName: "alarm.fill")
                     .font(.title3)
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.accent)
                 Text("Wake Time")
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
@@ -128,7 +128,7 @@ struct DayAlarmEditView: View {
                 Text(wakeDate, style: .time)
                     .font(.system(.title3, design: .rounded).weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.accent)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
@@ -166,7 +166,7 @@ struct DayAlarmEditView: View {
                     .foregroundStyle(WPStyles.primaryText)
             }
         }
-        .tint(WPStyles.primaryOrange)
+        .tint(WPStyles.accent)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))

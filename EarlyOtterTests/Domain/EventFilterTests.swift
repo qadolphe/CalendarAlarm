@@ -109,7 +109,17 @@ final class EventFilterTests: XCTestCase {
                 let rule = try JSONDecoder().decode(AlarmRule.self, from: data)
 
                 XCTAssertTrue(rule.isEnabled)
+                XCTAssertEqual(rule.symbol, .general)
         }
+
+    func testAlarmRuleSymbolRoundTrips() throws {
+        var rule = AlarmRule.makeDefault()
+        rule.symbol = .school
+
+        let decoded = try JSONDecoder().decode(AlarmRule.self, from: JSONEncoder().encode(rule))
+
+        XCTAssertEqual(decoded.symbol, .school)
+    }
 
     private func event(
         calendarID: String = "work",

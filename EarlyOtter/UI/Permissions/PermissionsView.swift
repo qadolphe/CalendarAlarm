@@ -22,7 +22,7 @@ struct PermissionsView: View {
                     }
 
                     if let noticeMessage = appState.noticeMessage {
-                        statusBanner(noticeMessage, tint: WPStyles.primaryOrange)
+                        statusBanner(noticeMessage, tint: WPStyles.accent)
                     }
 
                     VStack(spacing: 0) {
@@ -84,7 +84,7 @@ struct PermissionsView: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 4) {
@@ -111,7 +111,7 @@ struct PermissionsView: View {
                         }
                         .font(.caption.weight(.bold))
                         .buttonStyle(.bordered)
-                        .tint(WPStyles.primaryOrange)
+                        .tint(WPStyles.accent)
                         .controlSize(.small)
                     }
                 }

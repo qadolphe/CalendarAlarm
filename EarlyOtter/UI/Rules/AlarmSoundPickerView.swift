@@ -48,7 +48,7 @@ struct AlarmSoundPickerView: View {
             HStack(spacing: Layout.checkmarkSpacing) {
                 Image(systemName: "checkmark")
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.accent)
                     .frame(width: Layout.checkmarkWidth, alignment: .leading)
                     .opacity(isSelected ? 1 : 0)
 

@@ -94,11 +94,14 @@ enum AlarmRuleCondition: Codable, Equatable, Sendable {
         }
     }
 
-    var iconName: String {
-        switch self {
-        case .titleContains: return "text.quote"
-        case .locationContains: return "mappin.and.ellipse"
-        }
+    var titleKeyword: String? {
+        if case .titleContains(let keyword) = self { return keyword }
+        return nil
+    }
+
+    var locationKeyword: String? {
+        if case .locationContains(let place) = self { return place }
+        return nil
     }
 
     // MARK: Codable
@@ -130,6 +133,11 @@ enum AlarmRuleCondition: Codable, Equatable, Sendable {
 
 // A user-created alarm rule. The first matching rule (in order) wins.
 // The Default rule always matches and must be present exactly once.
+/// How a rule is represented in lists. Semantic cases; the UI maps them to symbols.
+enum RuleSymbol: String, Codable, CaseIterable, Sendable {
+    case general, school, work, flight, gym, run, medical, meeting, drive, study, music, sun
+}
+
 struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var id: UUID
     var name: String
@@ -142,6 +150,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var prepTime: Minutes
     var commuteTime: Minutes
     var alarmSettings: RuleAlarmSettings
+    var symbol: RuleSymbol
 
     static func makeDefault(
         prepTime: Minutes = Minutes(45),
@@ -213,6 +222,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         case prepTime
         case commuteTime
         case alarmSettings
+        case symbol
     }
 
     init(
@@ -225,7 +235,8 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         conditions: [AlarmRuleCondition],
         prepTime: Minutes,
         commuteTime: Minutes,
-        alarmSettings: RuleAlarmSettings
+        alarmSettings: RuleAlarmSettings,
+        symbol: RuleSymbol = .general
     ) {
         self.id = id
         self.name = name
@@ -237,6 +248,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         self.prepTime = prepTime
         self.commuteTime = commuteTime
         self.alarmSettings = alarmSettings
+        self.symbol = symbol
     }
 
     init(from decoder: Decoder) throws {
@@ -251,6 +263,8 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         prepTime = try container.decodeIfPresent(Minutes.self, forKey: .prepTime) ?? Minutes(45)
         commuteTime = try container.decodeIfPresent(Minutes.self, forKey: .commuteTime) ?? Minutes(20)
         alarmSettings = try container.decodeIfPresent(RuleAlarmSettings.self, forKey: .alarmSettings) ?? .default
+        // Rules saved before icons existed, or with an unknown icon, fall back to the generic one.
+        symbol = (try? container.decodeIfPresent(RuleSymbol.self, forKey: .symbol)) ?? .general
     }
 
     func encode(to encoder: Encoder) throws {
@@ -265,5 +279,6 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         try container.encode(prepTime, forKey: .prepTime)
         try container.encode(commuteTime, forKey: .commuteTime)
         try container.encode(alarmSettings, forKey: .alarmSettings)
+        try container.encode(symbol, forKey: .symbol)
     }
 }

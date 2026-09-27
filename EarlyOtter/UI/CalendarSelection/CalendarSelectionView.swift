@@ -87,7 +87,7 @@ struct CalendarSelectionView: View {
                     Task { await appState.selectAllCalendars() }
                 }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(WPStyles.secondaryBlue)
+                .foregroundStyle(WPStyles.eventTint)
                 .disabled(allCalendarsSelected)
             }
 
@@ -98,7 +98,7 @@ struct CalendarSelectionView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: calendar.isSelected ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(calendar.isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+                                .foregroundStyle(calendar.isSelected ? WPStyles.accent : WPStyles.tertiaryText)
                                 .font(.title3)
 
                             Text(calendar.title)

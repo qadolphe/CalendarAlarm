@@ -23,11 +23,6 @@ struct EarlyOtterDetailsView: View {
         return appState.dailyPlans.first(where: { $0.targetDay == inputPlan.targetDay }) ?? inputPlan
     }
 
-    /// This date carries a one-off manual adjustment.
-    private var isAdjusted: Bool {
-        plan.reason == .manualOverride || plan.reason == .manualSkip
-    }
-
     /// Only today and future days are editable, and never while fully disabled.
     private var isEditableDay: Bool {
         guard appState != nil, plan.reason != .systemDisabled else {
@@ -133,132 +128,51 @@ struct EarlyOtterDetailsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(selectedDayTitle)
-                            .font(.title2.weight(.bold))
+                            .font(.system(.title2, design: .rounded).weight(.bold))
                             .foregroundStyle(WPStyles.primaryText)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 32)
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    Group {
                         if showsUnavailableDayState {
-                            HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: unavailableStateIcon)
-                                    .foregroundStyle(plan.reason == .noSchedule ? WPStyles.secondaryBlue : WPStyles.primaryOrange)
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack(alignment: .center, spacing: 12) {
+                                    Image(systemName: unavailableStateIcon)
+                                        .foregroundStyle(plan.reason == .noSchedule ? WPStyles.eventTint : WPStyles.accent)
 
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(unavailableStateTitle)
-                                        .font(.headline)
-                                        .foregroundStyle(WPStyles.primaryText)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(unavailableStateTitle)
+                                            .font(.headline)
+                                            .foregroundStyle(WPStyles.primaryText)
 
-                                    if !unavailableStateMessage.isEmpty {
-                                        Text(unavailableStateMessage)
-                                            .font(.subheadline)
-                                            .foregroundStyle(WPStyles.secondaryText)
-                                            .fixedSize(horizontal: false, vertical: true)
+                                        if !unavailableStateMessage.isEmpty {
+                                            Text(unavailableStateMessage)
+                                                .font(.subheadline)
+                                                .foregroundStyle(WPStyles.secondaryText)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
                                     }
-                                }
 
-                                Spacer()
-                            }
-
-                            if let standaloneEvent {
-                                Divider()
-                                standaloneEventRow(standaloneEvent)
-                            }
-                        } else if let event = plan.targetEvent {
-                            HStack(alignment: .center) {
-                                Image(systemName: "alarm.fill")
-                                    .foregroundStyle(WPStyles.primaryOrange)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Wake Time")
-                                        .font(.headline)
-                                        .foregroundStyle(WPStyles.primaryText)
-
-                                    HStack(spacing: 6) {
-                                        Text(plan.alarmSettings.sound.displayName)
-                                        Text("•")
-                                        Text(plan.alarmSettings.snoozeEnabled ? "Snooze \(plan.alarmSettings.snoozeDuration.rawValue)m" : "No snooze")
-                                    }
-                                    .font(.caption)
-                                    .foregroundStyle(WPStyles.secondaryText)
-                                }
-
-                                Spacer()
-                                Text(plan.calculatedWakeTime, style: .time)
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(WPStyles.primaryText)
-                                    .contentTransition(.numericText())
-                            }
-
-                            Divider()
-                            
-                            if plan.reason == .manualOverride {
-                                timelineRow(icon: "pencil", label: "Manually adjusted", value: "")
-                            } else {
-                                timelineRow(icon: "cup.and.saucer.fill", label: "Prep Time", value: "\(plan.prepTime.rawValue)m")
-                                timelineRow(icon: "car.fill", label: "Commute", value: "\(plan.commuteTime.rawValue)m")
-                            }
-
-                            Divider()
-
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .foregroundStyle(WPStyles.secondaryBlue)
-                                Text(event.title)
-                                    .font(.headline)
-                                    .foregroundStyle(WPStyles.primaryText)
-                                    .lineLimit(1)
-                                Spacer()
-                                Text(event.startDate, style: .time)
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(WPStyles.primaryText)
-                            }
-                        } else {
-                            HStack(alignment: .center) {
-                                Image(systemName: "alarm.fill")
-                                    .foregroundStyle(WPStyles.primaryOrange)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Wake Time")
-                                        .font(.headline)
-                                        .foregroundStyle(WPStyles.primaryText)
-
-                                    HStack(spacing: 6) {
-                                        Text(plan.alarmSettings.sound.displayName)
-                                        Text("•")
-                                        Text(plan.alarmSettings.snoozeEnabled ? "Snooze \(plan.alarmSettings.snoozeDuration.rawValue)m" : "No snooze")
-                                    }
-                                    .font(.caption)
-                                    .foregroundStyle(WPStyles.secondaryText)
-                                }
-
-                                Spacer()
-                                Text(plan.calculatedWakeTime, style: .time)
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(WPStyles.primaryText)
-                                    .contentTransition(.numericText())
-                            }
-
-                            Divider()
-
-                            if let standaloneEvent {
-                                standaloneEventRow(standaloneEvent)
-                            } else {
-                                HStack {
-                                    Image(systemName: "moon.zzz.fill")
-                                        .foregroundStyle(.indigo)
-                                    Text("No early events")
-                                        .font(.headline)
-                                        .foregroundStyle(WPStyles.primaryText)
                                     Spacer()
                                 }
+
+                                if let standaloneEvent {
+                                    Divider()
+                                    standaloneEventRow(standaloneEvent)
+                                }
                             }
+                            .padding(20)
+                            .background(WPStyles.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        } else {
+                            WakeUpTimetableView(plan: plan)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(WPStyles.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                         }
                     }
-                    .padding(20)
-                    .background(WPStyles.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .padding(.horizontal, 20)
 
                     alarmStatusCard()
@@ -266,7 +180,7 @@ struct EarlyOtterDetailsView: View {
                     if !plan.matchedRuleNames.isEmpty {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "info.circle.fill")
-                                .foregroundStyle(WPStyles.secondaryBlue)
+                                .foregroundStyle(WPStyles.eventTint)
                                 .font(.title3)
                             
                             VStack(alignment: .leading, spacing: 4) {
@@ -279,7 +193,7 @@ struct EarlyOtterDetailsView: View {
                             }
                         }
                         .padding(16)
-                        .background(WPStyles.secondaryBlue.opacity(0.1))
+                        .background(WPStyles.eventTint.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal, 20)
                     }
@@ -343,13 +257,13 @@ struct EarlyOtterDetailsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Alarm Permission Needed")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(WPStyles.primaryOrange)
+                        .foregroundStyle(WPStyles.accent)
                     Text(AppConfiguration.alarmPermissionExplanation)
                         .font(.subheadline)
                         .foregroundStyle(WPStyles.secondaryText)
                 }
                 .padding(16)
-                .background(WPStyles.primaryOrange.opacity(0.12))
+                .background(WPStyles.accent.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 20)
             case .disabled, .notScheduled, .scheduled:
@@ -360,25 +274,10 @@ struct EarlyOtterDetailsView: View {
         }
     }
 
-    private func timelineRow(icon: String, label: String, value: String) -> some View {
-        HStack {
-            Image(systemName: icon)
-                .frame(width: 20)
-                .foregroundStyle(WPStyles.tertiaryText)
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.secondaryText)
-            Spacer()
-            Text(value)
-                .font(.subheadline.monospacedDigit().weight(.medium))
-                .foregroundStyle(WPStyles.primaryText)
-        }
-    }
-
     private func standaloneEventRow(_ event: ParsedEvent) -> some View {
         HStack {
             Image(systemName: "calendar")
-                .foregroundStyle(WPStyles.secondaryBlue)
+                .foregroundStyle(WPStyles.eventTint)
             Text(event.title)
                 .font(.headline)
                 .foregroundStyle(WPStyles.primaryText)

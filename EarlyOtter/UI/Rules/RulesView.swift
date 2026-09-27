@@ -12,20 +12,14 @@ struct RulesView: View {
             // MARK: Global filters (live above rules)
             Section {
                 NavigationLink(destination: GlobalEventFiltersView(appState: appState)) {
-                    HStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(WPStyles.surfaceRaised)
-                                .frame(width: 40, height: 40)
-                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                                .foregroundStyle(WPStyles.primaryOrange)
-                        }
+                    HStack(spacing: 14) {
+                        iconTile("line.3.horizontal.decrease", tint: WPStyles.primaryText)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Ignored Events & Filters")
+                            Text("Ignored Events")
                                 .font(.headline)
                                 .foregroundStyle(WPStyles.primaryText)
-                            Text("Configure which events are always skipped")
+                            Text(filterSummary)
                                 .font(.subheadline)
                                 .foregroundStyle(WPStyles.secondaryText)
                                 .lineLimit(1)
@@ -60,9 +54,12 @@ struct RulesView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         if !rule.isDefault {
+                            // Icon only; the explicit tint overrides the tab bar's white tint.
                             Button(role: .destructive) { deleteRule(rule) } label: {
-                                Label("Delete", systemImage: "trash")
+                                Image(systemName: "trash")
                             }
+                            .tint(.red)
+                            .accessibilityLabel("Delete")
                         }
                     }
                 }
@@ -72,7 +69,7 @@ struct RulesView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(WPStyles.primaryOrange)
+                            .foregroundStyle(WPStyles.accent)
                         Text("Add Rule")
                             .font(.headline)
                             .foregroundStyle(WPStyles.primaryText)
@@ -116,7 +113,7 @@ struct RulesView: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("Done") { isShowingSettings = false }
                                 .fontWeight(.bold)
-                                .foregroundStyle(WPStyles.primaryOrange)
+                                .foregroundStyle(WPStyles.accent)
                         }
                     }
             }
@@ -136,23 +133,19 @@ struct RulesView: View {
 
     private func ruleCard(_ rule: AlarmRule) -> some View {
         HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(rule.isDefault ? WPStyles.primaryOrange.opacity(0.15) : WPStyles.surfaceRaised)
-                    .frame(width: 42, height: 42)
-                Image(systemName: rule.isDefault ? "star.fill" : "slider.horizontal.3")
-                    .foregroundStyle(WPStyles.primaryOrange)
+            if rule.isDefault {
+                iconTile("star.fill", tint: WPStyles.accent, fill: WPStyles.accent.opacity(0.15))
+            } else {
+                iconTile(rule.symbol.systemImage, tint: WPStyles.primaryText)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(rule.name)
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
-
-                HStack(spacing: 12) {
-                    timingBadge(icon: "cup.and.saucer.fill", value: rule.prepTime.rawValue, unit: "prep")
-                    timingBadge(icon: "car.fill", value: rule.commuteTime.rawValue, unit: "commute")
-                }
+                Text("\(rule.prepTime.rawValue)m prep · \(rule.commuteTime.rawValue)m commute")
+                    .font(.subheadline)
+                    .foregroundStyle(WPStyles.secondaryText)
             }
 
             Spacer(minLength: 0)
@@ -166,15 +159,24 @@ struct RulesView: View {
         .opacity(rule.isDefault || rule.isEnabled ? 1 : 0.72)
     }
 
-    private func timingBadge(icon: String, value: Int, unit: String) -> some View {
-        HStack(alignment: .center, spacing: 4) {
-            Image(systemName: icon)
-                .font(.caption2)
-                .foregroundStyle(WPStyles.tertiaryText)
-            Text("\(value)m \(unit)")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(WPStyles.secondaryText)
-        }
+    private func iconTile(_ systemImage: String, tint: Color, fill: Color = WPStyles.surfaceRaised) -> some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(tint)
+            .frame(width: 42, height: 42)
+            .background(fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var filterSummary: String {
+        let filters = appState.preferences.filters
+        let statuses = [
+            (filters.ignoreAllDayEvents, "All-day"),
+            (filters.ignoreTentativeEvents, "Tentative"),
+            (filters.ignoreCanceledEvents, "Canceled"),
+            (filters.ignoreFreeEvents, "Free")
+        ].compactMap { $0.0 ? $0.1 : nil }
+        let active = statuses + appState.preferences.titleBlocklist
+        return active.isEmpty ? "None" : active.joined(separator: ", ")
     }
 
     // MARK: Helpers
@@ -199,11 +201,6 @@ enum RuleEditorMode {
 }
 
 struct RuleEditorView: View {
-    private enum ConditionField: Hashable {
-        case title
-        case location
-    }
-
     @Bindable var appState: AppState
     let mode: RuleEditorMode
     @Environment(\.dismiss) private var dismiss
@@ -218,15 +215,11 @@ struct RuleEditorView: View {
     @State private var sound: AlarmSoundOption
     @State private var snoozeEnabled: Bool
     @State private var snoozeDuration: Minutes
-    @State private var newTitleKeyword = ""
-    @State private var newLocationKeyword = ""
+    @State private var symbol: RuleSymbol
+    @State private var isChoosingSymbol = false
 
     @State private var showDuplicateAlert = false
     @State private var expandedAccountIDs: Set<CalendarAccountID> = []
-    @FocusState private var focusedConditionField: ConditionField?
-
-    @State private var selectedTab = 0 // 0 = Trigger Criteria, 1 = Alarm Actions
-    @Namespace private var editorTabUnderline
 
     private var isDefaultRule: Bool {
         if case .edit(let rule) = mode { return rule.isDefault }
@@ -249,6 +242,7 @@ struct RuleEditorView: View {
             _sound = State(initialValue: dr.alarmSettings.sound)
             _snoozeEnabled = State(initialValue: dr.alarmSettings.snoozeEnabled)
             _snoozeDuration = State(initialValue: dr.alarmSettings.snoozeDuration)
+            _symbol = State(initialValue: .general)
         case .edit(let rule):
             _name = State(initialValue: rule.name)
             _isEnabled = State(initialValue: rule.isEnabled)
@@ -260,6 +254,7 @@ struct RuleEditorView: View {
             _sound = State(initialValue: rule.alarmSettings.sound)
             _snoozeEnabled = State(initialValue: rule.alarmSettings.snoozeEnabled)
             _snoozeDuration = State(initialValue: rule.alarmSettings.snoozeDuration)
+            _symbol = State(initialValue: rule.symbol)
         }
     }
 
@@ -267,46 +262,25 @@ struct RuleEditorView: View {
         ZStack {
             Color.clear.withAppBackground()
 
-            VStack(spacing: 0) {
-                if !isDefaultRule {
-                    enabledAndNameSection
-                        .padding(.horizontal, 24)
-                        .padding(.top, 24)
-                        .padding(.bottom, 16)
-                }
-
-                editorTabSelector
-                    .padding(.top, isDefaultRule ? 28 : 0)
-                    .padding(.bottom, 24)
-                    .disabled(!isDefaultRule && !isEnabled)
-
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 28) {
-                        if selectedTab == 0 {
-                            if !isDefaultRule {
-                                weekdaysSection
-                                conditionsSection
-                            }
-                            calendarsSection
-                        } else {
-                            timingSection
-                            alarmSection
-                        }
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 28) {
+                    if !isDefaultRule {
+                        headerCard
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
+
+                    VStack(alignment: .leading, spacing: 28) {
+                        matchSection
+                        timingSection
+                        alarmSection
+                    }
                     .disabled(!isDefaultRule && !isEnabled)
                     .opacity((!isDefaultRule && !isEnabled) ? 0.5 : 1.0)
-                    .id(selectedTab)
-                    .transition(.opacity)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
             }
         }
-        .simultaneousGesture(
-            TapGesture().onEnded {
-                focusedConditionField = nil
-            }
-        )
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -326,15 +300,6 @@ struct RuleEditorView: View {
         } message: {
             Text("A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1.")
         }
-        .onChange(of: focusedConditionField) { previousField, currentField in
-            if previousField == .title, currentField != .title {
-                commitPendingTitleKeyword()
-            }
-
-            if previousField == .location, currentField != .location {
-                commitPendingLocationKeyword()
-            }
-        }
         .onChange(of: isEnabled) { _, newValue in
             guard case .edit(let rule) = mode, !rule.isDefault else { return }
             guard let current = appState.preferences.alarmRules.first(where: { $0.id == rule.id }),
@@ -352,14 +317,13 @@ struct RuleEditorView: View {
     private var calendarsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                sectionLabel("Calendars")
                 Spacer()
                 if !selectedCalendarIDs.isEmpty {
                     Button("Use All") {
                         selectedCalendarIDs = []
                     }
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(WPStyles.secondaryBlue)
+                    .foregroundStyle(WPStyles.eventTint)
                 }
             }
 
@@ -391,7 +355,7 @@ struct RuleEditorView: View {
                             } label: {
                                 HStack(spacing: 12) {
                                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+                                        .foregroundStyle(isSelected ? WPStyles.accent : WPStyles.tertiaryText)
 
                                     if let account = enabledAccounts.first {
                                         providerIcon(for: account.provider)
@@ -423,12 +387,12 @@ struct RuleEditorView: View {
     private func providerIcon(for provider: CalendarProvider) -> some View {
         if provider == .apple {
             Image(systemName: "apple.logo")
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.primaryText)
                 .frame(width: 16)
         } else {
             Text("G")
                 .font(.headline.weight(.black))
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.primaryText)
                 .frame(width: 16)
         }
     }
@@ -467,7 +431,7 @@ struct RuleEditorView: View {
                         }
                     } label: {
                         Image(systemName: allSelected ? "checkmark.circle.fill" : (someSelected ? "minus.circle.fill" : "circle"))
-                            .foregroundStyle((allSelected || someSelected) ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+                            .foregroundStyle((allSelected || someSelected) ? WPStyles.accent : WPStyles.tertiaryText)
                     }
                     .buttonStyle(.plain)
 
@@ -507,7 +471,7 @@ struct RuleEditorView: View {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(isSelected ? WPStyles.primaryOrange : WPStyles.tertiaryText)
+                                    .foregroundStyle(isSelected ? WPStyles.accent : WPStyles.tertiaryText)
 
                                 Text(calendar.title)
                                     .foregroundStyle(WPStyles.primaryText)
@@ -532,167 +496,176 @@ struct RuleEditorView: View {
         }
     }
 
-    private var editorTabSelector: some View {
-        HStack(spacing: 0) {
-            editorTabButton(title: "Trigger Criteria", tag: 0)
-            editorTabButton(title: "Alarm", tag: 1)
-        }
-    }
-
-    private func editorTabButton(title: String, tag: Int) -> some View {
-        let isSelected = selectedTab == tag
-        return Button {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
-                selectedTab = tag
-            }
-        } label: {
-            VStack(spacing: 10) {
-                Text(title)
-                    .font(.subheadline.weight(isSelected ? .bold : .regular))
-                    .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText)
-
-                // Reserve the underline's height on both tabs so the labels never shift.
-                Capsule()
-                    .fill(isSelected ? Color.clear : WPStyles.surfaceRaised)
-                    .frame(height: 3)
-                    .overlay {
-                        if isSelected {
-                            Capsule()
-                                .fill(WPStyles.primaryOrange)
-                                .matchedGeometryEffect(id: "editorTabUnderline", in: editorTabUnderline)
-                        }
-                    }
-            }
-            // Size to the label so the underline tracks the text width, X-style.
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.top, 6)
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
     private var navTitle: String {
         if isDefaultRule { return "Default Rule" }
         if mode.isAdd { return "New Rule" }
         return name.isEmpty ? "Rule" : name
     }
 
-    private var enabledAndNameSection: some View {
-        VStack(spacing: 0) {
-            Toggle(isOn: $isEnabled) {
-                Text("Enable Rule")
-                    .font(.body.weight(.medium))
+    private var headerCard: some View {
+        HStack(spacing: 12) {
+            Button {
+                isChoosingSymbol = true
+            } label: {
+                Image(systemName: symbol.systemImage)
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(WPStyles.primaryText)
+                    .frame(width: 36, height: 36)
+                    .background(WPStyles.surfaceRaised, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
-            .tint(WPStyles.primaryOrange)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-
-            Divider().padding(.leading, 16)
-
-            HStack {
-                Text("Name")
-                    .font(.body)
-                    .foregroundStyle(WPStyles.primaryText)
-                Spacer()
-                TextField("e.g. Doctor Appointments", text: $name)
-                    .font(.body)
-                    .multilineTextAlignment(.trailing)
-                    .foregroundStyle(WPStyles.secondaryText)
+            .buttonStyle(.plain)
+            .accessibilityLabel("Rule icon")
+            .popover(isPresented: $isChoosingSymbol) {
+                symbolPicker
+                    .padding(12)
+                    .presentationCompactAdaptation(.popover)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+
+            TextField("Rule name", text: $name)
+                .font(.headline)
+                .foregroundStyle(WPStyles.primaryText)
+
+            Toggle("Enabled", isOn: $isEnabled)
+                .labelsHidden()
+                .tint(WPStyles.accent)
         }
-        .background(WPStyles.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(WPStyles.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private var conditionsSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            sectionLabel("Conditions")
+    private var matchSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionLabel("Match")
 
-            conditionGroup(
-                icon: "text.magnifyingglass",
-                label: "Title contains",
-                values: conditions.compactMap {
-                    if case .titleContains(let v) = $0 { return v } else { return nil }
-                },
-                newValue: $newTitleKeyword,
-                focus: $focusedConditionField,
-                focusField: .title,
-                placeholder: "keyword",
-                onAdd: commitPendingTitleKeyword,
-                onRemove: { keyword in conditions.removeAll { $0 == .titleContains(keyword) } }
-            )
-
-            conditionGroup(
-                icon: "mappin.circle.fill",
-                label: "Location contains",
-                values: conditions.compactMap {
-                    if case .locationContains(let v) = $0 { return v } else { return nil }
-                },
-                newValue: $newLocationKeyword,
-                focus: $focusedConditionField,
-                focusField: .location,
-                placeholder: "place or address",
-                onAdd: commitPendingLocationKeyword,
-                onRemove: { location in conditions.removeAll { $0 == .locationContains(location) } }
-            )
-        }
-    }
-
-    private func conditionGroup(
-        icon: String,
-        label: String,
-        values: [String],
-        newValue: Binding<String>,
-        focus: FocusState<ConditionField?>.Binding,
-        focusField: ConditionField,
-        placeholder: String,
-        onAdd: @escaping () -> Void,
-        onRemove: @escaping (String) -> Void
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: icon).foregroundStyle(WPStyles.primaryOrange)
-                Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(WPStyles.primaryText)
-            }
-
-            if !values.isEmpty {
-                FlowLayout(spacing: 6) {
-                    ForEach(values, id: \.self) { value in
-                        HStack(spacing: 4) {
-                            Text(value).font(.subheadline.weight(.medium)).foregroundStyle(WPStyles.primaryText)
-                            Button { onRemove(value) } label: {
-                                Image(systemName: "xmark.circle.fill").foregroundStyle(WPStyles.tertiaryText)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(WPStyles.surfaceRaised)
-                        .clipShape(Capsule())
+            VStack(spacing: 0) {
+                if !isDefaultRule {
+                    navRow("Title contains", value: keywordSummary(titleKeywords.wrappedValue)) {
+                        KeywordListEditor(
+                            title: "Title Contains",
+                            placeholder: "Add a word",
+                            footer: "Events whose title contains all of these words use this rule.",
+                            keywords: titleKeywords
+                        )
                     }
+                    Divider().padding(.leading, 16)
+                    navRow("Location contains", value: keywordSummary(locationKeywords.wrappedValue)) {
+                        KeywordListEditor(
+                            title: "Location Contains",
+                            placeholder: "Add a place or address",
+                            footer: "Events whose location contains all of these use this rule.",
+                            keywords: locationKeywords
+                        )
+                    }
+                    Divider().padding(.leading, 16)
+                    navRow("Days", value: daysSummary) {
+                        WeekdayPicker(weekdays: $activeWeekdays)
+                    }
+                    Divider().padding(.leading, 16)
+                }
+                navRow("Calendars", value: calendarsSummary) {
+                    ScrollView {
+                        calendarsSection.padding(20)
+                    }
+                    .background(Color.clear.withAppBackground())
+                    .navigationTitle("Calendars")
+                    .navigationBarTitleDisplayMode(.inline)
                 }
             }
+            .background(WPStyles.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
 
+    private func navRow<Destination: View>(
+        _ title: String,
+        value: String,
+        @ViewBuilder destination: () -> Destination
+    ) -> some View {
+        NavigationLink(destination: destination) {
             HStack(spacing: 8) {
-                TextField(placeholder, text: newValue)
-                    .font(.subheadline)
+                Text(title)
                     .foregroundStyle(WPStyles.primaryText)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .focused(focus, equals: focusField)
-                    .onSubmit { onAdd() }
-                Button(action: onAdd) {
-                    Image(systemName: "plus.circle.fill").foregroundStyle(WPStyles.primaryOrange)
+                Spacer(minLength: 12)
+                Text(value)
+                    .foregroundStyle(WPStyles.secondaryText)
+                    .lineLimit(1)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(WPStyles.tertiaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var titleKeywords: Binding<[String]> {
+        keywords(\.titleKeyword, make: AlarmRuleCondition.titleContains)
+    }
+
+    private var locationKeywords: Binding<[String]> {
+        keywords(\.locationKeyword, make: AlarmRuleCondition.locationContains)
+    }
+
+    private func keywords(
+        _ extract: @escaping (AlarmRuleCondition) -> String?,
+        make: @escaping (String) -> AlarmRuleCondition
+    ) -> Binding<[String]> {
+        Binding(
+            get: { conditions.compactMap(extract) },
+            set: { conditions = conditions.filter { extract($0) == nil } + $0.map(make) }
+        )
+    }
+
+    private func keywordSummary(_ keywords: [String]) -> String {
+        keywords.isEmpty ? "Any" : keywords.joined(separator: ", ")
+    }
+
+    private var daysSummary: String {
+        switch activeWeekdays {
+        case Set(1...7): return "Every day"
+        case Set(2...6): return "Weekdays"
+        case [1, 7]: return "Weekends"
+        default:
+            let symbols = Calendar.current.shortWeekdaySymbols
+            return activeWeekdays.sorted().map { symbols[$0 - 1] }.joined(separator: ", ")
+        }
+    }
+
+    private var calendarsSummary: String {
+        if selectedCalendarIDs.isEmpty { return "All" }
+        let titles = appState.calendars.filter { selectedCalendarIDs.contains($0.id) }.map(\.title)
+        switch titles.count {
+        case 0: return "None"
+        case 1: return titles[0]
+        default: return "\(titles.count) calendars"
+        }
+    }
+
+    private var symbolPicker: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.fixed(40), spacing: 6), count: 6), spacing: 6) {
+            ForEach(RuleSymbol.allCases, id: \.self) { option in
+                let isSelected = option == symbol
+                Button {
+                    symbol = option
+                    isChoosingSymbol = false
+                } label: {
+                    Image(systemName: option.systemImage)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.tertiaryText)
+                        .frame(width: 40, height: 40)
+                        .background(isSelected ? WPStyles.surfaceRaised : .clear, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                .stroke(isSelected ? WPStyles.accent : .clear, lineWidth: 1.5)
+                        }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(option.rawValue.capitalized)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
-            .padding(12)
-            .background(WPStyles.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 
@@ -707,31 +680,6 @@ struct RuleEditorView: View {
             }
             .background(WPStyles.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        }
-    }
-
-    private var weekdaysSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                sectionLabel("Applies On")
-                Spacer()
-                if activeWeekdays != Set(1...7) {
-                    Button("Every day") {
-                        activeWeekdays = Set(1...7)
-                    }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WPStyles.secondaryBlue)
-                }
-            }
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7),
-                spacing: 8
-            ) {
-                ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
-                    weekdayToggleCell(option)
-                }
-            }
         }
     }
 
@@ -764,17 +712,17 @@ struct RuleEditorView: View {
                 Divider().padding(.leading, 16)
 
                 Toggle(isOn: $snoozeEnabled) {
-                    Text("Enable Snooze")
+                    Text("Snooze")
                         .font(.body)
                         .foregroundStyle(WPStyles.primaryText)
                 }
-                .tint(WPStyles.primaryOrange)
+                .tint(WPStyles.accent)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
 
                 if snoozeEnabled {
                     Divider().padding(.leading, 16)
-                    stepperRow(label: "Snooze duration", value: $snoozeDuration, range: 1...60)
+                    stepperRow(label: "Duration", value: $snoozeDuration, range: 1...60)
                 }
             }
             .background(WPStyles.surface)
@@ -793,40 +741,12 @@ struct RuleEditorView: View {
                 Spacer()
                 Text("\(value.wrappedValue.rawValue) min")
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.primaryText)
                     .monospacedDigit()
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-    }
-
-    private func weekdayToggleCell(_ option: WeekdayOption) -> some View {
-        let isSelected = activeWeekdays.contains(option.weekday)
-
-        return Button {
-            if isSelected {
-                guard activeWeekdays.count > 1 else { return }
-                activeWeekdays.remove(option.weekday)
-            } else {
-                activeWeekdays.insert(option.weekday)
-            }
-        } label: {
-            Text(option.shortLabel)
-                .font(.system(size: 10, weight: .bold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(isSelected ? WPStyles.surfaceRaised : WPStyles.surface)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
-                )
-                .foregroundStyle(isSelected ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
-        }
-        .buttonStyle(.plain)
     }
 
     private func sectionLabel(_ text: String) -> some View {
@@ -838,8 +758,6 @@ struct RuleEditorView: View {
     }
 
     private func trySave() {
-        commitPendingConditions()
-
         // Check for 1:1 duplicate (same calendars + same conditions) against other rules
         if case .add = mode {
             let sortedConditions = conditions.sorted {
@@ -857,45 +775,6 @@ struct RuleEditorView: View {
             }
         }
         save()
-    }
-
-    private func commitPendingConditions() {
-        commitPendingTitleKeyword()
-        commitPendingLocationKeyword()
-    }
-
-    private func commitPendingTitleKeyword() {
-        commitPendingCondition(
-            text: &newTitleKeyword,
-            makeCondition: AlarmRuleCondition.titleContains
-        )
-    }
-
-    private func commitPendingLocationKeyword() {
-        commitPendingCondition(
-            text: &newLocationKeyword,
-            makeCondition: AlarmRuleCondition.locationContains
-        )
-    }
-
-    private func commitPendingCondition(
-        text: inout String,
-        makeCondition: (String) -> AlarmRuleCondition
-    ) {
-        let value = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !value.isEmpty else {
-            text = ""
-            return
-        }
-
-        let condition = makeCondition(value)
-        guard !conditions.contains(condition) else {
-            text = ""
-            return
-        }
-
-        conditions.append(condition)
-        text = ""
     }
 
     private func save() {
@@ -916,7 +795,8 @@ struct RuleEditorView: View {
                             sound: sound,
                             snoozeEnabled: snoozeEnabled,
                             snoozeDuration: snoozeDuration
-                        )
+                        ),
+                        symbol: symbol
                     )
                     if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
                         copy.alarmRules.insert(newRule, at: idx)
@@ -930,6 +810,7 @@ struct RuleEditorView: View {
                         copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
                         copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
                         copy.alarmRules[idx].conditions = isDefaultRule ? [] : conditions
+                        copy.alarmRules[idx].symbol = symbol
                         copy.alarmRules[idx].prepTime = prepTime
                         copy.alarmRules[idx].commuteTime = commuteTime
                         copy.alarmRules[idx].alarmSettings = RuleAlarmSettings(
@@ -965,6 +846,90 @@ struct RuleEditorView: View {
                 selectedCalendarIDs = []
             }
         }
+    }
+}
+
+// MARK: - Rule editor pages
+
+/// A plain list of keywords: swipe to delete, type and return to add.
+private struct KeywordListEditor: View {
+    let title: String
+    let placeholder: String
+    let footer: String
+    @Binding var keywords: [String]
+
+    @State private var draft = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(keywords, id: \.self) { keyword in
+                    Text(keyword)
+                        .foregroundStyle(WPStyles.primaryText)
+                }
+                .onDelete { keywords.remove(atOffsets: $0) }
+
+                TextField(placeholder, text: $draft)
+                    .focused($isFocused)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .submitLabel(.done)
+                    .onSubmit(commit)
+            } footer: {
+                Text(footer)
+            }
+            .listRowBackground(WPStyles.surface)
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear.withAppBackground())
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { isFocused = keywords.isEmpty }
+        .onDisappear(perform: commit)
+    }
+
+    private func commit() {
+        let value = draft.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        draft = ""
+        guard !value.isEmpty, !keywords.contains(value) else { return }
+        keywords.append(value)
+    }
+}
+
+/// Clock-style day list; at least one day stays selected.
+private struct WeekdayPicker: View {
+    @Binding var weekdays: Set<Int>
+
+    var body: some View {
+        List {
+            ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
+                Button {
+                    if weekdays.contains(option.weekday) {
+                        guard weekdays.count > 1 else { return }
+                        weekdays.remove(option.weekday)
+                    } else {
+                        weekdays.insert(option.weekday)
+                    }
+                } label: {
+                    HStack {
+                        Text("Every \(option.fullLabel)")
+                            .foregroundStyle(WPStyles.primaryText)
+                        Spacer()
+                        if weekdays.contains(option.weekday) {
+                            Image(systemName: "checkmark")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(WPStyles.accent)
+                        }
+                    }
+                }
+            }
+            .listRowBackground(WPStyles.surface)
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear.withAppBackground())
+        .navigationTitle("Days")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -1076,7 +1041,7 @@ struct GlobalEventFiltersView: View {
 
     private func filterToggle(_ label: String, isOn: Binding<Bool>) -> some View {
         Toggle(label, isOn: isOn)
-            .tint(WPStyles.primaryOrange)
+            .tint(WPStyles.accent)
             .foregroundStyle(WPStyles.primaryText)
     }
 
@@ -1121,7 +1086,7 @@ struct GlobalEventFiltersView: View {
                     .autocorrectionDisabled()
                     .onSubmit { addKeyword(newKeyword, to: keywords) }
                 Button { addKeyword(newKeyword, to: keywords) } label: {
-                    Image(systemName: "plus.circle.fill").foregroundStyle(WPStyles.primaryOrange)
+                    Image(systemName: "plus.circle.fill").foregroundStyle(WPStyles.accent)
                 }
                 .buttonStyle(.plain)
             }
@@ -1139,5 +1104,24 @@ struct GlobalEventFiltersView: View {
             list.wrappedValue.append(v)
         }
         binding.wrappedValue = ""
+    }
+}
+
+extension RuleSymbol {
+    var systemImage: String {
+        switch self {
+        case .general: "slider.horizontal.3"
+        case .school: "graduationcap.fill"
+        case .work: "briefcase.fill"
+        case .flight: "airplane"
+        case .gym: "dumbbell.fill"
+        case .run: "figure.run"
+        case .medical: "stethoscope"
+        case .meeting: "person.2.fill"
+        case .drive: "car.fill"
+        case .study: "book.fill"
+        case .music: "music.note"
+        case .sun: "sun.max.fill"
+        }
     }
 }

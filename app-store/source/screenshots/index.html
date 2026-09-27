@@ -10,12 +10,8 @@
 @font-face { font-family: "Fraunces"; src: url("Fraunces-Italic.ttf"); font-weight: 100 900; font-style: italic; }
 
 :root {
-  /* app tokens (mirror WPStyles) */
-  --orange: rgb(255,158,10); --deep: rgb(179,92,20); --blue: rgb(10,133,255);
-  --bg0: rgb(10,10,10); --bg1: rgb(28,28,28); --surface: rgb(36,36,36); --raised: rgb(51,51,51);
-  --t1: rgb(227,227,227); --t2: rgb(217,194,173); --t3: rgba(255,255,255,.58);
-  /* marketing tokens */
-  --ink: #16120f; --cream: #f2eadc; --apricot: #ffa31a; --clay: #b35c14;
+  /* Night Swim: midnight navy, cream, starlight gold; deep gold for accents on cream. */
+  --ink: #0b1428; --cream: #f2eadc; --gold: #f4c66a; --clay: #a8791f;
   --M: 96px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,9 +21,9 @@ body { font-family: "SFP", system-ui; -webkit-font-smoothing: antialiased; }
 
 /* ---------- Panels ---------- */
 .panel { position: relative; width: 1320px; height: 2868px; overflow: hidden; flex: none; }
-.panel.ink     { background: var(--ink);     color: var(--cream); --fg: var(--cream); --accent: var(--apricot); --line: rgba(242,234,220,.22); --shadow: 0 80px 140px rgba(0,0,0,.55), 0 20px 40px rgba(0,0,0,.35); }
-.panel.cream   { background: var(--cream);   color: var(--ink);   --fg: var(--ink);   --accent: var(--clay);    --line: rgba(22,18,15,.18);   --shadow: 0 90px 120px -40px rgba(70,40,10,.5), 0 24px 50px rgba(70,40,10,.16); }
-.panel.apricot { background: var(--apricot); color: var(--ink);   --fg: var(--ink);   --accent: var(--ink);     --line: rgba(22,18,15,.25);   --shadow: 0 90px 120px -40px rgba(110,45,0,.55), 0 24px 50px rgba(110,45,0,.2); }
+.panel.ink     { background: var(--ink);     color: var(--cream); --fg: var(--cream); --accent: var(--gold); --line: rgba(242,234,220,.22); --shadow: 0 80px 140px rgba(0,0,0,.55), 0 20px 40px rgba(0,0,0,.35); }
+.panel.cream   { background: var(--cream);   color: var(--ink);   --fg: var(--ink);   --accent: var(--clay);    --line: rgba(11,20,40,.16);   --shadow: 0 90px 120px -40px rgba(11,20,40,.45), 0 24px 50px rgba(11,20,40,.14); }
+.panel.gold { background: var(--gold); color: var(--ink);   --fg: var(--ink);   --accent: var(--ink);     --line: rgba(11,20,40,.22);   --shadow: 0 90px 120px -40px rgba(80,60,10,.45), 0 24px 50px rgba(80,60,10,.18); }
 .grain { position: absolute; inset: 0; pointer-events: none; z-index: 20; opacity: .09; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); }
 
@@ -35,16 +31,15 @@ body { font-family: "SFP", system-ui; -webkit-font-smoothing: antialiased; }
 .rule { position: absolute; left: 0; right: 0; top: 168px; height: 2px; background: var(--line); z-index: 4; }
 .index { position: absolute; left: var(--M); top: 146px; z-index: 5; display: flex; align-items: center; gap: 22px; padding-right: 26px;
   font-family: "SFP"; font-size: 28px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
-.panel.ink .index { background: var(--ink); } .panel.cream .index { background: var(--cream); } .panel.apricot .index { background: var(--apricot); }
+.panel.ink .index { background: var(--ink); } .panel.cream .index { background: var(--cream); } .panel.gold .index { background: var(--gold); }
 .index b { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); letter-spacing: .04em; }
 .index span { opacity: .62; }
 .head { position: absolute; left: var(--M); right: var(--M); top: 262px; z-index: 5; }
 h1 { font-family: "Fraunces"; font-weight: 480; font-size: 150px; line-height: .96; letter-spacing: -0.032em;
   font-variation-settings: "opsz" 144, "SOFT" 60, "WONK" 0; }
 h1 i { font-style: italic; font-weight: 420; color: var(--accent); font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; letter-spacing: -0.02em; }
-.sub { margin-top: 46px; max-width: 930px; font-size: 42px; line-height: 1.36; letter-spacing: -0.012em; opacity: .66; font-weight: 450; }
+.sub { margin-top: 46px; max-width: 1060px; font-size: 42px; line-height: 1.36; letter-spacing: -0.012em; opacity: .66; font-weight: 450; }
 .num { font-family: "Fraunces"; font-variant-numeric: lining-nums tabular-nums; font-variation-settings: "opsz" 144, "SOFT" 40, "WONK" 0; letter-spacing: -0.03em; }
-.caps { font-size: 26px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 
 /* ---------- Device ---------- */
 .device { position: absolute; width: 1000px; height: 2102px; z-index: 3; transform-origin: 0 0; }
@@ -55,31 +50,31 @@ h1 i { font-style: italic; font-weight: 420; color: var(--accent); font-variatio
 .device .btn { position: absolute; width: 9px; border-radius: 4px; background: linear-gradient(90deg,#18191b,#55575c,#18191b); }
 
 /* ---------- App (points) ---------- */
-.app { position: absolute; left: 0; top: 0; width: 440px; height: 956px; zoom: 2.13636; overflow: hidden; font-family: "SFP"; color: var(--t1); }
-.app-bg { position: absolute; inset: 0; background: linear-gradient(180deg, var(--bg0), var(--bg1)); }
-.app-bg::before { content: ""; position: absolute; width: 280px; height: 280px; border-radius: 50%; right: -120px; top: -90px; background: rgba(255,158,10,.14); filter: blur(60px); }
-.app-bg::after { content: ""; position: absolute; width: 240px; height: 240px; border-radius: 50%; left: -80px; bottom: -80px; background: rgba(10,133,255,.08); filter: blur(50px); }
+.app { position: absolute; left: 0; top: 0; width: 440px; height: 956px; zoom: 2.13636; overflow: hidden; font-family: "SFP"; color: #fff; }
 .island { position: absolute; left: 50%; top: 11px; width: 126px; height: 37px; margin-left: -63px; border-radius: 20px; background: #000; z-index: 50; }
 .status { position: absolute; left: 0; right: 0; top: 0; height: 54px; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 6px 34px 0 50px; }
 .status .time { font-weight: 600; font-size: 17px; letter-spacing: -0.01em; color: #fff; width: 60px; text-align: center; }
 .status .right { display: flex; align-items: center; gap: 7px; }
 .i { display: inline-block; flex: none; background: currentColor; -webkit-mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; }
-.card { background: var(--surface); border-radius: 28px; padding: 16px; position: relative; }
-.rounded { font-family: "SFR"; }
 .row { display: flex; align-items: center; }
-.sp { flex: 1; }
-.tabbar { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); width: 300px; height: 64px; border-radius: 32px;
   background: rgba(40,40,42,.72); backdrop-filter: blur(20px); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.14), 0 8px 30px rgba(0,0,0,.4);
   display: flex; align-items: center; justify-content: space-around; padding: 4px; z-index: 30; }
-.tab { flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,.92); }
-.tab.on { background: rgba(255,255,255,.12); }
 </style>
 </head>
 <body>
 <div id="root"></div>
-<script src="screens.js"></script>
 <script>
 const P = new URLSearchParams(location.search);
+
+const ic = (name, size, color) =>
+  `<span class="i" style="width:${size}px;height:${size}px;background:${color};-webkit-mask-image:url('sym/${name}.png')"></span>`;
+
+// Screens are real renders of the app (app/*.png); only the status bar is drawn here.
+const RENDER_TIME = '8:13';
+const statusBar = `<div class="app" style="height:60px;background:none"><div class="island"></div>
+  <div class="status"><div class="time">${RENDER_TIME}</div>
+    <div class="right" style="color:#fff">${ic('cellularbars', 18, '#fff')}${ic('wifi', 17, '#fff')}${ic('battery.100percent', 27, '#fff')}</div></div></div>`;
+const shot = name => `<img src="app/${name}.png" style="width:100%;display:block">${statusBar}`;
 
 function device(x, y, screen, scale = 1, z = 3) {
   return `<div class="device" style="left:${x}px;top:${y}px;transform:scale(${scale});z-index:${z}">
@@ -99,9 +94,8 @@ const panels = [];
 
 /* 01 — Hero */
 panels.push(['ink', () => `
-  ${head('01', 'Calendar alarm', 'Your alarm,<br>set by your<br><i>calendar.</i>',
-    'EarlyOtter reads tomorrow’s first event and wakes you with time to spare.')}
-  ${device(160, 1110, dashboard('11:15'))}
+  ${head('01', 'Calendar alarm', 'Your alarm,<br>set by your<br><i>calendar.</i>', '')}
+  ${device(160, 900, shot('home'))}
 `]);
 
 /* 02 — The math */
@@ -116,56 +110,32 @@ panels.push(['cream', () => {
   return `
   ${head('02', 'Built-in math', 'Prep and<br>commute,<br><i>built in.</i>', '')}
   <div style="position:absolute;left:var(--M);right:var(--M);top:770px;z-index:5">
-    ${row(`<span class="num" style="font-size:104px;font-weight:500">9:00</span>`, 'Biology Class', 'First event of the day', dot('#0a85ff'))}
+    ${row(`<span class="num" style="font-size:104px;font-weight:500">9:00</span>`, 'Biology Class', 'First event of the day', dot('#6ed3e0'))}
     ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:35</span>`, 'Prep time', 'Shower, coffee, get dressed', `<div style="opacity:.5">${ic('cup.and.saucer.fill', 40, 'var(--ink)')}</div>`)}
     ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:30</span>`, 'Commute', 'Door to lecture hall', `<div style="opacity:.5">${ic('car.fill', 40, 'var(--ink)')}</div>`)}
-    ${row(`<span class="num" style="font-size:164px;font-weight:600;color:var(--clay)">7:55</span>`, 'Wake up', 'Alarm set automatically', dot('#ff9e0a'), { h: 200, bt: '5px solid var(--ink)', ts: 52 })}
+    ${row(`<span class="num" style="font-size:164px;font-weight:600;color:var(--clay)">7:55</span>`, 'Wake up', 'Alarm set automatically', dot('#f4c66a'), { h: 200, bt: '5px solid var(--ink)', ts: 52 })}
   </div>
-  ${device(160, 1440, detailsSheet())}
+  ${device(160, 1440, shot('details'))}
 `;}]);
 
 /* 03 — Week */
-panels.push(['apricot', () => {
-  const times = ['—', '7:55', '9:45', '6:40', '7:55', '7:30', '—'];
-  const evs = ['Off', 'Biology', 'Team sync', 'Pitch', 'Biology', 'Standby', 'Off'];
-  return `
+panels.push(['gold', () => `
   ${head('03', 'Every day is different', 'Life changes.<br><i>Your alarm</i><br>should too.', '')}
-  <div style="position:absolute;left:var(--M);top:900px;z-index:5"><div style="width:440px;zoom:2.5636">
-    <div style="background:#1c1a19;border-radius:32px;padding:18px 16px 20px;color:var(--t1);box-shadow:0 36px 50px -20px rgba(110,45,0,.55),0 10px 20px rgba(110,45,0,.18)">
-      <div class="row" style="margin-bottom:14px"><div style="font-size:17px;font-weight:600">Oct 4 - 10</div><div class="sp"></div>
-        <div class="row" style="gap:10px;font-size:11px;font-weight:600;color:var(--t2)">
-          <span class="row" style="gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#ff9e0a"></span>Alarm</span>
-          <span class="row" style="gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#0a85ff"></span>Event</span></div></div>
-      ${weekColumns(44, 12, 372)}
-    </div>
-    <div class="row" style="gap:12px;padding:0 22px;margin-top:22px;color:var(--ink)">${times.map((t, i) => `
-      <div style="flex:1;text-align:center">
-        <div class="num" style="font-size:19px;font-weight:${t === '—' ? 300 : 560};opacity:${t === '—' ? .4 : 1}">${t}</div>
-        <div style="font-size:8px;font-weight:600;letter-spacing:.02em;opacity:.62;margin-top:3px;white-space:nowrap">${evs[i]}</div></div>`).join('')}
-    </div>
-  </div></div>
-  <div style="position:absolute;left:var(--M);right:var(--M);top:2400px;z-index:5;border-top:2px solid var(--line);padding-top:36px;font-size:38px;line-height:1.35;opacity:.7;max-width:1000px">
-    A new wake-up for every day, with nothing for you to set. EarlyOtter recalculates every night.</div>
-`;}]);
+  <img src="app/week.png" style="position:absolute;left:var(--M);top:1300px;width:1128px;border-radius:86px;z-index:5;box-shadow:var(--shadow)">
+`]);
 
 /* 04 — Rules */
 panels.push(['ink', () => `
-  ${head('04', 'Custom rules', 'A rule for<br>every kind<br>of <i>morning.</i>', 'Class, gym, flights. Give each its own prep and commute.')}
-  ${device(56, 1010, rulesScreen(), .8, 3)}
-  ${device(464, 1190, ruleEditor(), .8, 4)}
+  ${head('04', 'Custom rules', 'A rule for<br>every kind<br>of <i>morning.</i>', '')}
+  ${device(56, 850, shot('rules'), .8, 3)}
+  ${device(464, 1030, shot('editor'), .8, 4)}
 `]);
 
-/* 05 — Native alarm */
-panels.push(['cream', () => `
-  ${head('05', 'Native iOS alarms', 'Rings through<br><i>Silent</i> & Focus.', 'Built on Apple’s own alarm system, so it wakes you just like the Clock app.')}
-  ${device(160, 870, lockScreen())}
-`]);
-
-/* 06 — Sleep in */
-panels.push(['apricot', () => `
-  ${head('06', 'Days off', 'No early plans?<br><i>Sleep in.</i>', 'Standby alarms cover quiet weekdays. Days off stay silent.')}
+/* 05 — Sleep in */
+panels.push(['gold', () => `
+  ${head('05', 'Days off', 'No early plans?<br><i>Sleep in.</i>', 'A latest wake-up on quiet mornings. Days off stay silent.')}
   <img src="OtterOverlook.png" style="position:absolute;width:380px;left:736px;top:780px;z-index:2">
-  ${device(160, 1078, scheduleScreen())}
+  ${device(160, 1078, shot('schedule'))}
 `]);
 
 const only = P.has('p') ? [+P.get('p')] : panels.map((_, i) => i);

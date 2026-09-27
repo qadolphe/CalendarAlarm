@@ -29,7 +29,7 @@ struct EarlyOtterCalculator {
         let isFallbackEnabled = scheduleRules.fallbackEnabledDays.contains(weekday)
         let fallbackAlarmSettings = preferences.fallbackAlarmSettings
 
-        // The blue event marker reflects whether an event exists that day, so it is
+        // The event marker reflects whether an event exists that day, so it is
         // computed once up front and threaded into every plan — including disabled,
         // inactive, and skipped days where no alarm runs but the event is still there.
         let firstEventOfDay = events

@@ -48,6 +48,7 @@
 		AA000000000000000000021B /* UI/CalendarSelection/CalendarSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011B /* UI/CalendarSelection/CalendarSelectionView.swift */; };
 		AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */; };
 		AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */; };
+		AA0000000000000000000D02 /* UI/Dashboard/WakeUpTimetableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000D01 /* UI/Dashboard/WakeUpTimetableView.swift */; };
 		AA000000000000000000021E /* UI/Dashboard/DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */; };
 		AA000000000000000000021F /* UI/Permissions/PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */; };
 		AA0000000000000000000220 /* UI/Permissions/PermissionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */; };
@@ -91,6 +92,7 @@
 		AA0000000000000000000253 /* Domain/Services/WakeUpGreeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000153 /* Domain/Services/WakeUpGreeting.swift */; };
 		AA0000000000000000000254 /* Configuration/WakeUpMessageCatalog+Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000154 /* Configuration/WakeUpMessageCatalog+Default.swift */; };
 		AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
+		AA0000000000000000000D04 /* UI/TimetableFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */; };
 		AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000301 /* Domain/EventFilterTests.swift */; };
 		AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */; };
 		AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */; };
@@ -186,6 +188,7 @@
 		AA000000000000000000011B /* UI/CalendarSelection/CalendarSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/CalendarSelection/CalendarSelectionView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011C /* UI/CalendarSelection/CalendarSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/CalendarSelection/CalendarSelectionViewModel.swift; sourceTree = "<group>"; };
 		AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000D01 /* UI/Dashboard/WakeUpTimetableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/WakeUpTimetableView.swift; sourceTree = "<group>"; };
 		AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardViewModel.swift; sourceTree = "<group>"; };
 		AA000000000000000000011F /* UI/Permissions/PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000120 /* UI/Permissions/PermissionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Permissions/PermissionsViewModel.swift; sourceTree = "<group>"; };
@@ -229,6 +232,7 @@
 		AA0000000000000000000153 /* Domain/Services/WakeUpGreeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/WakeUpGreeting.swift; sourceTree = "<group>"; };
 		AA0000000000000000000154 /* Configuration/WakeUpMessageCatalog+Default.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Configuration/WakeUpMessageCatalog+Default.swift"; sourceTree = "<group>"; };
 		AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/TimetableFormatTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000301 /* Domain/EventFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EventFilterTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EarlyOtterCalculatorTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AlarmSyncServiceTests.swift; sourceTree = "<group>"; };
@@ -533,6 +537,7 @@
 			isa = PBXGroup;
 			children = (
 				AA000000000000000000011D /* UI/Dashboard/DashboardView.swift */,
+				AA0000000000000000000D01 /* UI/Dashboard/WakeUpTimetableView.swift */,
 				AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */,
 				AA000000000000000000011E /* UI/Dashboard/DashboardViewModel.swift */,
 				775180102FA6F5EA00B73F60 /* UI/Dashboard/EarlyOtterDetailsView.swift */,
@@ -625,6 +630,7 @@
 				AA0000000000000000000901 /* Domain/AppReviewPromptPolicyTests.swift */,
 				AA0000000000000000000A01 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift */,
 				AA0000000000000000000300 /* Domain/ClockTimeTests.swift */,
+				AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */,
 				AA0000000000000000000301 /* Domain/EventFilterTests.swift */,
 				AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */,
 				AA0000000000000000000307 /* Domain/WakeUpGreetingTests.swift */,
@@ -850,6 +856,7 @@
 				AA000000000000000000021B /* UI/CalendarSelection/CalendarSelectionView.swift in Sources */,
 				AA000000000000000000021C /* UI/CalendarSelection/CalendarSelectionViewModel.swift in Sources */,
 				AA000000000000000000021D /* UI/Dashboard/DashboardView.swift in Sources */,
+				AA0000000000000000000D02 /* UI/Dashboard/WakeUpTimetableView.swift in Sources */,
 				AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */,
 				AA0000000000000000000252 /* UI/Schedule/ScheduleView.swift in Sources */,
 				AA0000000000000000000253 /* Domain/Services/WakeUpGreeting.swift in Sources */,
@@ -887,6 +894,7 @@
 				AA0000000000000000000911 /* Domain/AppReviewPromptPolicyTests.swift in Sources */,
 				AA0000000000000000000A11 /* Domain/NextAlarmWidgetDisplayPolicyTests.swift in Sources */,
 				AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */,
+				AA0000000000000000000D04 /* UI/TimetableFormatTests.swift in Sources */,
 				AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */,
 				AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */,
 				AA0000000000000000000407 /* Domain/WakeUpGreetingTests.swift in Sources */,

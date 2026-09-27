@@ -56,7 +56,7 @@ struct SettingsView: View {
         NavigationLink(destination: destination()) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.secondaryText)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
@@ -87,7 +87,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: isSystemEnabledBinding)
                     .labelsHidden()
-                    .tint(WPStyles.primaryOrange)
+                    .tint(WPStyles.accent)
             }
             Text(appState.preferences.isSystemEnabled ? "EarlyOtter will schedule alarms based on your rules." : "EarlyOtter is completely disabled. No alarms will run.")
                 .font(.subheadline)
@@ -122,7 +122,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: usageSharingBinding)
                     .labelsHidden()
-                    .tint(WPStyles.primaryOrange)
+                    .tint(WPStyles.accent)
             }
             Text(AppConfiguration.usageSharingExplanation)
                 .font(.subheadline)
@@ -194,7 +194,7 @@ struct AccountsView: View {
                         } label: {
                             HStack(spacing: 14) {
                                 Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(WPStyles.primaryOrange)
+                                    .foregroundStyle(WPStyles.accent)
                                     .frame(width: 24)
 
                                 VStack(alignment: .leading, spacing: 4) {
@@ -214,7 +214,7 @@ struct AccountsView: View {
                     } label: {
                         HStack(spacing: 14) {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(WPStyles.primaryOrange)
+                                .foregroundStyle(WPStyles.accent)
                                 .frame(width: 24)
 
                             VStack(alignment: .leading, spacing: 4) {
@@ -260,12 +260,12 @@ struct AccountsView: View {
         HStack(spacing: 14) {
             if account.provider == .apple {
                 Image(systemName: "apple.logo")
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.primaryText)
                     .frame(width: 24)
             } else {
                 Text("G")
                     .font(.headline.weight(.black))
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.primaryText)
                     .frame(width: 24)
             }
 
@@ -289,23 +289,9 @@ struct AccountsView: View {
                 )
             )
             .labelsHidden()
-            .tint(WPStyles.primaryOrange)
+            .tint(WPStyles.accent)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-    }
-
-    private func noticeBanner(_ text: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "info.circle.fill")
-                .foregroundStyle(WPStyles.primaryOrange)
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(WPStyles.primaryText)
-            Spacer()
-        }
-        .padding(16)
-        .background(WPStyles.primaryOrange.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }

@@ -129,7 +129,7 @@ struct OnboardingView: View {
             }
 
             if let noticeMessage = appState.noticeMessage {
-                statusBanner(noticeMessage, tint: WPStyles.primaryOrange, icon: "info.circle.fill")
+                statusBanner(noticeMessage, tint: WPStyles.accent, icon: "info.circle.fill")
             }
             
             VStack(spacing: 16) {
@@ -155,7 +155,7 @@ struct OnboardingView: View {
 
             nextButton(
                 title: alarmGranted ? "Next" : "Allow Alarms to Continue",
-                color: alarmGranted ? WPStyles.primaryOrange : .black
+                isEnabled: alarmGranted
             ) {
                 if alarmGranted {
                     advanceToNextStep()
@@ -269,7 +269,7 @@ struct OnboardingView: View {
                 } else if finishPhase == 2 {
                     VStack(spacing: 24) {
                         ProgressView()
-                            .tint(WPStyles.primaryOrange)
+                            .tint(WPStyles.accent)
                             .scaleEffect(1.8)
                         
                         Text("Generating alarms...")
@@ -308,7 +308,7 @@ struct OnboardingView: View {
                                     Text(plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened))
                                         .font(WPStyles.timeDisplayFont)
                                         .minimumScaleFactor(0.8)
-                                        .foregroundStyle(WPStyles.primaryOrange)
+                                        .foregroundStyle(WPStyles.accent)
                                         .lineLimit(1)
                                 } else {
                                     Text("Enjoy sleeping in!")
@@ -458,7 +458,7 @@ struct OnboardingView: View {
             VStack(spacing: 8) {
                 Text(option.shortLabel).font(.system(size: 9, weight: .bold))
                 Circle()
-                    .fill(isFixed ? WPStyles.primaryOrange : WPStyles.surfaceRaised)
+                    .fill(isFixed ? WPStyles.accent : WPStyles.surfaceRaised)
                     .frame(width: 6, height: 6)
             }
             .frame(maxWidth: .infinity)
@@ -469,7 +469,7 @@ struct OnboardingView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isAutoAlarm ? WPStyles.primaryOrange.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(isAutoAlarm ? WPStyles.accent.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
             )
             .foregroundStyle(isAutoAlarm || isFixed ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
         }
@@ -525,16 +525,18 @@ struct OnboardingView: View {
         }
     }
     
-    private func nextButton(title: String, color: Color = WPStyles.primaryOrange, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    /// Gold with dark text when the step can advance; a quiet dark capsule while it's blocked.
+    private func nextButton(title: String, isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
+        let fill = isEnabled ? WPStyles.accent : Color.black
+        return Button(action: action) {
             Text(title)
                 .font(.headline.weight(.semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(isEnabled ? WPStyles.onAccent : .white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(color)
+                .background(fill)
                 .clipShape(Capsule())
-                .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
+                .shadow(color: fill.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .padding(.bottom, 24)
     }
@@ -543,7 +545,7 @@ struct OnboardingView: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
                 .frame(width: 32)
             
             Text(title)
@@ -564,15 +566,8 @@ struct OnboardingView: View {
                     .font(.title2)
                     .foregroundStyle(.green)
             } else {
-                Button(action: action) {
-                    Text(actionTitle)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(WPStyles.primaryOrange)
-                        .clipShape(Capsule())
-                }
+                Button(actionTitle, action: action)
+                    .buttonStyle(PrimaryCapsuleButtonStyle())
             }
         }
     }
@@ -588,7 +583,7 @@ struct OnboardingView: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -619,15 +614,8 @@ struct OnboardingView: View {
                     .font(.title2)
                     .foregroundStyle(.green)
             } else {
-                Button(action: action) {
-                    Text(actionTitle)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(WPStyles.primaryOrange)
-                        .clipShape(Capsule())
-                }
+                Button(actionTitle, action: action)
+                    .buttonStyle(PrimaryCapsuleButtonStyle())
             }
         }
     }
@@ -638,41 +626,6 @@ struct OnboardingView: View {
 
     private var finishStepPlan: WakeUpPlan? {
         appState.tomorrowPlanPreview
-    }
-
-    private func finishStepHeadline(for plan: WakeUpPlan) -> Text {
-        let timeString = plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened)
-
-        switch plan.reason {
-        case .event:
-            if let title = plan.targetEvent?.title, !title.isEmpty {
-                return Text(title)
-            }
-            return Text("Tomorrow's alarm is \(Text(timeString).bold()).")
-        case .fallback, .manualOverride:
-            return Text("Standby alarm at \(Text(timeString).bold()).")
-        case .authorizationMissing:
-            return Text("Alarm access is still off.")
-        case .noSchedule, .inactiveDay, .manualSkip:
-            return Text("No alarm for tomorrow.")
-        case .disabled, .systemDisabled:
-            return Text("Automatic alarms are currently paused.")
-        }
-    }
-
-    private func finishStepDetail(for plan: WakeUpPlan) -> String? {
-        switch plan.reason {
-        case .event:
-            return "Alarm \(plan.calculatedWakeTime.formatted(date: .omitted, time: .shortened))"
-        case .fallback, .manualOverride:
-            return nil
-        case .authorizationMissing:
-            return nil
-        case .noSchedule, .inactiveDay, .manualSkip:
-            return nil
-        case .disabled, .systemDisabled:
-            return nil
-        }
     }
 
     private func statusBanner(_ text: String, tint: Color, icon: String) -> some View {
@@ -727,7 +680,7 @@ struct OnboardingView: View {
     private func routineRow(title: String, icon: String, value: Int, binding: Binding<Int>) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
                 .frame(width: 24)
             Text(title)
                 .font(.body)

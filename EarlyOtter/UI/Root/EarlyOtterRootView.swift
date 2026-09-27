@@ -134,7 +134,7 @@ struct EarlyOtterRootView: View {
                 RulesView(appState: appState)
             }
             .tag(MainTab.rules)
-            .tabItem { Label("Rules", systemImage: "gearshape.fill") }
+            .tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
         }
         .tint(WPStyles.tabSelection)
         .toolbarBackground(WPStyles.background, for: .tabBar)
@@ -148,7 +148,7 @@ struct EarlyOtterRootView: View {
                 .ignoresSafeArea()
 
             ProgressView("Preparing EarlyOtter...")
-                .tint(WPStyles.primaryOrange)
+                .tint(WPStyles.accent)
                 .foregroundStyle(WPStyles.primaryText)
         }
     }

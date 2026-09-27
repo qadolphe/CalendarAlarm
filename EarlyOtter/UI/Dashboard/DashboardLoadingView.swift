@@ -26,7 +26,7 @@ struct DashboardLoadingView: View {
                 Spacer()
                 Text(AppConfiguration.appName)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.accent)
                     .opacity(0.92)
                     .padding(.bottom, 56)
             }
@@ -66,8 +66,8 @@ struct DashboardLoadingView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                WPStyles.primaryOrange.opacity(0.20),
-                                WPStyles.primaryOrange.opacity(0.0)
+                                WPStyles.accent.opacity(0.20),
+                                WPStyles.accent.opacity(0.0)
                             ],
                             center: .center,
                             startRadius: 8,

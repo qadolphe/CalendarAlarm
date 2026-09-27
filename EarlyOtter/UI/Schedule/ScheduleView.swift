@@ -17,6 +17,12 @@ struct ScheduleView: View {
                         dayRow(option)
                     }
                 }
+
+                Text("Standby is your latest wake-up. Earlier events move it earlier.")
+                    .font(.footnote)
+                    .foregroundStyle(WPStyles.tertiaryText)
+                    .padding(.horizontal, 4)
+                    .padding(.top, 4)
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
@@ -38,8 +44,8 @@ struct ScheduleView: View {
         let isOff = !autoEnabled && !isFixed
 
         // Left stripe + outline light up when auto alarms drive the day.
-        let accent: Color = autoEnabled ? WPStyles.primaryOrange
-            : isFixed ? WPStyles.primaryOrange.opacity(0.55)
+        let accent: Color = autoEnabled ? WPStyles.accent
+            : isFixed ? WPStyles.accent.opacity(0.55)
             : WPStyles.tertiaryText.opacity(0.3)
 
         return Button {
@@ -51,7 +57,7 @@ struct ScheduleView: View {
                     .frame(width: 4, height: 30)
 
                 Text(option.fullLabel)
-                    .font(.system(.headline, design: .rounded).weight(.bold))
+                    .font(.headline)
                     .foregroundStyle(isOff ? WPStyles.tertiaryText : WPStyles.primaryText)
 
                 Spacer(minLength: 8)
@@ -62,7 +68,8 @@ struct ScheduleView: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(WPStyles.tertiaryText)
             }
-            .padding(.vertical, 14)
+            .frame(minHeight: 36)
+            .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
             .background(dayCardBackground(autoEnabled: autoEnabled, isFixed: isFixed))
@@ -74,41 +81,26 @@ struct ScheduleView: View {
     @ViewBuilder
     private func dayTrailing(weekday: Int, autoEnabled: Bool, isFixed: Bool) -> some View {
         if isFixed {
-            // A fixed backup time exists — show it.
-            Text(fixedTimeString(for: weekday))
-                .font(.system(size: 19, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(WPStyles.primaryOrange)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(fixedTimeString(for: weekday))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(WPStyles.primaryText)
+                Text("Standby")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(WPStyles.secondaryText)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
         } else if autoEnabled {
-            // Auto alarms on, but no backup — flag the missing fallback.
-            crossedAlarm
+            Text("Calendar only")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(WPStyles.secondaryText)
         } else {
-            // Nothing scheduled this day.
-            Image(systemName: "moon.zzz.fill")
-                .font(.title3)
-                .foregroundStyle(WPStyles.tertiaryText.opacity(0.7))
+            Label("Off", systemImage: "moon.zzz.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(WPStyles.tertiaryText)
         }
-    }
-
-    // A crossed-out alarm (no SF Symbol exists for this, so we compose it).
-    private var crossedAlarm: some View {
-        Image(systemName: "alarm.fill")
-            .font(.title3)
-            .foregroundStyle(WPStyles.secondaryText)
-            .overlay {
-                Capsule()
-                    .fill(WPStyles.surface)
-                    .frame(width: 30, height: 5)
-                    .rotationEffect(.degrees(-45))
-            }
-            .overlay {
-                Capsule()
-                    .fill(WPStyles.secondaryText)
-                    .frame(width: 30, height: 2)
-                    .rotationEffect(.degrees(-45))
-            }
     }
 
     @ViewBuilder
@@ -117,8 +109,8 @@ struct ScheduleView: View {
         ZStack {
             shape.fill(WPStyles.surface)
             shape.stroke(
-                autoEnabled ? WPStyles.primaryOrange.opacity(0.4)
-                    : isFixed ? WPStyles.primaryOrange.opacity(0.22)
+                autoEnabled ? WPStyles.accent.opacity(0.4)
+                    : isFixed ? WPStyles.accent.opacity(0.22)
                     : WPStyles.cardBorder.opacity(0.5),
                 lineWidth: 1
             )

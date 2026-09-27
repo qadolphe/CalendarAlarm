@@ -1,31 +1,28 @@
 import SwiftUI
 
 public enum WPStyles {
-    public static let primaryOrange = Color(red: 1.0, green: 0.62, blue: 0.04)
-    public static let deepOrange = Color(red: 0.70, green: 0.36, blue: 0.08)
-    public static let secondaryBlue = Color(red: 0.04, green: 0.52, blue: 1.0)
+    // "Night Swim": the onboarding otter's starry water. Wake-ups are starlight gold,
+    // events are bioluminescent aqua.
+    public static let accent = Color(red: 0.957, green: 0.776, blue: 0.416)
+    public static let accentMuted = Color(red: 0.72, green: 0.58, blue: 0.30)
+    public static let eventTint = Color(red: 0.431, green: 0.827, blue: 0.878)
     public static let successGreen = Color(red: 0.19, green: 0.82, blue: 0.35)
-    public static let background = Color(red: 0.07, green: 0.07, blue: 0.07)
-    public static let bgGradientStart = Color(red: 0.04, green: 0.04, blue: 0.04)
-    public static let bgGradientEnd = Color(red: 0.11, green: 0.11, blue: 0.11)
-    public static let surface = Color(red: 0.14, green: 0.14, blue: 0.14)
-    public static let surfaceRaised = Color(red: 0.20, green: 0.20, blue: 0.20)
-    public static let surfaceOutline = Color(red: 0.32, green: 0.27, blue: 0.20)
-    public static let primaryText = Color(red: 0.89, green: 0.89, blue: 0.89)
-    public static let secondaryText = Color(red: 0.85, green: 0.76, blue: 0.68)
+    public static let background = Color(red: 0.039, green: 0.063, blue: 0.125)
+    public static let bgGradientStart = Color(red: 0.027, green: 0.047, blue: 0.102)
+    public static let bgGradientEnd = Color(red: 0.055, green: 0.09, blue: 0.169)
+    public static let surface = Color(red: 0.078, green: 0.122, blue: 0.212)
+    public static let surfaceRaised = Color(red: 0.114, green: 0.165, blue: 0.271)
+    public static let surfaceOutline = Color(red: 0.22, green: 0.28, blue: 0.40)
+    public static let primaryText = Color(red: 0.933, green: 0.941, blue: 0.957)
+    public static let secondaryText = Color(red: 0.651, green: 0.698, blue: 0.784)
     public static let tertiaryText = Color.white.opacity(0.58)
-    public static let pillBackground = primaryOrange.opacity(0.16)
-    public static let pillText = Color(red: 1.0, green: 0.78, blue: 0.53)
-    public static let warningBanner = primaryOrange
+    /// Text and icons drawn on an accent fill; white is too faint on the pastel.
+    public static let onAccent = background
     public static let cardBorder = surfaceOutline.opacity(0.75)
-    /// Toolbar glyphs sit on the system's glass capsule, so they stay white rather
-    /// than taking the brand orange.
-    public static let toolbarIcon = Color.white
     public static let tabSelection = Color.white
 
     public static let cardCornerRadius: CGFloat = 28
     public static let timeDisplayFont = Font.system(size: 72, weight: .bold, design: .rounded)
-    public static let heroTitleFont = Font.system(size: 34, weight: .bold, design: .rounded)
 }
 
 struct AppBackgroundModifier: ViewModifier {
@@ -36,19 +33,20 @@ struct AppBackgroundModifier: ViewModifier {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .overlay(alignment: .topTrailing) {
-                Circle()
-                    .fill(WPStyles.primaryOrange.opacity(0.14))
-                    .frame(width: 280, height: 280)
-                    .blur(radius: 60)
-                    .offset(x: 120, y: -90)
+            // Starlight along the top, a faint glow off the water below.
+            .overlay(alignment: .top) {
+                Ellipse()
+                    .fill(WPStyles.accent.opacity(0.10))
+                    .frame(width: 520, height: 240)
+                    .blur(radius: 90)
+                    .offset(y: -140)
             }
             .overlay(alignment: .bottomLeading) {
-                Circle()
-                    .fill(WPStyles.secondaryBlue.opacity(0.08))
-                    .frame(width: 240, height: 240)
-                    .blur(radius: 50)
-                    .offset(x: -80, y: 80)
+                Ellipse()
+                    .fill(WPStyles.eventTint.opacity(0.07))
+                    .frame(width: 320, height: 220)
+                    .blur(radius: 80)
+                    .offset(x: -80, y: 60)
             }
             .ignoresSafeArea()
 
@@ -71,14 +69,6 @@ public extension View {
                     .fill(WPStyles.surface)
             )
     }
-
-    func insetSurfaceStyle(cornerRadius: CGFloat = 24) -> some View {
-        self
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(WPStyles.surface)
-            )
-    }
 }
 
 struct PrimaryButtonStyle: ButtonStyle {
@@ -88,8 +78,8 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 16)
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
-            .background(WPStyles.primaryOrange)
-            .foregroundStyle(.black)
+            .background(WPStyles.accent)
+            .foregroundStyle(WPStyles.onAccent)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .opacity(configuration.isPressed ? 0.9 : 1)
@@ -101,10 +91,10 @@ struct PrimaryCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.black)
+            .foregroundStyle(WPStyles.onAccent)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(WPStyles.primaryOrange)
+            .background(WPStyles.accent)
             .clipShape(Capsule())
             .opacity(configuration.isPressed ? 0.9 : 1)
     }

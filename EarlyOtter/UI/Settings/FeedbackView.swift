@@ -53,7 +53,7 @@ struct FeedbackView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                .stroke(isSelected ? WPStyles.primaryOrange.opacity(0.7) : Color.clear, lineWidth: 1)
+                                .stroke(isSelected ? WPStyles.accent.opacity(0.7) : Color.clear, lineWidth: 1)
                         )
                 }
                 .buttonStyle(.plain)
@@ -111,7 +111,7 @@ struct FeedbackView: View {
         case .sent:
             statusRow("Feedback sent.", icon: "checkmark.circle.fill", tint: WPStyles.successGreen)
         case .failed:
-            statusRow("Couldn't send. Try again.", icon: "exclamationmark.circle.fill", tint: WPStyles.primaryOrange)
+            statusRow("Couldn't send. Try again.", icon: "exclamationmark.circle.fill", tint: WPStyles.accent)
         case .idle, .submitting:
             EmptyView()
         }

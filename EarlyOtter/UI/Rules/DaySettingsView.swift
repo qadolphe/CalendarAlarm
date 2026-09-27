@@ -13,7 +13,7 @@ struct DaySettingsView: View {
                 VStack(spacing: 10) {
                     toggleCard(
                         icon: "calendar.badge.clock",
-                        iconTint: WPStyles.primaryOrange,
+                        iconTint: WPStyles.accent,
                         title: "Calendar Alarms",
                         isOn: activeBinding
                     )
@@ -21,7 +21,7 @@ struct DaySettingsView: View {
                     VStack(spacing: 0) {
                         toggleRow(
                             icon: "alarm.fill",
-                            iconTint: WPStyles.secondaryBlue,
+                            iconTint: WPStyles.eventTint,
                             title: "Standby Alarm",
                             isOn: fallbackEnabledBinding
                         )
@@ -62,7 +62,7 @@ struct DaySettingsView: View {
                         dismiss()
                     }
                     .fontWeight(.bold)
-                    .foregroundStyle(WPStyles.primaryOrange)
+                    .foregroundStyle(WPStyles.accent)
                 }
             }
             .presentationDetents([.medium])
@@ -81,7 +81,7 @@ struct DaySettingsView: View {
                     .foregroundStyle(WPStyles.primaryText)
             }
         }
-        .tint(WPStyles.primaryOrange)
+        .tint(WPStyles.accent)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
     }

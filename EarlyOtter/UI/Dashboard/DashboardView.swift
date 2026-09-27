@@ -43,7 +43,7 @@ struct DashboardView: View {
                             } else {
                                 VStack(alignment: .leading, spacing: 24) {
                                     if let permissionBanner = viewModel.permissionBanner {
-                                        banner(permissionBanner, tint: .orange, icon: "bell.badge.fill")
+                                        banner(permissionBanner, tint: WPStyles.accent, icon: "bell.badge.fill")
                                     }
 
                                     if let noticeMessage = appState.noticeMessage {
@@ -87,7 +87,7 @@ struct DashboardView: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("Done") { isShowingFeedback = false }
                                 .fontWeight(.bold)
-                                .foregroundStyle(WPStyles.primaryOrange)
+                                .foregroundStyle(WPStyles.accent)
                         }
                     }
             }
@@ -219,7 +219,7 @@ struct DashboardView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "alarm.fill")
                         .font(.title3)
-                        .foregroundStyle(WPStyles.primaryOrange)
+                        .foregroundStyle(WPStyles.accent)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Set your standby alarms")
@@ -237,7 +237,7 @@ struct DashboardView: View {
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.primaryOrange.opacity(0.4), lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.accent.opacity(0.4), lineWidth: 1))
             }
             .buttonStyle(.plain)
 
@@ -260,7 +260,7 @@ struct DashboardView: View {
         HStack {
             Text(AppConfiguration.appName)
                 .font(.system(size: 26, weight: .bold, design: .rounded))
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
                 .padding(.leading, 10)
                 .offset(y: 15)
 
@@ -300,7 +300,7 @@ struct DashboardView: View {
         VStack(spacing: 16) {
             Image(systemName: "bell.badge.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(WPStyles.primaryOrange)
+                .foregroundStyle(WPStyles.accent)
 
             Text("Setup Required")
                 .font(.title2.weight(.bold))
@@ -314,10 +314,10 @@ struct DashboardView: View {
             NavigationLink(destination: PermissionsView(appState: appState)) {
                 Text("Fix Permissions")
                     .font(.headline)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(WPStyles.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(WPStyles.primaryOrange)
+                    .background(WPStyles.accent)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(.top, 8)
@@ -358,10 +358,10 @@ struct DashboardView: View {
             } label: {
                 Text("Reactivate")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(WPStyles.onAccent)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(WPStyles.primaryOrange)
+                    .background(WPStyles.accent)
                     .clipShape(Capsule())
             }
         }
@@ -382,59 +382,8 @@ private struct DashboardHeroCardView: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Next Alarm")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(WPStyles.primaryText)
-                    Spacer()
-                    Image(systemName: "sparkles")
-                        .font(.caption)
-                        .foregroundStyle(WPStyles.primaryOrange.opacity(0.6))
-                }
-
-                if let timeUntilWake = viewModel.timeUntilWake {
-                    Text(timeUntilWake)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(WPStyles.secondaryText)
-                }
-
-                Text(plan.calculatedWakeTime, style: .time)
-                    .font(WPStyles.timeDisplayFont)
-                    .monospacedDigit()
-                    .foregroundStyle(WPStyles.primaryText)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: plan.calculatedWakeTime)
-
-                if let event = plan.targetEvent {
-                    HStack(spacing: 8) {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(WPStyles.secondaryBlue)
-                        Text(event.title)
-                            .font(.headline)
-                            .lineLimit(1)
-                            .foregroundStyle(WPStyles.primaryText)
-                        Spacer()
-                        Text(event.startDate, style: .time)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(WPStyles.secondaryText)
-                    }
-                    .padding(.top, 4)
-                } else {
-                    HStack(spacing: 8) {
-                        Image(systemName: "moon.zzz.fill")
-                            .foregroundStyle(.indigo)
-                        Text(viewModel.statusMessage ?? "Sleeping in")
-                            .font(.headline)
-                            .lineLimit(2)
-                            .foregroundStyle(WPStyles.primaryText)
-                        Spacer()
-                    }
-                    .padding(.top, 4)
-                }
-            }
+            WakeUpTimetableView(plan: plan, note: viewModel.statusMessage)
+                .padding(.horizontal, 4)
         }
         .buttonStyle(.plain)
         .cardStyle()
@@ -459,7 +408,7 @@ private struct DashboardNoAlarmCardView: View {
                     .foregroundStyle(.indigo)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("No alarm scheduled")
-                        .font(.title2.weight(.bold))
+                        .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(WPStyles.primaryText)
                     Text(message)
                         .font(.subheadline)
@@ -506,7 +455,7 @@ private struct DashboardWeeklyCardView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 270)
+                .frame(height: 252)
             }
         }
         .cardStyle()
@@ -571,13 +520,26 @@ private struct DashboardWeekDayColumnView: View {
                     isPrimary: viewModel.isPrimary(entry),
                     viewModel: viewModel
                 )
-                .frame(width: columnWidth, height: 236)
+                .frame(width: columnWidth, height: 200)
+
+                Text(viewModel.wakeLabel(for: entry))
+                    .font(.system(size: 12, weight: viewModel.isPrimary(entry) ? .bold : .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(wakeLabelColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .opacity(viewModel.isElapsed(entry) ? 0.35 : 1)
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(viewModel.accessibilityLabel(for: entry))
+    }
+
+    private var wakeLabelColor: Color {
+        if entry.alarmDate == nil { return WPStyles.tertiaryText }
+        return viewModel.isPrimary(entry) ? WPStyles.primaryText : WPStyles.secondaryText
     }
 }
 
@@ -593,12 +555,12 @@ private struct DashboardWeekPillBarView: View {
             let isElapsed = viewModel.isElapsed(entry)
             let dimmingOpacity = isElapsed ? 0.35 : 1.0
             let outlineColor = isPrimary
-                ? WPStyles.deepOrange.opacity(0.92)
-                : WPStyles.deepOrange.opacity(0.68)
+                ? WPStyles.accentMuted.opacity(0.92)
+                : WPStyles.accentMuted.opacity(0.68)
 
             ZStack {
                 Capsule()
-                    .fill(WPStyles.deepOrange.opacity((isPrimary ? 0.16 : 0.09) * dimmingOpacity))
+                    .fill(WPStyles.accentMuted.opacity((isPrimary ? 0.16 : 0.09) * dimmingOpacity))
 
                 Capsule()
                     .stroke(outlineColor.opacity(dimmingOpacity), lineWidth: isPrimary ? 2.4 : 1.8)
@@ -612,18 +574,18 @@ private struct DashboardWeekPillBarView: View {
                         path.addLine(to: CGPoint(x: x, y: max(eventY, alarmY)))
                     }
                     .stroke(
-                        WPStyles.primaryOrange.opacity(0.85),
+                        WPStyles.accent.opacity(0.85),
                         style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5])
                     )
                     .opacity(dimmingOpacity)
                 }
 
                 if let alarmY = markerY(for: entry.alarmDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.primaryOrange, y: alarmY, in: geometry.size, opacity: dimmingOpacity)
+                    marker(color: WPStyles.accent, y: alarmY, in: geometry.size, opacity: dimmingOpacity)
                 }
 
                 if let eventY = markerY(for: entry.eventDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.secondaryBlue, y: eventY, in: geometry.size, opacity: dimmingOpacity)
+                    marker(color: WPStyles.eventTint, y: eventY, in: geometry.size, opacity: dimmingOpacity)
                 }
             }
         }
