@@ -125,11 +125,11 @@ panels.push(['ink', () => `
   ${device(464, 1030, shot('editor'), .8, 4)}
 `]);
 
-/* 04 — Sleep in */
+/* 04 — Schedule */
 panels.push(['gold', () => `
-  ${head('04', 'Days off', 'No early plans?<br><i>Sleep in.</i>', 'A latest wake-up on quiet mornings. Days off stay silent.')}
-  <img src="OtterOverlook.png" style="position:absolute;width:380px;left:736px;top:780px;z-index:2">
-  ${device(160, 1078, shot('schedule'))}
+  ${head('04', 'Your schedule', 'Full control of<br>your <i>schedule.</i>', '')}
+  <img src="OtterOverlook.png" style="position:absolute;width:380px;left:736px;top:602px;z-index:2">
+  ${device(160, 900, shot('schedule'))}
 `]);
 
 const only = P.has('p') ? [+P.get('p')] : panels.map((_, i) => i);
