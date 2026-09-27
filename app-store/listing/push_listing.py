@@ -112,14 +112,15 @@ def main():
 
     for locale in listing["locales"]:
         print(locale)
-        info_attrs = {"name": copy["name"], "subtitle": copy["subtitle"]}
+        info_attrs = {k: copy[k] for k in ("name", "subtitle", "privacyPolicyUrl")}
         if locale not in info_locs:
             info_attrs["locale"] = locale
         upsert("appInfoLocalizations", info_locs.get(locale), "appInfo", info["id"], info_attrs)
 
         # Adding a language creates its version localization too, so read them after.
         version_locs = localizations(f"/v1/appStoreVersions/{version['id']}/appStoreVersionLocalizations")
-        version_attrs = {k: copy[k] for k in ("keywords", "promotionalText", "description", "whatsNew")}
+        version_attrs = {k: copy[k] for k in (
+            "keywords", "promotionalText", "description", "whatsNew", "supportUrl", "marketingUrl")}
         if locale not in version_locs:
             version_attrs["locale"] = locale
         localization_id = upsert("appStoreVersionLocalizations", version_locs.get(locale),
