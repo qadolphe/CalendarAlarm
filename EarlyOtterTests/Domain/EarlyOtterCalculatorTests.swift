@@ -311,7 +311,7 @@ final class EarlyOtterCalculatorTests: XCTestCase {
                 prepTime: Minutes(45),
                 commuteTime: Minutes(20),
                 alarmSettings: RuleAlarmSettings(
-                    sound: .glass,
+                    sound: .tide,
                     snoozeEnabled: false,
                     snoozeDuration: Minutes(15)
                 )
@@ -326,7 +326,7 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertEqual(plan.alarmSettings.sound, .glass)
+        XCTAssertEqual(plan.alarmSettings.sound, .tide)
         XCTAssertFalse(plan.alarmSettings.snoozeEnabled)
         XCTAssertEqual(plan.alarmSettings.snoozeDuration, Minutes(15))
     }

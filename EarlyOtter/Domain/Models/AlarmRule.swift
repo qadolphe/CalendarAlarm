@@ -4,16 +4,11 @@ enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
     // Resolved by the system alarm process when the alarm fires, so it has no
     // file this app can reach. Kept first in the list as the standard choice.
     case `default`
-    case bloom
-    case blow
-    case dawn
-    case glass
-    case hero
-    case morse
-    case ping
-    case ripple
-    case sosumi
-    case submarine
+    case sunrise
+    case starlight
+    case otter
+    case tide
+    case classic
 
     // Where settings saved against a retired tone land.
     static let standard: AlarmSoundOption = .default
@@ -21,16 +16,11 @@ enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
     var displayName: String {
         switch self {
         case .default:      return "Default"
-        case .bloom:        return "Bloom"
-        case .blow:         return "Blow"
-        case .dawn:         return "Dawn"
-        case .glass:        return "Glass"
-        case .hero:         return "Hero"
-        case .morse:        return "Morse"
-        case .ping:         return "Ping"
-        case .ripple:       return "Ripple"
-        case .sosumi:       return "Sosumi"
-        case .submarine:    return "Submarine"
+        case .sunrise:      return "Sunrise"
+        case .starlight:    return "Starlight"
+        case .otter:        return "Otter"
+        case .tide:         return "Tide"
+        case .classic:      return "Classic"
         }
     }
 
@@ -40,16 +30,7 @@ enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
     var resourceName: String? {
         switch self {
         case .default:      return nil
-        case .bloom:        return "AlarmBloom.wav"
-        case .blow:         return "Blow.aiff"
-        case .dawn:         return "AlarmDawn.wav"
-        case .glass:        return "Glass.aiff"
-        case .hero:         return "Hero.aiff"
-        case .morse:        return "Morse.aiff"
-        case .ping:         return "Ping.aiff"
-        case .ripple:       return "AlarmRipple.wav"
-        case .sosumi:       return "Sosumi.aiff"
-        case .submarine:    return "Submarine.aiff"
+        default:            return "Alarm\(rawValue.capitalized).wav"
         }
     }
 
