@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Synthesizes EarlyOtter's original alarm tones. Standard library only.
 
-Usage: ./synth.py [output_dir] [tone ...]
-Every tone is built from sine math and written as 44.1 kHz mono 16-bit WAV,
-under AlarmKit's 30-second limit. Gentle tones start soft and build.
+Usage: ./synth.py [tone ...]    (renders all tones when none are named)
+Writes straight into the app's AlarmSounds folder. Every tone is built from
+sine math as 44.1 kHz mono 16-bit WAV, under AlarmKit's 30-second limit.
+Output is deterministic, so re-rendering an unchanged tone produces the same file.
 """
 import array, math, pathlib, random, sys, wave
 
+OUT_DIR = pathlib.Path(__file__).resolve().parents[2] / "EarlyOtter/Resources/AlarmSounds"
 RATE = 44_100
 TAU = 2 * math.pi
 
@@ -18,6 +20,7 @@ def hz(midi):
 # MARK: Instruments. Each returns a list of samples for one note.
 
 def marimba(f, dur=1.2):
+    """A wooden bar: a fundamental plus the bright, fast-fading overtones of a mallet hit."""
     out = []
     for i in range(int(dur * RATE)):
         t = i / RATE
@@ -28,6 +31,7 @@ def marimba(f, dur=1.2):
 
 
 def kalimba(f, dur=1.6):
+    """A thumb piano: a plucked tine with one inharmonic overtone."""
     out = []
     for i in range(int(dur * RATE)):
         t = i / RATE
@@ -62,19 +66,20 @@ def celesta(f, dur=1.4):
 
 def tick(dur=0.03):
     """A clock tick: a short, bright resonant click."""
-    random.seed(1)
+    rng = random.Random(1)
     out, low = [], 0.0
     for i in range(int(dur * RATE)):
         t = i / RATE
-        low += 0.5 * (random.uniform(-1, 1) - low)
+        low += 0.5 * (rng.uniform(-1, 1) - low)
         out.append((0.85 * math.sin(TAU * 2600 * t) + 0.15 * low) * math.exp(-t * 180))
     return out
 
 
-def pad(freqs, dur, attack=2.0):
-    """Soft chord: detuned band-limited saws through a one-pole low-pass."""
+def pad(freqs, dur, rng, attack=2.0):
+    """Soft chord: detuned band-limited saws through a one-pole low-pass.
+    `rng` sets each voice's starting phase."""
     out, low = [], 0.0
-    voices = [(f * d, random.random() * TAU) for f in freqs for d in (0.997, 1.003)]
+    voices = [(f * d, rng.random() * TAU) for f in freqs for d in (0.997, 1.003)]
     for i in range(int(dur * RATE)):
         t = i / RATE
         s = sum(sum(math.sin(k * (TAU * f * t + p)) / k for k in range(1, 7)) for f, p in voices)
@@ -219,11 +224,11 @@ def otter():
 
 def tide():
     """Warm swelling chords with a kalimba melody drifting on top."""
-    random.seed(3)
+    rng = random.Random(3)
     t = Track(26)
     chords = [[48, 55, 64], [45, 52, 60], [41, 48, 57], [43, 50, 59]]
     for c, chord in enumerate(chords * 2):
-        t.add(pad([hz(m) for m in chord], 3.6, attack=1.2), c * 3.2, 0.9)
+        t.add(pad([hz(m) for m in chord], 3.6, rng, attack=1.2), c * 3.2, 0.9)
     melody = [72, None, 76, 79, None, 76, 74, None]
     for rep in range(6):
         pattern(t, kalimba, melody, 0.5, gain=0.7, start=1.6 + rep * 4)
@@ -249,8 +254,7 @@ TONES = {
 
 
 if __name__ == "__main__":
-    out_dir = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for name in sys.argv[2:] or TONES:
-        TONES[name]().write(out_dir / f"Alarm{name}.wav")
-        print("wrote", out_dir / f"Alarm{name}.wav")
+    for name in sys.argv[1:] or TONES:
+        path = OUT_DIR / f"Alarm{name}.wav"  # must match AlarmSoundOption.resourceName
+        TONES[name]().write(path)
+        print("wrote", path)
