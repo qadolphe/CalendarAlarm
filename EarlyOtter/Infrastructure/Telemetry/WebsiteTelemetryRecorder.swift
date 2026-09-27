@@ -12,7 +12,8 @@ actor WebsiteTelemetryRecorder: TelemetryRecording {
     private let endpoint: URL
     private let session: URLSession
     private let metadata: ClientMetadata
-    private nonisolated let defaults: UserDefaults
+    // UserDefaults is documented as thread-safe but not yet annotated Sendable.
+    private nonisolated(unsafe) let defaults: UserDefaults
     private let queueURL: URL
     private let resolveChannel: @Sendable () async -> String
     private let encoder = JSONEncoder()
