@@ -1,0 +1,12 @@
+{
+  "screenshots": ["../promo/Editorial/1.png", "../promo/Editorial/2.png", "../promo/Editorial/3.png", "../promo/Editorial/4.png"],
+  "default": {
+    "name": "Calendar Alarms - EarlyOtter",
+    "subtitle": "Auto alarms from your calendar",
+    "keywords": "wake,up,clock,smart,morning,routine,schedule,meeting,class,commute,sleep,event,planner,snooze,prep",
+    "promotionalText": "Your alarm, set by your calendar. EarlyOtter finds your first event, subtracts prep and commute, and wakes you right on time. No early plans? Sleep in.",
+    "description": "EarlyOtter sets your alarm from your calendar.\n\nIt finds your first event of the day, subtracts your prep time and commute, and schedules a real alarm, so you wake up exactly when you need to. No early plans? It lets you sleep in until your latest wake-up time.\n\n• Works with Apple Calendar and Google Calendar\n• Prep and commute time built in\n• Custom rules for classes, flights, the gym or work\n• Standby alarms for quiet mornings; days off stay silent\n• Real alarms that ring even on silent\n• Private by design: your calendar is read on your iPhone and never uploaded",
+    "whatsNew": "• A cleaner, simpler Settings screen\n• Rate EarlyOtter right from Settings\n• Reliability improvements"
+  },
+  "locales": ["en-US", "en-GB", "en-AU", "en-CA"]
+}
