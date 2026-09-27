@@ -7,11 +7,8 @@ import SwiftUI
 @available(iOS 26.0, *)
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<EarlyOtterAlarmMetadata> {
-        let eventTitle = normalizedEventTitle(from: plan)
-        let title = WakeUpGreetingProvider().title(
-            eventTitle: eventTitle,
-            wakeTime: plan.calculatedWakeTime
-        )
+        // The alarm is titled with the event it wakes you for; standby alarms just say "Wake up".
+        let title = normalizedEventTitle(from: plan) ?? AppConfiguration.genericAlarmTitle
         let secondaryButton = snoozeButton(for: plan.alarmSettings)
         let countdownDuration = snoozeCountdownDuration(for: plan.alarmSettings)
         let alert: AlarmPresentation.Alert
@@ -43,7 +40,7 @@ enum AlarmKitMappers {
             presentation: presentation,
             metadata: EarlyOtterAlarmMetadata(
                 planID: plan.id.rawValue,
-                eventTitle: eventTitle ?? AppConfiguration.genericAlarmTitle
+                eventTitle: title
             ),
             tintColor: .orange
         )
