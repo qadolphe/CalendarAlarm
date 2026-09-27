@@ -212,7 +212,6 @@ actor AlarmSyncService {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: false,
             reason: .manualOverride,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -280,7 +279,7 @@ private extension AlarmSyncService {
             return .notScheduled
         case .disabled, .systemDisabled, .inactiveDay, .manualSkip:
             return .disabled
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return nil
         }
     }

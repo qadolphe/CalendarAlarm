@@ -276,14 +276,13 @@ struct RuleEditorView: View {
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") { trySave() }
-                    .buttonStyle(PrimaryCapsuleButtonStyle())
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm) { trySave() }
+                    .tint(WPStyles.accent)
             }
             if mode.isAdd {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundStyle(WPStyles.secondaryText)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { dismiss() }
                 }
             }
         }

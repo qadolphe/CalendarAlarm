@@ -26,6 +26,8 @@ struct EarlyOtterRefreshSnapshot: Equatable, Sendable {
     let tomorrowPlan: WakeUpPlan
     let dailyPlans: [WakeUpPlan]
     let displayPlans: [WakeUpPlan]
+    /// Every plan handed to AlarmKit, calendar and standard alarms alike.
+    let scheduledPlans: [WakeUpPlan]
     let syncResult: AlarmSyncResult
 }
 
@@ -92,9 +94,13 @@ actor EarlyOtterRefreshService {
             let accounts = try await earlyOtterService.accounts()
             let calendars = try await earlyOtterService.calendars()
             let dashboardStart = startOfDashboardWeek(containing: now, calendar: calendar)
-            let dailyPlans = try await earlyOtterService.makeDailyPlans(
+            let calendarPlans = try await earlyOtterService.makeDailyPlans(
                 startingAt: dashboardStart,
                 count: AppConfiguration.dashboardPlanningCount,
+                calendar: calendar
+            )
+            let (alarmPlans, dailyPlans) = try earlyOtterService.makeAlarmPlans(
+                alongside: calendarPlans,
                 calendar: calendar
             )
             let tomorrowTargetDay = TargetDay.tomorrow(from: now, calendar: calendar)
@@ -112,7 +118,15 @@ actor EarlyOtterRefreshService {
                 earlyOtterService.displayPlans(from: dailyPlans, now: now)
                     .prefix(planningWindowCount)
             )
-            let syncResult = try await alarmSyncService.sync(plans: displayPlans)
+            // Every alarm rings, not just each day's earliest: the calendar alarms
+            // as before, plus standard alarms over the same number of days.
+            let alarmHorizon = calendar.date(byAdding: .day, value: planningWindowCount, to: now) ?? now
+            let scheduledPlans = Array(
+                earlyOtterService.displayPlans(from: calendarPlans, now: now)
+                    .prefix(planningWindowCount)
+            ) + earlyOtterService.displayPlans(from: alarmPlans, now: now)
+                .filter { $0.calculatedWakeTime < alarmHorizon }
+            let syncResult = try await alarmSyncService.sync(plans: scheduledPlans)
 
             let snapshot = EarlyOtterRefreshSnapshot(
                 permissions: permissions,
@@ -121,6 +135,7 @@ actor EarlyOtterRefreshService {
                 tomorrowPlan: tomorrowPlan,
                 dailyPlans: dailyPlans,
                 displayPlans: displayPlans,
+                scheduledPlans: scheduledPlans,
                 syncResult: syncResult
             )
             let result = EarlyOtterRefreshResult(
@@ -214,7 +229,7 @@ extension EarlyOtterRefreshService {
         from snapshot: EarlyOtterRefreshSnapshot,
         syncedAt: Date
     ) -> NextAlarmWidgetSnapshot {
-        let plansByID = Dictionary(uniqueKeysWithValues: snapshot.displayPlans.map { ($0.id, $0) })
+        let plansByID = Dictionary(uniqueKeysWithValues: snapshot.scheduledPlans.map { ($0.id, $0) })
 
         if let nextRecord = snapshot.syncResult.records.first {
             let plan = plansByID[nextRecord.planID]
@@ -252,11 +267,15 @@ extension EarlyOtterRefreshService {
             return nil
         }
 
+        if plan.reason == .alarm {
+            return plan.alarmTitle
+        }
+
         if let event = displayedEvent ?? widgetDisplayedEvent(for: plan) {
             return event.startDate.formatted(date: .omitted, time: .shortened)
         }
 
-        return "Standby alarm"
+        return "Alarm"
     }
 
     func widgetShowsConnectedMarkers(

@@ -244,7 +244,6 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: plan.prepTime,
             commuteTime: plan.commuteTime,
             alarmSettings: plan.alarmSettings,
-            isFallback: plan.isFallback,
             reason: .disabled,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -299,7 +298,6 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: plan.prepTime,
             commuteTime: plan.commuteTime,
             alarmSettings: plan.alarmSettings,
-            isFallback: false,
             reason: .noSchedule,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -463,8 +461,7 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: Minutes(45),
             commuteTime: Minutes(20),
             alarmSettings: .default,
-            isFallback: true,
-            reason: .fallback,
+            reason: .alarm,
             appliedRuleName: "Fallback",
             matchedRuleNames: []
         )
@@ -499,7 +496,6 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: Minutes(45),
             commuteTime: Minutes(20),
             alarmSettings: .default,
-            isFallback: false,
             reason: .event,
             appliedRuleName: "Default",
             matchedRuleNames: []

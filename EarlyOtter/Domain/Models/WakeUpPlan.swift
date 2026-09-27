@@ -2,7 +2,8 @@ import Foundation
 
 enum EarlyOtterReason: String, Codable, Equatable, Sendable {
     case event
-    case fallback
+    /// A standard alarm the user set on the Schedule tab.
+    case alarm
     case noSchedule
     case disabled
     case inactiveDay
@@ -17,7 +18,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 
     let targetDay: TargetDay
     let targetEvent: ParsedEvent?
-    let firstEventOfDay: ParsedEvent?
+    var firstEventOfDay: ParsedEvent?
 
     let calculatedWakeTime: Date
     let eventStartTime: Date?
@@ -26,8 +27,10 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     let commuteTime: Minutes
     let alarmSettings: RuleAlarmSettings
 
-    let isFallback: Bool
     let reason: EarlyOtterReason
+
+    /// The user's label for a standard alarm (`reason == .alarm`); may be empty.
+    let alarmLabel: String?
 
     /// Name of the rule that produced the chosen wake time.
     var appliedRuleName: String?
@@ -45,8 +48,8 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         prepTime: Minutes,
         commuteTime: Minutes,
         alarmSettings: RuleAlarmSettings,
-        isFallback: Bool,
         reason: EarlyOtterReason,
+        alarmLabel: String? = nil,
         appliedRuleName: String?,
         matchedRuleNames: [String]
     ) {
@@ -59,9 +62,26 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         self.prepTime = prepTime
         self.commuteTime = commuteTime
         self.alarmSettings = alarmSettings
-        self.isFallback = isFallback
         self.reason = reason
+        self.alarmLabel = alarmLabel
         self.appliedRuleName = appliedRuleName
         self.matchedRuleNames = matchedRuleNames
+    }
+}
+
+extension WakeUpPlan {
+    /// A standard alarm's name, as the Clock app shows it: its label, or "Alarm".
+    var alarmTitle: String {
+        alarmLabel.flatMap { $0.isEmpty ? nil : $0 } ?? "Alarm"
+    }
+
+    /// Whether this plan puts an alarm on the device.
+    var setsAlarm: Bool {
+        switch reason {
+        case .event, .alarm, .authorizationMissing, .manualOverride:
+            return true
+        case .noSchedule, .disabled, .inactiveDay, .manualSkip, .systemDisabled:
+            return false
+        }
     }
 }

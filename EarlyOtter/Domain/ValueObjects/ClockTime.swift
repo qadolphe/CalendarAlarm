@@ -1,6 +1,6 @@
 import Foundation
 
-struct ClockTime: Codable, Equatable, Hashable, Sendable {
+struct ClockTime: Codable, Equatable, Hashable, Comparable, Sendable {
     let hour: Int
     let minute: Int
 
@@ -13,6 +13,10 @@ struct ClockTime: Codable, Equatable, Hashable, Sendable {
     }
 
     static let defaultLatestWakeTime = ClockTime(hour: 8, minute: 0)
+
+    static func < (lhs: ClockTime, rhs: ClockTime) -> Bool {
+        (lhs.hour, lhs.minute) < (rhs.hour, rhs.minute)
+    }
 
     func date(on targetDay: TargetDay, calendar: Calendar = .current) -> Date {
         var components = calendar.dateComponents([.year, .month, .day], from: targetDay.date)

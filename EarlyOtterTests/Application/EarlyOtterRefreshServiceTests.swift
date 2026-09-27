@@ -101,7 +101,6 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
         var preferences = AlarmPreferences.default
         preferences.isSystemEnabled = true
         preferences.schedule.isEnabled = true
-        preferences.schedule.fallbackEnabledDays = []
         let provider = StubCalendarProvider(events: [])
         let preferencesStore = InMemoryPreferencesStore(preferences: preferences)
         let earlyOtterService = EarlyOtterService(
@@ -199,7 +198,7 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(widgetSnapshot.lastUpdatedAt, now)
     }
 
-    func testMakeWidgetSnapshotUsesDisplayedEventForFallbackWithoutConnector() async throws {
+    func testMakeWidgetSnapshotLabelsStandardAlarm() async throws {
         let calendar = configuredCalendar()
         let syncedAt = makeDate(
             year: 2026,
@@ -228,33 +227,17 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             second: 0,
             calendar: calendar
         )
-        let firstEventStart = makeDate(
-            year: 2026,
-            month: 5,
-            day: 16,
-            hour: 8,
-            minute: 30,
-            second: 0,
-            calendar: calendar
-        )
-        let firstEvent = makeEvent(
-            id: "event-1",
-            title: "Team Sync",
-            startDate: firstEventStart,
-            calendarID: "work"
-        )
         let plan = WakeUpPlan(
-            id: "fallback-plan",
+            id: "alarm-plan",
             targetDay: TargetDay(date: targetDayDate, calendar: calendar),
             targetEvent: nil,
-            firstEventOfDay: firstEvent,
             calculatedWakeTime: wakeTime,
             eventStartTime: nil,
-            prepTime: Minutes(30),
-            commuteTime: Minutes(15),
+            prepTime: Minutes(0),
+            commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: true,
-            reason: .fallback,
+            reason: .alarm,
+            alarmLabel: "Gym",
             appliedRuleName: nil,
             matchedRuleNames: []
         )
@@ -273,6 +256,7 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
             tomorrowPlan: plan,
             dailyPlans: [plan],
             displayPlans: [plan],
+            scheduledPlans: [plan],
             syncResult: AlarmSyncResult(
                 records: [scheduledRecord],
                 statusesByPlanID: [plan.id: .scheduled(scheduledRecord)],
@@ -299,8 +283,8 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
 
         let widgetSnapshot = await service.makeWidgetSnapshot(from: snapshot, syncedAt: syncedAt)
 
-        XCTAssertEqual(widgetSnapshot.eventTitle, "Team Sync")
-        XCTAssertEqual(widgetSnapshot.context, firstEventStart.formatted(date: .omitted, time: .shortened))
+        XCTAssertNil(widgetSnapshot.eventTitle)
+        XCTAssertEqual(widgetSnapshot.context, "Gym")
         XCTAssertEqual(widgetSnapshot.showsConnectedMarkers, false)
     }
 

@@ -24,10 +24,10 @@ struct EarlyOtterCalculator {
         let scheduleRules = preferences.schedule
         let timingRules = preferences.timing
         let weekday = calendar.component(.weekday, from: targetDay.date)
-        let dayFallback = preferences.fallbackWakeTime(for: weekday)
-        let fallbackWakeTime = dayFallback.date(on: targetDay, calendar: calendar)
-        let isFallbackEnabled = scheduleRules.fallbackEnabledDays.contains(weekday)
-        let fallbackAlarmSettings = preferences.fallbackAlarmSettings
+        // Days without a calendar alarm still carry a nominal time and settings.
+        let placeholderTime = timingRules.latestWakeTime
+        let placeholderWakeTime = placeholderTime.date(on: targetDay, calendar: calendar)
+        let defaultAlarmSettings = preferences.defaultAlarmSettings
 
         // The event marker reflects whether an event exists that day, so it is
         // computed once up front and threaded into every plan — including disabled,
@@ -43,19 +43,18 @@ struct EarlyOtterCalculator {
                     kind: "systemDisabled",
                     components: [
                         timestamp(targetDay.date),
-                        "\(dayFallback.hour)",
-                        "\(dayFallback.minute)"
+                        "\(placeholderTime.hour)",
+                        "\(placeholderTime.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
                 firstEventOfDay: firstEventOfDay,
-                calculatedWakeTime: fallbackWakeTime,
+                calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                alarmSettings: fallbackAlarmSettings,
-                isFallback: true,
+                alarmSettings: defaultAlarmSettings,
                 reason: .systemDisabled,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -74,7 +73,7 @@ struct EarlyOtterCalculator {
                 isSkipped: override.isSkipped,
                 firstEventOfDay: firstEventOfDay,
                 timingRules: timingRules,
-                fallbackAlarmSettings: fallbackAlarmSettings,
+                defaultAlarmSettings: defaultAlarmSettings,
                 calendar: calendar
             )
         }
@@ -87,10 +86,9 @@ struct EarlyOtterCalculator {
             scheduleRules: scheduleRules,
             timingRules: timingRules,
             weekday: weekday,
-            dayFallback: dayFallback,
-            fallbackWakeTime: fallbackWakeTime,
-            isFallbackEnabled: isFallbackEnabled,
-            fallbackAlarmSettings: fallbackAlarmSettings,
+            placeholderTime: placeholderTime,
+            placeholderWakeTime: placeholderWakeTime,
+            defaultAlarmSettings: defaultAlarmSettings,
             firstEventOfDay: firstEventOfDay,
             calendar: calendar
         )
@@ -104,7 +102,7 @@ struct EarlyOtterCalculator {
         return basePlan
     }
 
-    /// The normal event-driven / fallback plan for a day, with no per-date override applied.
+    /// The normal event-driven plan for a day, with no per-date override applied.
     private func automaticPlan(
         events: [ParsedEvent],
         preferences: AlarmPreferences,
@@ -112,43 +110,31 @@ struct EarlyOtterCalculator {
         scheduleRules: ScheduleRules,
         timingRules: TimingRules,
         weekday: Int,
-        dayFallback: ClockTime,
-        fallbackWakeTime: Date,
-        isFallbackEnabled: Bool,
-        fallbackAlarmSettings: RuleAlarmSettings,
+        placeholderTime: ClockTime,
+        placeholderWakeTime: Date,
+        defaultAlarmSettings: RuleAlarmSettings,
         firstEventOfDay: ParsedEvent?,
         calendar: Calendar
     ) -> WakeUpPlan {
         if !scheduleRules.activeDays.contains(weekday) {
-            if isFallbackEnabled {
-                return makeFallbackPlan(
-                    targetDay: targetDay,
-                    wakeTime: fallbackWakeTime,
-                    timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings,
-                    firstEventOfDay: firstEventOfDay
-                )
-            }
-
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "inactive-day",
                     components: [
                         timestamp(targetDay.date),
                         "\(weekday)",
-                        "\(dayFallback.hour)",
-                        "\(dayFallback.minute)"
+                        "\(placeholderTime.hour)",
+                        "\(placeholderTime.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
                 firstEventOfDay: firstEventOfDay,
-                calculatedWakeTime: fallbackWakeTime,
+                calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                alarmSettings: fallbackAlarmSettings,
-                isFallback: false,
+                alarmSettings: defaultAlarmSettings,
                 reason: .inactiveDay,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -156,34 +142,23 @@ struct EarlyOtterCalculator {
         }
 
         if !scheduleRules.isEnabled {
-            if isFallbackEnabled {
-                return makeFallbackPlan(
-                    targetDay: targetDay,
-                    wakeTime: fallbackWakeTime,
-                    timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings,
-                    firstEventOfDay: firstEventOfDay
-                )
-            }
-
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "disabled",
                     components: [
                         timestamp(targetDay.date),
-                        "\(dayFallback.hour)",
-                        "\(dayFallback.minute)"
+                        "\(placeholderTime.hour)",
+                        "\(placeholderTime.minute)"
                     ]
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
                 firstEventOfDay: firstEventOfDay,
-                calculatedWakeTime: fallbackWakeTime,
+                calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                alarmSettings: fallbackAlarmSettings,
-                isFallback: false,
+                alarmSettings: defaultAlarmSettings,
                 reason: .disabled,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -234,16 +209,6 @@ struct EarlyOtterCalculator {
         }
 
         guard let winner = candidates.min(by: { $0.wakeTime < $1.wakeTime }) else {
-            if isFallbackEnabled {
-                return makeFallbackPlan(
-                    targetDay: targetDay,
-                    wakeTime: fallbackWakeTime,
-                    timingRules: timingRules,
-                    alarmSettings: fallbackAlarmSettings,
-                    firstEventOfDay: firstEventOfDay
-                )
-            }
-
             return WakeUpPlan(
                 id: hasher.makeID(
                     kind: "no-schedule",
@@ -255,12 +220,11 @@ struct EarlyOtterCalculator {
                 targetDay: targetDay,
                 targetEvent: nil,
                 firstEventOfDay: firstEventOfDay,
-                calculatedWakeTime: fallbackWakeTime,
+                calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
                 commuteTime: timingRules.defaultCommuteTime,
-                alarmSettings: fallbackAlarmSettings,
-                isFallback: false,
+                alarmSettings: defaultAlarmSettings,
                 reason: .noSchedule,
                 appliedRuleName: nil,
                 matchedRuleNames: []
@@ -279,16 +243,6 @@ struct EarlyOtterCalculator {
         let matchedRuleNames: [String] = allMatchedRulesForWinningEvent.count > 1
             ? Array(LinkedDedupe(allMatchedRulesForWinningEvent))
             : []
-
-        if isFallbackEnabled, fallbackWakeTime <= winnerWakeTime {
-            return makeFallbackPlan(
-                targetDay: targetDay,
-                wakeTime: fallbackWakeTime,
-                timingRules: timingRules,
-                alarmSettings: fallbackAlarmSettings,
-                firstEventOfDay: firstEventOfDay
-            )
-        }
 
         return WakeUpPlan(
             id: hasher.makeID(
@@ -310,7 +264,6 @@ struct EarlyOtterCalculator {
             prepTime: winningRule.prepTime,
             commuteTime: winningRule.commuteTime,
             alarmSettings: winningRule.alarmSettings,
-            isFallback: false,
             reason: .event,
             appliedRuleName: winningRule.name,
             matchedRuleNames: matchedRuleNames
@@ -324,7 +277,7 @@ struct EarlyOtterCalculator {
         isSkipped: Bool,
         firstEventOfDay: ParsedEvent?,
         timingRules: TimingRules,
-        fallbackAlarmSettings: RuleAlarmSettings,
+        defaultAlarmSettings: RuleAlarmSettings,
         calendar: Calendar
     ) -> WakeUpPlan {
         let wakeTime = customTime.date(on: targetDay, calendar: calendar)
@@ -345,8 +298,7 @@ struct EarlyOtterCalculator {
             eventStartTime: nil,
             prepTime: timingRules.prepTime,
             commuteTime: timingRules.defaultCommuteTime,
-            alarmSettings: fallbackAlarmSettings,
-            isFallback: false,
+            alarmSettings: defaultAlarmSettings,
             reason: isSkipped ? .manualSkip : .manualOverride,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -369,7 +321,6 @@ struct EarlyOtterCalculator {
             prepTime: base.prepTime,
             commuteTime: base.commuteTime,
             alarmSettings: base.alarmSettings,
-            isFallback: false,
             reason: .manualSkip,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -380,35 +331,6 @@ struct EarlyOtterCalculator {
         String(format: "%.0f", date.timeIntervalSince1970)
     }
 
-    private func makeFallbackPlan(
-        targetDay: TargetDay,
-        wakeTime: Date,
-        timingRules: TimingRules,
-        alarmSettings: RuleAlarmSettings = .default,
-        firstEventOfDay: ParsedEvent? = nil
-    ) -> WakeUpPlan {
-        WakeUpPlan(
-            id: hasher.makeID(
-                kind: "fallback",
-                components: [
-                    timestamp(targetDay.date),
-                    timestamp(wakeTime)
-                ]
-            ),
-            targetDay: targetDay,
-            targetEvent: nil,
-            firstEventOfDay: firstEventOfDay,
-            calculatedWakeTime: wakeTime,
-            eventStartTime: nil,
-            prepTime: timingRules.prepTime,
-            commuteTime: timingRules.defaultCommuteTime,
-            alarmSettings: alarmSettings,
-            isFallback: true,
-            reason: .fallback,
-            appliedRuleName: nil,
-            matchedRuleNames: []
-        )
-    }
 }
 
 // Simple order-preserving deduplication without requiring Hashable protocol extras

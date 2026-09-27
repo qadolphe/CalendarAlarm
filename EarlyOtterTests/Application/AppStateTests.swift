@@ -21,7 +21,6 @@ final class AppStateTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.reason, .noSchedule)
-        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
         XCTAssertEqual(plan.targetDay, TargetDay.tomorrow(from: now, calendar: calendar))
         XCTAssertEqual(plan.calculatedWakeTime, TargetDay.tomorrow(from: now, calendar: calendar).date)
@@ -54,8 +53,7 @@ final class AppStateTests: XCTestCase {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: true,
-            reason: .fallback,
+            reason: .alarm,
             appliedRuleName: nil,
             matchedRuleNames: []
         )
@@ -283,7 +281,9 @@ final class AppStateTests: XCTestCase {
             .weekday,
             from: Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
         )
-        updatedPreferences.fallbackEnabledDays.insert(tomorrowWeekday)
+        updatedPreferences.standardAlarms.append(
+            StandardAlarm(time: ClockTime(hour: 8, minute: 0), repeatDays: [tomorrowWeekday])
+        )
 
         await provider.suspendNextEventsRequest()
 
@@ -301,7 +301,7 @@ final class AppStateTests: XCTestCase {
         await provider.resumeSuspendedRequest()
         await updateTask.value
 
-        XCTAssertEqual(appState.tomorrowPlanPreview?.reason, .fallback)
+        XCTAssertEqual(appState.tomorrowPlanPreview?.reason, .alarm)
     }
 
     func testRefreshOnAppOpenRunsEvenWhenDashboardIsLoading() async {

@@ -12,7 +12,8 @@ struct DashboardView: View {
     @Bindable var appState: AppState
     var onOpenSchedule: () -> Void = {}
     @State private var selectedDayDetails: DayDetailsPresentation? = nil
-    @AppStorage("hasDismissedStandbyPrompt") private var hasDismissedStandbyPrompt = false
+    // Kept from the standby prompt, so anyone who closed that one isn't asked again.
+    @AppStorage("hasDismissedStandbyPrompt") private var hasDismissedAlarmPrompt = false
     @State private var isShowingFeedback = false
 
     private var isLoading: Bool {
@@ -185,8 +186,8 @@ struct DashboardView: View {
                 }
                 .padding(.top, 16)
 
-                if hasNoFixedAlarms && !hasDismissedStandbyPrompt {
-                    setAlarmsPromptCard
+                if appState.preferences.standardAlarms.isEmpty && !hasDismissedAlarmPrompt {
+                    addAlarmPromptCard
                 }
 
                 DashboardWeeklyCardView(viewModel: viewModel) { entry in
@@ -206,11 +207,7 @@ struct DashboardView: View {
             .accessibilityHidden(true)
     }
 
-    private var hasNoFixedAlarms: Bool {
-        appState.preferences.hasNoFixedAlarms
-    }
-
-    private var setAlarmsPromptCard: some View {
+    private var addAlarmPromptCard: some View {
         // Two sibling buttons (not nested): the card navigates, the corner ✕ dismisses.
         ZStack(alignment: .topTrailing) {
             Button {
@@ -222,10 +219,10 @@ struct DashboardView: View {
                         .foregroundStyle(WPStyles.accent)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Set your standby alarms")
+                        Text("Add a backup alarm")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(WPStyles.primaryText)
-                        Text("Pick wake-up times for days without events")
+                        Text("For days without early events")
                             .font(.caption)
                             .foregroundStyle(WPStyles.secondaryText)
                     }
@@ -242,7 +239,7 @@ struct DashboardView: View {
             .buttonStyle(.plain)
 
             Button {
-                hasDismissedStandbyPrompt = true
+                hasDismissedAlarmPrompt = true
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .bold))
@@ -274,14 +271,14 @@ struct DashboardView: View {
         case .inactiveDay:
             return "Auto Alarms are paused for this day."
         case .noSchedule:
-            return "No scheduled events or fallback alarms are coming up."
+            return "No calendar events or alarms are coming up."
         case .disabled:
             return "Automatic alarms are turned off."
         case .systemDisabled:
             return "EarlyOtter is disabled."
         case .manualSkip:
             return "You turned off the alarm for this day."
-        case .fallback, .authorizationMissing, .manualOverride, .event:
+        case .alarm, .authorizationMissing, .manualOverride, .event:
             return "No alarm is currently scheduled."
         }
     }
@@ -290,7 +287,7 @@ struct DashboardView: View {
         switch plan.reason {
         case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
             return true
-        case .fallback, .authorizationMissing, .manualOverride, .event:
+        case .alarm, .authorizationMissing, .manualOverride, .event:
             return false
         }
     }

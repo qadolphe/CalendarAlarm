@@ -39,7 +39,7 @@ struct EarlyOtterDetailsView: View {
         switch plan.reason {
         case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
             return true
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return false
         }
     }
@@ -54,7 +54,7 @@ struct EarlyOtterDetailsView: View {
             return "calendar.badge.exclamationmark"
         case .manualSkip:
             return "bell.slash.fill"
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return "alarm.fill"
         }
     }
@@ -71,7 +71,7 @@ struct EarlyOtterDetailsView: View {
             return "Nothing Scheduled"
         case .manualSkip:
             return "Manually Disabled"
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return "Wake Time"
         }
     }
@@ -85,10 +85,10 @@ struct EarlyOtterDetailsView: View {
         case .systemDisabled:
             return "EarlyOtter is fully disabled right now, so no managed alarms will be created until you turn it back on."
         case .noSchedule:
-            return "No matching calendar event or fallback alarm was available for this day."
+            return "No matching calendar event or alarm was available for this day."
         case .manualSkip:
             return ""
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return ""
         }
     }
@@ -335,7 +335,6 @@ struct EarlyOtterDetailsView_Previews: PreviewProvider {
             prepTime: Minutes(30),
             commuteTime: Minutes(20),
             alarmSettings: .default,
-            isFallback: false,
             reason: .event,
             appliedRuleName: "Weekday Office",
             matchedRuleNames: ["Weekday Office", "Morning Meetings"]
@@ -354,8 +353,7 @@ struct EarlyOtterDetailsView_Previews: PreviewProvider {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: true,
-            reason: .fallback,
+            reason: .alarm,
             appliedRuleName: nil,
             matchedRuleNames: []
         )

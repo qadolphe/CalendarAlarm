@@ -160,6 +160,22 @@ final class AppState {
         await mutatePreferences { $0.setOverride(override, for: targetDay) }
     }
 
+    /// Adds or replaces a standard alarm; a one-time alarm is pinned to its next ring.
+    func saveAlarm(_ alarm: StandardAlarm) async {
+        let armed = alarm.armed()
+        await mutatePreferences { prefs in
+            if let index = prefs.standardAlarms.firstIndex(where: { $0.id == armed.id }) {
+                prefs.standardAlarms[index] = armed
+            } else {
+                prefs.standardAlarms.append(armed)
+            }
+        }
+    }
+
+    func deleteAlarm(id: UUID) async {
+        await mutatePreferences { $0.standardAlarms.removeAll { $0.id == id } }
+    }
+
     func refreshPlan() async {
         let previousDashboardState = dashboardState
         noticeMessage = nil
@@ -470,6 +486,7 @@ final class AppState {
 
         let now = Date()
         let calendar = Calendar.current
+        disableFiredOneTimeAlarms(now: now, calendar: calendar)
         let currentPermissions = await permissionService.currentStatus()
 
         guard isCurrentRefresh(refreshGeneration) else { return }
@@ -519,7 +536,7 @@ final class AppState {
             return
         }
 
-        if plan.isFallback
+        if plan.reason == .alarm
             || plan.reason == .disabled
             || plan.reason == .systemDisabled
             || plan.reason == .inactiveDay
@@ -530,6 +547,16 @@ final class AppState {
         }
 
         dashboardState = .ready(viewState)
+    }
+
+    /// One-time alarms switch themselves off after ringing, like the Clock app.
+    private func disableFiredOneTimeAlarms(now: Date, calendar: Calendar) {
+        var updated = preferences
+        updated.disableFiredOneTimeAlarms(now: now, calendar: calendar)
+        guard updated != preferences else { return }
+
+        preferences = updated
+        try? preferencesStore.save(updated)
     }
 
     private func beginRefresh() -> Int {
@@ -579,7 +606,6 @@ final class AppState {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: false,
             reason: .noSchedule,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -599,7 +625,7 @@ final class AppState {
             return .notScheduled
         case .disabled, .inactiveDay, .systemDisabled, .manualSkip:
             return .disabled
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return .failed("Alarm status unavailable.")
         }
     }

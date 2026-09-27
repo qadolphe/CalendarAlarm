@@ -29,25 +29,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.reason, .event)
     }
 
-    func testFallsBackWhenNoValidEvents() {
-        let calendar = configuredCalendar()
-        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
-        var preferences = AlarmPreferences.default
-        preferences.fallbackEnabledDays = Set(1...7)
-
-        let plan = calculator.calculate(
-            events: [],
-            preferences: preferences,
-            targetDay: targetDay,
-            calendar: calendar
-        )
-
-        XCTAssertNil(plan.targetEvent)
-        XCTAssertTrue(plan.isFallback)
-        XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertEqual(plan.calculatedWakeTime, ClockTime.defaultLatestWakeTime.date(on: targetDay, calendar: calendar))
-    }
-
     func testSubtractsPrepAndCommuteTime() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
@@ -78,7 +59,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.reason, .disabled)
-        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
     }
 
@@ -96,7 +76,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.reason, .inactiveDay)
-        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
     }
 
@@ -175,11 +154,10 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
     }
 
-    func testNoScheduleWhenNoEventsAndFallbackDisabled() {
+    func testNoScheduleWhenNoEvents() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
-        var preferences = AlarmPreferences.default
-        preferences.fallbackEnabledDays = []
+        let preferences = AlarmPreferences.default
 
         let plan = calculator.calculate(
             events: [],
@@ -189,29 +167,7 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.reason, .noSchedule)
-        XCTAssertFalse(plan.isFallback)
         XCTAssertNil(plan.targetEvent)
-    }
-
-    func testFallbackWinsWhenEarlierThanEventAlarm() {
-        let calendar = configuredCalendar()
-        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
-        var preferences = AlarmPreferences.default
-        preferences.fallbackEnabledDays = Set(1...7)
-        preferences.schedule.fallbackWakeTimes[calendar.component(.weekday, from: targetDay.date)] = ClockTime(hour: 8, minute: 0)
-
-        let eventStart = makeDate(year: 2026, month: 5, day: 2, hour: 15, minute: 0, calendar: calendar)
-        let plan = calculator.calculate(
-            events: [event(startDate: eventStart, endDate: eventStart.addingTimeInterval(1_800))],
-            preferences: preferences,
-            targetDay: targetDay,
-            calendar: calendar
-        )
-
-        XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertTrue(plan.isFallback)
-        XCTAssertNil(plan.targetEvent)
-        XCTAssertEqual(plan.calculatedWakeTime, makeDate(year: 2026, month: 5, day: 2, hour: 8, minute: 0, calendar: calendar))
     }
 
     func testDoesNotMutateEvents() {
@@ -301,36 +257,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertEqual(plan.targetEvent?.id, "work")
     }
 
-    func testFallbackInheritsDefaultRuleAlarmSettings() {
-        let calendar = configuredCalendar()
-        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
-        var preferences = AlarmPreferences.default
-        preferences.fallbackEnabledDays = Set(1...7)
-        preferences.alarmRules = [
-            AlarmRule.makeDefault(
-                prepTime: Minutes(45),
-                commuteTime: Minutes(20),
-                alarmSettings: RuleAlarmSettings(
-                    sound: .tide,
-                    snoozeEnabled: false,
-                    snoozeDuration: Minutes(15)
-                )
-            )
-        ]
-
-        let plan = calculator.calculate(
-            events: [],
-            preferences: preferences,
-            targetDay: targetDay,
-            calendar: calendar
-        )
-
-        XCTAssertEqual(plan.reason, .fallback)
-        XCTAssertEqual(plan.alarmSettings.sound, .tide)
-        XCTAssertFalse(plan.alarmSettings.snoozeEnabled)
-        XCTAssertEqual(plan.alarmSettings.snoozeDuration, Minutes(15))
-    }
-
     func testRuleWeekdaysGateRuleMatching() {
         let calendar = configuredCalendar()
         let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
@@ -357,7 +283,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
             weekdaysOnlyRule,
             AlarmRule.makeDefault(prepTime: Minutes(10), commuteTime: Minutes(0))
         ]
-        preferences.fallbackEnabledDays = []
 
         let plan = calculator.calculate(
             events: [saturdayEvent],
@@ -398,7 +323,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
             disabledRule,
             AlarmRule.makeDefault(prepTime: Minutes(10), commuteTime: Minutes(0))
         ]
-        preferences.fallbackEnabledDays = []
 
         let plan = calculator.calculate(
             events: [officeEvent],
@@ -499,7 +423,6 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         )
         var preferences = AlarmPreferences.default
         preferences.alarmRules = [workRule, schoolRule, AlarmRule.makeDefault(prepTime: Minutes(0), commuteTime: Minutes(0))]
-        preferences.fallbackEnabledDays = []
 
         let plan = calculator.calculate(
             events: [evt],

@@ -74,17 +74,42 @@ struct LocationRule: Codable, Equatable, Sendable {
 
 struct ScheduleRules: Codable, Equatable, Sendable {
     var isEnabled: Bool
+    /// Weekdays calendar alarms run on.
     var activeDays: Set<Int>
-    var fallbackEnabledDays: Set<Int>
-    /// Per-weekday fallback wake times. Missing key = use `TimingRules.latestWakeTime`.
-    var fallbackWakeTimes: [Int: ClockTime]
+    var alarms: [StandardAlarm]
 
     static let `default` = ScheduleRules(
         isEnabled: true,
         activeDays: Set(1...7),
-        fallbackEnabledDays: [],
-        fallbackWakeTimes: [:]
+        alarms: []
     )
+}
+
+extension ScheduleRules {
+    private enum CodingKeys: String, CodingKey {
+        case isEnabled
+        case activeDays
+        case alarms
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled = try container.decode(Bool.self, forKey: .isEnabled)
+        activeDays = try container.decode(Set<Int>.self, forKey: .activeDays)
+        // Schedules saved before standard alarms get theirs from `LegacyStandbySchedule`.
+        alarms = try container.decodeIfPresent([StandardAlarm].self, forKey: .alarms) ?? []
+    }
+}
+
+/// The standby fields a schedule carried before standard alarms replaced them.
+private struct LegacyStandbySchedule: Decodable {
+    let alarms: [StandardAlarm]?
+    let fallbackEnabledDays: Set<Int>?
+    let fallbackWakeTimes: [Int: ClockTime]?
+
+    var needsMigration: Bool {
+        alarms == nil
+    }
 }
 
 struct TimingRules: Codable, Equatable, Sendable {
@@ -193,9 +218,9 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         set { schedule.activeDays = newValue }
     }
 
-    var fallbackEnabledDays: Set<Int> {
-        get { schedule.fallbackEnabledDays }
-        set { schedule.fallbackEnabledDays = newValue }
+    var standardAlarms: [StandardAlarm] {
+        get { schedule.alarms }
+        set { schedule.alarms = newValue }
     }
 
     var selectedCalendarIDs: Set<String> {
@@ -233,24 +258,11 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         set { filters.titleKeywords.allowedKeywords = newValue }
     }
 
-    /// Effective fallback wake time for a given weekday (1=Sun…7=Sat).
-    func fallbackWakeTime(for weekday: Int) -> ClockTime {
-        schedule.fallbackWakeTimes[weekday] ?? timing.latestWakeTime
-    }
-
-    /// Whether event-driven auto alarms run on the given weekday.
-    func autoAlarmEnabled(on weekday: Int) -> Bool {
-        isEnabled && activeDays.contains(weekday)
-    }
-
-    /// Whether a fixed backup alarm is set for the given weekday.
-    func fixedAlarmEnabled(on weekday: Int) -> Bool {
-        fallbackEnabledDays.contains(weekday)
-    }
-
-    /// True when no fixed backup alarms are configured for any day.
-    var hasNoFixedAlarms: Bool {
-        fallbackEnabledDays.isEmpty
+    /// Turns off one-time alarms whose ring time has passed, like the Clock app.
+    mutating func disableFiredOneTimeAlarms(now: Date = Date(), calendar: Calendar = .current) {
+        for index in schedule.alarms.indices where schedule.alarms[index].hasFired(now: now, calendar: calendar) {
+            schedule.alarms[index].isEnabled = false
+        }
     }
 
     // MARK: Per-date overrides
@@ -314,7 +326,7 @@ struct AlarmPreferences: Codable, Equatable, Sendable {
         )
     }
 
-    var fallbackAlarmSettings: RuleAlarmSettings {
+    var defaultAlarmSettings: RuleAlarmSettings {
         defaultAlarmRule.alarmSettings
     }
 
@@ -394,6 +406,15 @@ extension AlarmPreferences {
                 timing: decodedTiming,
                 legacySelectedCalendarIDs: filters.selectedCalendarIDs
             )
+            if let legacy = try? container.decodeIfPresent(LegacyStandbySchedule.self, forKey: .schedule),
+               legacy.needsMigration {
+                schedule.alarms = StandardAlarm.migratedStandby(
+                    days: legacy.fallbackEnabledDays ?? [],
+                    times: legacy.fallbackWakeTimes ?? [:],
+                    defaultTime: decodedTiming.latestWakeTime,
+                    settings: defaultAlarmRule.alarmSettings
+                )
+            }
             return
         }
 
@@ -401,11 +422,11 @@ extension AlarmPreferences {
         dateOverrides = try container.decodeIfPresent([String: DayAlarmOverride].self, forKey: .dateOverrides) ?? [:]
 
         let decodedActiveDays = try container.decodeIfPresent(Set<Int>.self, forKey: .activeDays) ?? ScheduleRules.default.activeDays
+        let legacyStandbyDays = try container.decodeIfPresent(Set<Int>.self, forKey: .fallbackEnabledDays) ?? decodedActiveDays
         schedule = ScheduleRules(
             isEnabled: try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? ScheduleRules.default.isEnabled,
             activeDays: decodedActiveDays,
-            fallbackEnabledDays: try container.decodeIfPresent(Set<Int>.self, forKey: .fallbackEnabledDays) ?? decodedActiveDays,
-            fallbackWakeTimes: [:]
+            alarms: []
         )
         timing = TimingRules(
             prepTime: try container.decodeIfPresent(Minutes.self, forKey: .prepTime) ?? TimingRules.default.prepTime,
@@ -429,6 +450,12 @@ extension AlarmPreferences {
             legacyDecoded,
             timing: timing,
             legacySelectedCalendarIDs: filters.selectedCalendarIDs
+        )
+        schedule.alarms = StandardAlarm.migratedStandby(
+            days: legacyStandbyDays,
+            times: [:],
+            defaultTime: timing.latestWakeTime,
+            settings: defaultAlarmRule.alarmSettings
         )
     }
 

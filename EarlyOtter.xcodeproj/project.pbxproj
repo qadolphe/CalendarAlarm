@@ -30,8 +30,10 @@
 		AA0000000000000000000206 /* Domain/Models/CalendarSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000106 /* Domain/Models/CalendarSource.swift */; };
 		AA0000000000000000000207 /* Domain/Models/ParsedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */; };
 		AA0000000000000000000208 /* Domain/Models/ScheduledAlarmRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000108 /* Domain/Models/ScheduledAlarmRecord.swift */; };
+		AA0000000000000000000F10 /* Domain/Models/StandardAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F00 /* Domain/Models/StandardAlarm.swift */; };
 		AA0000000000000000000209 /* Domain/Models/WakeUpPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000109 /* Domain/Models/WakeUpPlan.swift */; };
 		AA000000000000000000020A /* Domain/Services/EventFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010A /* Domain/Services/EventFilter.swift */; };
+		AA0000000000000000000F11 /* Domain/Services/StandardAlarmPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F01 /* Domain/Services/StandardAlarmPlanner.swift */; };
 		AA000000000000000000020B /* Domain/Services/EarlyOtterCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010B /* Domain/Services/EarlyOtterCalculator.swift */; };
 		AA000000000000000000020C /* Domain/Services/EarlyOtterHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */; };
 		AA000000000000000000020D /* Domain/ValueObjects/ClockTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010D /* Domain/ValueObjects/ClockTime.swift */; };
@@ -63,7 +65,7 @@
 		AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000127 /* UI/Rules/RulesView.swift */; };
 		AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */; };
 		AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */; };
-		AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */; };
+		AA0000000000000000000229 /* UI/Schedule/AlarmEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000129 /* UI/Schedule/AlarmEditorView.swift */; };
 		AA0000000000000000000230 /* Domain/Models/AlarmRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */; };
 		AA0000000000000000000231 /* Application/AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000131 /* Application/AccountService.swift */; };
 		AA0000000000000000000232 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000132 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift */; };
@@ -88,6 +90,7 @@
 		AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
 		AA0000000000000000000D04 /* UI/TimetableFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */; };
 		AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000301 /* Domain/EventFilterTests.swift */; };
+		AA0000000000000000000F12 /* Domain/StandardAlarmPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* Domain/StandardAlarmPlannerTests.swift */; };
 		AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */; };
 		AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */; };
 		AA0000000000000000000404 /* Application/AccountServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000304 /* Application/AccountServiceTests.swift */; };
@@ -163,8 +166,10 @@
 		AA0000000000000000000106 /* Domain/Models/CalendarSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/CalendarSource.swift; sourceTree = "<group>"; };
 		AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/ParsedEvent.swift; sourceTree = "<group>"; };
 		AA0000000000000000000108 /* Domain/Models/ScheduledAlarmRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/ScheduledAlarmRecord.swift; sourceTree = "<group>"; };
+		AA0000000000000000000F00 /* Domain/Models/StandardAlarm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/StandardAlarm.swift; sourceTree = "<group>"; };
 		AA0000000000000000000109 /* Domain/Models/WakeUpPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/WakeUpPlan.swift; sourceTree = "<group>"; };
 		AA000000000000000000010A /* Domain/Services/EventFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/EventFilter.swift; sourceTree = "<group>"; };
+		AA0000000000000000000F01 /* Domain/Services/StandardAlarmPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/StandardAlarmPlanner.swift; sourceTree = "<group>"; };
 		AA000000000000000000010B /* Domain/Services/EarlyOtterCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/EarlyOtterCalculator.swift; sourceTree = "<group>"; };
 		AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/EarlyOtterHasher.swift; sourceTree = "<group>"; };
 		AA000000000000000000010D /* Domain/ValueObjects/ClockTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/ClockTime.swift; sourceTree = "<group>"; };
@@ -196,7 +201,7 @@
 		AA0000000000000000000127 /* UI/Rules/RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/RulesView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/AlarmSoundPickerView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Audio/AlarmSoundPreviewPlayer.swift; sourceTree = "<group>"; };
-		AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/DaySettingsView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000129 /* UI/Schedule/AlarmEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Schedule/AlarmEditorView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000130 /* Domain/Models/AlarmRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/AlarmRule.swift; sourceTree = "<group>"; };
 		AA0000000000000000000131 /* Application/AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AccountService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000132 /* Infrastructure/Auth/GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Auth/GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
@@ -221,6 +226,7 @@
 		AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/TimetableFormatTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000301 /* Domain/EventFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EventFilterTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000F02 /* Domain/StandardAlarmPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/StandardAlarmPlannerTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EarlyOtterCalculatorTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AlarmSyncServiceTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000304 /* Application/AccountServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application/AccountServiceTests.swift; sourceTree = "<group>"; };
@@ -438,6 +444,7 @@
 				AA0000000000000000000146 /* Domain/Models/NextAlarmWidgetSnapshot.swift */,
 				AA0000000000000000000107 /* Domain/Models/ParsedEvent.swift */,
 				AA0000000000000000000108 /* Domain/Models/ScheduledAlarmRecord.swift */,
+				AA0000000000000000000F00 /* Domain/Models/StandardAlarm.swift */,
 				AA0000000000000000000109 /* Domain/Models/WakeUpPlan.swift */,
 			);
 			name = Models;
@@ -449,6 +456,7 @@
 				AA0000000000000000000900 /* Domain/Services/AppReviewPromptPolicy.swift */,
 				AA0000000000000000000A00 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift */,
 				AA000000000000000000010A /* Domain/Services/EventFilter.swift */,
+				AA0000000000000000000F01 /* Domain/Services/StandardAlarmPlanner.swift */,
 				AA000000000000000000010B /* Domain/Services/EarlyOtterCalculator.swift */,
 				AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */,
 			);
@@ -564,7 +572,6 @@
 		AA0000000000000000000536 /* Rules */ = {
 			isa = PBXGroup;
 			children = (
-				AA0000000000000000000129 /* UI/Rules/DaySettingsView.swift */,
 				AA0000000000000000000127 /* UI/Rules/RulesView.swift */,
 				AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */,
 			);
@@ -586,6 +593,7 @@
 		AA0000000000000000000538 /* Schedule */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000129 /* UI/Schedule/AlarmEditorView.swift */,
 				AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */,
 			);
 			name = Schedule;
@@ -612,6 +620,7 @@
 				AA0000000000000000000300 /* Domain/ClockTimeTests.swift */,
 				AA0000000000000000000D03 /* UI/TimetableFormatTests.swift */,
 				AA0000000000000000000301 /* Domain/EventFilterTests.swift */,
+				AA0000000000000000000F02 /* Domain/StandardAlarmPlannerTests.swift */,
 				AA0000000000000000000302 /* Domain/EarlyOtterCalculatorTests.swift */,
 			);
 			name = Domain;
@@ -804,8 +813,10 @@
 				AA0000000000000000000246 /* Domain/Models/NextAlarmWidgetSnapshot.swift in Sources */,
 				AA0000000000000000000207 /* Domain/Models/ParsedEvent.swift in Sources */,
 				AA0000000000000000000208 /* Domain/Models/ScheduledAlarmRecord.swift in Sources */,
+				AA0000000000000000000F10 /* Domain/Models/StandardAlarm.swift in Sources */,
 				AA0000000000000000000209 /* Domain/Models/WakeUpPlan.swift in Sources */,
 				AA000000000000000000020A /* Domain/Services/EventFilter.swift in Sources */,
+				AA0000000000000000000F11 /* Domain/Services/StandardAlarmPlanner.swift in Sources */,
 				AA000000000000000000020B /* Domain/Services/EarlyOtterCalculator.swift in Sources */,
 				AA000000000000000000020C /* Domain/Services/EarlyOtterHasher.swift in Sources */,
 				AA0000000000000000000910 /* Domain/Services/AppReviewPromptPolicy.swift in Sources */,
@@ -848,7 +859,7 @@
 				AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */,
 				AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */,
 				AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */,
-				AA0000000000000000000229 /* UI/Rules/DaySettingsView.swift in Sources */,
+				AA0000000000000000000229 /* UI/Schedule/AlarmEditorView.swift in Sources */,
 				9363927702F16CFA0B76D76F /* DesignSystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -869,6 +880,7 @@
 				AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */,
 				AA0000000000000000000D04 /* UI/TimetableFormatTests.swift in Sources */,
 				AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */,
+				AA0000000000000000000F12 /* Domain/StandardAlarmPlannerTests.swift in Sources */,
 				AA0000000000000000000402 /* Domain/EarlyOtterCalculatorTests.swift in Sources */,
 				AA0000000000000000000815 /* Infrastructure/WebsiteFeedbackSubmitterTests.swift in Sources */,
 			);
@@ -937,7 +949,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = EarlyOtter/EarlyOtter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -975,7 +987,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = EarlyOtter/EarlyOtter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				EXECUTABLE_NAME = EarlyOtter;
@@ -1057,7 +1069,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NextAlarmWidget/NextAlarmWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NextAlarmWidget/Info.plist;
@@ -1087,7 +1099,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NextAlarmWidget/NextAlarmWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NextAlarmWidget/Info.plist;

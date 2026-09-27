@@ -4,15 +4,18 @@ final class EarlyOtterService {
     private let calendarProvider: CalendarEventProviding
     private let preferencesStore: PreferencesStoring
     private let calculator: EarlyOtterCalculator
+    private let alarmPlanner: StandardAlarmPlanner
 
     init(
         calendarProvider: CalendarEventProviding,
         preferencesStore: PreferencesStoring,
-        calculator: EarlyOtterCalculator = EarlyOtterCalculator()
+        calculator: EarlyOtterCalculator = EarlyOtterCalculator(),
+        alarmPlanner: StandardAlarmPlanner = StandardAlarmPlanner()
     ) {
         self.calendarProvider = calendarProvider
         self.preferencesStore = preferencesStore
         self.calculator = calculator
+        self.alarmPlanner = alarmPlanner
     }
 
     func makePlan(
@@ -68,6 +71,21 @@ final class EarlyOtterService {
         )
     }
 
+    /// Standard alarm plans for the days `calendarPlans` cover, plus each day's
+    /// earliest alarm of either kind for the week view.
+    func makeAlarmPlans(
+        alongside calendarPlans: [WakeUpPlan],
+        calendar: Calendar = .current
+    ) throws -> (alarmPlans: [WakeUpPlan], dayPlans: [WakeUpPlan]) {
+        let alarmPlans = alarmPlanner.plans(
+            for: calendarPlans.map(\.targetDay),
+            calendarPlans: calendarPlans,
+            preferences: try preferencesStore.load(),
+            calendar: calendar
+        )
+        return (alarmPlans, alarmPlanner.earliestPerDay(calendarPlans: calendarPlans, alarmPlans: alarmPlans))
+    }
+
     func makeDisplayPlans(
         startingAt now: Date = Date(),
         count: Int,
@@ -87,12 +105,7 @@ final class EarlyOtterService {
         now: Date = Date()
     ) -> [WakeUpPlan] {
         dailyPlans.filter { plan in
-            plan.reason != .disabled
-                && plan.reason != .inactiveDay
-                && plan.reason != .systemDisabled
-                && plan.reason != .noSchedule
-                && plan.reason != .manualSkip
-                && plan.calculatedWakeTime > now
+            plan.setsAlarm && plan.calculatedWakeTime > now
         }
     }
 

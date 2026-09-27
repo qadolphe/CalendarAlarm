@@ -15,7 +15,7 @@ struct DashboardViewModel {
             switch plan.reason {
             case .disabled, .inactiveDay, .noSchedule, .systemDisabled, .manualSkip:
                 return nil
-            case .event, .fallback, .authorizationMissing, .manualOverride:
+            case .event, .alarm, .authorizationMissing, .manualOverride:
                 return plan.calculatedWakeTime
             }
         }
@@ -174,8 +174,9 @@ struct DashboardViewModel {
             if plan.reason == .inactiveDay {
                 return "Auto Alarms are paused for that day based on your active schedule."
             }
-            if plan.reason == .fallback {
-                return "Standby alarm is scheduled."
+            if plan.reason == .alarm {
+                // The timetable says what's left of the day instead.
+                return nil
             }
             return "Alarm scheduled for the next valid event."
         case .needsPermission:
@@ -185,7 +186,7 @@ struct DashboardViewModel {
         case .failed(let message):
             return "Couldn't schedule alarm: \(message)"
         case .notScheduled:
-            return "No scheduled events or standby alarm."
+            return "No scheduled events or alarms."
         }
     }
 
@@ -260,7 +261,7 @@ struct DashboardViewModel {
         }
 
         if let alarmDate = entry.alarmDate {
-            return "\(day), fallback alarm at \(alarmDate.formatted(date: .omitted, time: .shortened))."
+            return "\(day), alarm at \(alarmDate.formatted(date: .omitted, time: .shortened))."
         }
 
         switch entry.plan.reason {
@@ -271,10 +272,10 @@ struct DashboardViewModel {
         case .systemDisabled:
             return "\(day), EarlyOtter is disabled."
         case .noSchedule:
-            return "\(day), no event or fallback alarm is scheduled."
+            return "\(day), no event or alarm is scheduled."
         case .manualSkip:
             return "\(day), alarm turned off for this day."
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return day
         }
     }
@@ -334,7 +335,7 @@ struct DashboardViewModel {
             return .notScheduled
         case .disabled, .inactiveDay, .systemDisabled, .manualSkip:
             return .disabled
-        case .event, .fallback, .authorizationMissing, .manualOverride:
+        case .event, .alarm, .authorizationMissing, .manualOverride:
             return nil
         }
     }
@@ -349,7 +350,6 @@ struct DashboardViewModel {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: .default,
-            isFallback: false,
             reason: .noSchedule,
             appliedRuleName: nil,
             matchedRuleNames: []

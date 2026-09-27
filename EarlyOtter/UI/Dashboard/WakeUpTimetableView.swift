@@ -10,15 +10,22 @@ struct WakeUpTimetableView: View {
 
     private let numberColumnWidth: CGFloat = 140
 
+    /// For a standard alarm, only an event still to come that day; it didn't set the time.
     private var event: ParsedEvent? {
-        plan.targetEvent ?? plan.firstEventOfDay
+        let event = plan.targetEvent ?? plan.firstEventOfDay
+        guard plan.reason == .alarm else { return event }
+        return event.flatMap { $0.startDate > plan.calculatedWakeTime ? $0 : nil }
+    }
+
+    private var heroTitle: String {
+        plan.reason == .alarm ? plan.alarmTitle : "Wake up"
     }
 
     var body: some View {
         VStack(spacing: 0) {
             TimelineView(.everyMinute) { context in
                 row(
-                    title: "Wake up",
+                    title: heroTitle,
                     subtitle: TimetableFormat.countdown(from: context.date, to: plan.calculatedWakeTime).map { "in \($0)" },
                     isHero: true
                 ) {
@@ -52,13 +59,14 @@ struct WakeUpTimetableView: View {
                     }
                     Divider()
                 }
-                row(title: event.title, subtitle: event.location) {
+                // Labelled so a standard alarm isn't mistaken for one set by this event.
+                row(title: event.title, subtitle: plan.reason == .alarm ? "Next event" : event.location) {
                     number(TimetableFormat.clock(event.startDate), size: 22)
                 } marker: {
                     dot(WPStyles.eventTint)
                 }
             } else {
-                Label(note ?? "No early events", systemImage: "moon.zzz.fill")
+                Label(note ?? emptyEventsText, systemImage: "moon.zzz.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.secondaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -66,6 +74,16 @@ struct WakeUpTimetableView: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// A standard alarm has nothing after it; a calendar alarm had nothing early enough.
+    private var emptyEventsText: String {
+        guard plan.reason == .alarm else { return "No early events" }
+        switch dayName {
+        case "Today": return "No more events today"
+        case "Tomorrow": return "No more events tomorrow"
+        default: return "No more events on \(dayName)"
+        }
     }
 
     /// "Today", "Tomorrow", or the weekday.

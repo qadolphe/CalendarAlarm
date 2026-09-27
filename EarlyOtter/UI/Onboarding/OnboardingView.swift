@@ -6,7 +6,6 @@ struct OnboardingView: View {
     var onFinish: (() -> Void)? = nil
     
     @State private var currentStep = 0
-    @State private var selectedWeekday: WeekdayOption?
     @State private var finishPhase = 0
     private let totalSteps = 5
     private let finishIntroDelay: Duration = .milliseconds(500)
@@ -32,9 +31,6 @@ struct OnboardingView: View {
                     )
             }
             .animation(.easeInOut, value: currentStep)
-        }
-        .sheet(item: $selectedWeekday) { option in
-            DaySettingsView(appState: appState, weekdayOption: option)
         }
     }
     
@@ -341,7 +337,7 @@ struct OnboardingView: View {
                 } else if finishPhase >= 4 {
                     if finishStepPlan != nil {
                         VStack(spacing: 28) {
-                            Text("Set Standby Alarms for days without events.")
+                            Text("Pick the days EarlyOtter wakes you for your first event.")
                                 .font(.body.weight(.medium))
                                 .multilineTextAlignment(finishPhase == 4 ? .center : .leading)
                                 .foregroundStyle(WPStyles.secondaryText)
@@ -353,11 +349,11 @@ struct OnboardingView: View {
 
                             if finishPhase >= 5 {
                                 VStack(alignment: .leading, spacing: 16) {
-                                    Text("Standby Alarms")
+                                    Text("Calendar Alarms")
                                         .font(.headline)
                                         .foregroundStyle(WPStyles.primaryText)
                                     
-                                    scheduleCard
+                                    CalendarDaysRow(appState: appState)
                                 }
                                 .cardStyle()
                                 .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -439,43 +435,6 @@ struct OnboardingView: View {
         }
     }
     
-    private var scheduleCard: some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7),
-            spacing: 8
-        ) {
-            ForEach(EarlyOtterUIConfiguration.sundayFirstWeekdays) { option in
-                weekdayCell(option)
-            }
-        }
-    }
-    
-    private func weekdayCell(_ option: WeekdayOption) -> some View {
-        let isAutoAlarm = appState.preferences.activeDays.contains(option.weekday)
-        let isFixed = appState.preferences.fixedAlarmEnabled(on: option.weekday)
-
-        return Button { selectedWeekday = option } label: {
-            VStack(spacing: 8) {
-                Text(option.shortLabel).font(.system(size: 9, weight: .bold))
-                Circle()
-                    .fill(isFixed ? WPStyles.accent : WPStyles.surfaceRaised)
-                    .frame(width: 6, height: 6)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isAutoAlarm || isFixed ? WPStyles.surfaceRaised : WPStyles.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isAutoAlarm ? WPStyles.accent.opacity(0.8) : Color.white.opacity(0.06), lineWidth: 1)
-            )
-            .foregroundStyle(isAutoAlarm || isFixed ? WPStyles.primaryText : WPStyles.secondaryText.opacity(0.7))
-        }
-        .buttonStyle(.plain)
-    }
-
     // MARK: - Components & Bindings
     
     private func onboardingPage<Content: View, Footer: View>(
