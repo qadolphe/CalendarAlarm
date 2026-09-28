@@ -29,13 +29,13 @@ struct EarlyOtterCalculator {
         let placeholderWakeTime = placeholderTime.date(on: targetDay, calendar: calendar)
         let defaultAlarmSettings = preferences.defaultAlarmSettings
 
-        // The event marker reflects whether an event exists that day, so it is
-        // computed once up front and threaded into every plan — including disabled,
-        // inactive, and skipped days where no alarm runs but the event is still there.
-        let firstEventOfDay = events
+        // The day's events are computed once up front and threaded into every plan —
+        // including disabled, inactive, and skipped days where no alarm runs but the
+        // events are still there for the week markers and the day planner.
+        let dayEvents = events
             .filter { eventFilter.shouldInclude($0, preferences: preferences) }
             .filter { targetDay.interval(calendar: calendar).contains($0.startDate) }
-            .min(by: { $0.startDate < $1.startDate })
+            .sorted { $0.startDate < $1.startDate }
 
         if !preferences.isSystemEnabled {
             return WakeUpPlan(
@@ -49,7 +49,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                firstEventOfDay: firstEventOfDay,
+                dayEvents: dayEvents,
                 calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -71,7 +71,7 @@ struct EarlyOtterCalculator {
                 targetDay: targetDay,
                 customTime: customTime,
                 isSkipped: override.isSkipped,
-                firstEventOfDay: firstEventOfDay,
+                dayEvents: dayEvents,
                 timingRules: timingRules,
                 defaultAlarmSettings: defaultAlarmSettings,
                 calendar: calendar
@@ -89,7 +89,7 @@ struct EarlyOtterCalculator {
             placeholderTime: placeholderTime,
             placeholderWakeTime: placeholderWakeTime,
             defaultAlarmSettings: defaultAlarmSettings,
-            firstEventOfDay: firstEventOfDay,
+            dayEvents: dayEvents,
             calendar: calendar
         )
 
@@ -113,7 +113,7 @@ struct EarlyOtterCalculator {
         placeholderTime: ClockTime,
         placeholderWakeTime: Date,
         defaultAlarmSettings: RuleAlarmSettings,
-        firstEventOfDay: ParsedEvent?,
+        dayEvents: [ParsedEvent],
         calendar: Calendar
     ) -> WakeUpPlan {
         if !scheduleRules.activeDays.contains(weekday) {
@@ -129,7 +129,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                firstEventOfDay: firstEventOfDay,
+                dayEvents: dayEvents,
                 calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -153,7 +153,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                firstEventOfDay: firstEventOfDay,
+                dayEvents: dayEvents,
                 calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -219,7 +219,7 @@ struct EarlyOtterCalculator {
                 ),
                 targetDay: targetDay,
                 targetEvent: nil,
-                firstEventOfDay: firstEventOfDay,
+                dayEvents: dayEvents,
                 calculatedWakeTime: placeholderWakeTime,
                 eventStartTime: nil,
                 prepTime: timingRules.prepTime,
@@ -258,7 +258,7 @@ struct EarlyOtterCalculator {
             ),
             targetDay: targetDay,
             targetEvent: winningEvent,
-            firstEventOfDay: firstEventOfDay,
+            dayEvents: dayEvents,
             calculatedWakeTime: winnerWakeTime,
             eventStartTime: winningEvent.startDate,
             prepTime: winningRule.prepTime,
@@ -266,6 +266,7 @@ struct EarlyOtterCalculator {
             alarmSettings: winningRule.alarmSettings,
             reason: .event,
             appliedRuleName: winningRule.name,
+            appliedRuleSymbol: winningRule.symbol,
             matchedRuleNames: matchedRuleNames
         )
     }
@@ -275,7 +276,7 @@ struct EarlyOtterCalculator {
         targetDay: TargetDay,
         customTime: ClockTime,
         isSkipped: Bool,
-        firstEventOfDay: ParsedEvent?,
+        dayEvents: [ParsedEvent],
         timingRules: TimingRules,
         defaultAlarmSettings: RuleAlarmSettings,
         calendar: Calendar
@@ -293,7 +294,7 @@ struct EarlyOtterCalculator {
             ),
             targetDay: targetDay,
             targetEvent: nil,
-            firstEventOfDay: firstEventOfDay,
+            dayEvents: dayEvents,
             calculatedWakeTime: wakeTime,
             eventStartTime: nil,
             prepTime: timingRules.prepTime,
@@ -315,7 +316,7 @@ struct EarlyOtterCalculator {
             ),
             targetDay: targetDay,
             targetEvent: nil,
-            firstEventOfDay: base.firstEventOfDay,
+            dayEvents: base.dayEvents,
             calculatedWakeTime: base.calculatedWakeTime,
             eventStartTime: nil,
             prepTime: base.prepTime,

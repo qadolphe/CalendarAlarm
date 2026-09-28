@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDisplayName</key>
-	<string>EarlyOtter</string>
-	<key>CFBundleName</key>
-	<string>EarlyOtter</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.earlyotter.calendaralarm.refresh</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -17,16 +17,10 @@
 			</array>
 		</dict>
 	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>com.earlyotter.calendaralarm.refresh</string>
-	</array>
 	<key>GIDClientID</key>
 	<string>688194676970-g7hhh3mig118flbgbjifbi2it05scaq0.apps.googleusercontent.com</string>
 	<key>NSAlarmKitUsageDescription</key>
 	<string>EarlyOtter schedules wake-up alarms based on your calendar events.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A day's alarm as a timetable: the wake-up first, then how it was worked out
-/// (prep, commute, event). Shared by the Home card and the day details sheet.
+/// (prep, commute, event). Used by the Home card.
 /// Numbers sit in the left column, labels in the middle, markers on the right.
 struct WakeUpTimetableView: View {
     let plan: WakeUpPlan
@@ -10,22 +10,20 @@ struct WakeUpTimetableView: View {
 
     private let numberColumnWidth: CGFloat = 140
 
-    /// For a standard alarm, only an event still to come that day; it didn't set the time.
     private var event: ParsedEvent? {
-        let event = plan.targetEvent ?? plan.firstEventOfDay
-        guard plan.reason == .alarm else { return event }
-        return event.flatMap { $0.startDate > plan.calculatedWakeTime ? $0 : nil }
+        plan.targetEvent ?? plan.firstEventOfDay
     }
 
-    private var heroTitle: String {
-        plan.reason == .alarm ? plan.alarmTitle : "Wake up"
+    /// A standard alarm didn't set its time, so say how the event sits against it.
+    private func standardAlarmLabel(for event: ParsedEvent) -> String {
+        event.startDate < plan.calculatedWakeTime ? "Before alarm" : "Next event"
     }
 
     var body: some View {
         VStack(spacing: 0) {
             TimelineView(.everyMinute) { context in
                 row(
-                    title: heroTitle,
+                    title: plan.wakeTitle,
                     subtitle: TimetableFormat.countdown(from: context.date, to: plan.calculatedWakeTime).map { "in \($0)" },
                     isHero: true
                 ) {
@@ -60,7 +58,7 @@ struct WakeUpTimetableView: View {
                     Divider()
                 }
                 // Labelled so a standard alarm isn't mistaken for one set by this event.
-                row(title: event.title, subtitle: plan.reason == .alarm ? "Next event" : event.location) {
+                row(title: event.title, subtitle: plan.reason == .alarm ? standardAlarmLabel(for: event) : event.location) {
                     number(TimetableFormat.clock(event.startDate), size: 22)
                 } marker: {
                     dot(WPStyles.eventTint)
@@ -76,13 +74,13 @@ struct WakeUpTimetableView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// A standard alarm has nothing after it; a calendar alarm had nothing early enough.
+    /// A standard alarm's day has no events; a calendar alarm had nothing early enough.
     private var emptyEventsText: String {
         guard plan.reason == .alarm else { return "No early events" }
         switch dayName {
-        case "Today": return "No more events today"
-        case "Tomorrow": return "No more events tomorrow"
-        default: return "No more events on \(dayName)"
+        case "Today": return "No events today"
+        case "Tomorrow": return "No events tomorrow"
+        default: return "No events on \(dayName)"
         }
     }
 

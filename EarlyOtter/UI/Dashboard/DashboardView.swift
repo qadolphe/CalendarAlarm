@@ -1,17 +1,23 @@
 import SwiftUI
 
 struct DashboardView: View {
-    private struct DayDetailsPresentation: Identifiable {
-        let entry: DashboardViewModel.WeekEntry
-
-        var id: Date {
-            entry.id
-        }
-    }
-
     @Bindable var appState: AppState
     var onOpenSchedule: () -> Void = {}
-    @State private var selectedDayDetails: DayDetailsPresentation? = nil
+    /// The day open in the planner; the week card folds into date circles above it.
+    @State private var openDayID: Date?
+    /// 0 is the Home layout, 1 the planner fully open. Drags drive it directly.
+    @State private var dayProgress: CGFloat = 0
+    @State private var weekCardFrame: CGRect = .zero
+    @State private var editingPlan: WakeUpPlan?
+    @State private var alarmMove: AlarmMove?
+
+    /// A drag-moved alarm, kept long enough to offer Undo.
+    private struct AlarmMove: Equatable {
+        let day: TargetDay
+        let time: Date
+        let previousOverride: DayAlarmOverride?
+        let ruleName: String?
+    }
     // Kept from the standby prompt, so anyone who closed that one isn't asked again.
     @AppStorage("hasDismissedStandbyPrompt") private var hasDismissedAlarmPrompt = false
     @State private var isShowingFeedback = false
@@ -32,7 +38,7 @@ struct DashboardView: View {
                     .transition(.opacity)
                     .zIndex(1)
             } else {
-                ZStack {
+                ZStack(alignment: .topLeading) {
                     Color.clear.withAppBackground()
 
                     ScrollView(showsIndicators: false) {
@@ -65,10 +71,19 @@ struct DashboardView: View {
                         .padding(.top, 12)
                         .padding(.bottom, 28)
                     }
+                    .refreshable {
+                        await appState.refreshPlan()
+                    }
+                    .opacity(1 - dayProgress)
+                    .allowsHitTesting(openDayID == nil)
+
+                    if let openDayID, let page = viewModel.page(containing: openDayID),
+                       let entry = page.entries.first(where: { $0.id == openDayID }) {
+                        dayOverlay(page: page, entry: entry, viewModel: viewModel)
+                    }
                 }
-                .refreshable {
-                    await appState.refreshPlan()
-                }
+                .coordinateSpace(.named(Self.coordinateSpace))
+                .toolbar(openDayID == nil ? .visible : .hidden, for: .tabBar)
                 .transition(.opacity)
                 .zIndex(0)
             }
@@ -78,8 +93,11 @@ struct DashboardView: View {
         .task {
             await appState.loadIfNeeded()
         }
-        .sheet(item: $selectedDayDetails) { item in
-            EarlyOtterDetailsView(plan: item.entry.plan, alarmStatus: item.entry.alarmStatus, appState: appState)
+        .sheet(item: $editingPlan) { plan in
+            DayAlarmEditView(appState: appState, plan: plan) { editingPlan = nil }
+                .withAppBackground()
+                .presentationDetents([.fraction(0.6)])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isShowingFeedback) {
             NavigationStack {
@@ -92,6 +110,140 @@ struct DashboardView: View {
                         }
                     }
             }
+        }
+    }
+
+    private static let coordinateSpace = "dashboard"
+
+    /// The week card lifted out of the scroll view and folded to the top, with the
+    /// planner sliding up under it. At progress 0 it sits exactly over the real card.
+    private func dayOverlay(
+        page: DashboardViewModel.WeekPage,
+        entry: DashboardViewModel.WeekEntry,
+        viewModel: DashboardViewModel
+    ) -> some View {
+        GeometryReader { proxy in
+            let collapsedTop: CGFloat = 8
+            let panelTop = collapsedTop + WeekStrip.collapsedCardHeight + 8
+            let panelHeight = proxy.size.height - panelTop
+
+            ZStack(alignment: .topLeading) {
+                DashboardWeekCardView(title: viewModel.weekRangeTitle(for: page), collapse: dayProgress) {
+                    DashboardWeekPageView(
+                        page: page,
+                        viewModel: viewModel,
+                        collapse: dayProgress,
+                        selectedDayID: entry.id,
+                        onSelect: openDay
+                    )
+                }
+                .frame(width: weekCardFrame.width)
+                .offset(x: weekCardFrame.minX, y: lerp(weekCardFrame.minY, collapsedTop, dayProgress))
+
+                // Swiping sideways moves between the week's days, like tapping the circles.
+                TabView(selection: Binding(get: { openDayID ?? entry.id }, set: { openDayID = $0 })) {
+                    ForEach(page.entries) { dayEntry in
+                        DayPlannerView(
+                            entry: dayEntry,
+                            onEditAlarm: { editingPlan = dayEntry.plan },
+                            onMoveAlarm: { moveAlarm(of: dayEntry.plan, to: $0) },
+                            onPull: { dayProgress = max(0, 1 - $0 / panelHeight) },
+                            onRelease: { $0 ? closeDay() : reopenDay() }
+                        )
+                        .tag(dayEntry.id)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .background(
+                    WPStyles.surface,
+                    in: UnevenRoundedRectangle(topLeadingRadius: WPStyles.cardCornerRadius, topTrailingRadius: WPStyles.cardCornerRadius, style: .continuous)
+                )
+                .overlay(alignment: .bottom) {
+                    if let alarmMove {
+                        alarmMoveToast(alarmMove)
+                            .padding(.bottom, 40)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
+                .animation(.smooth(duration: 0.3), value: alarmMove)
+                .frame(height: panelHeight)
+                .offset(y: panelTop + (1 - dayProgress) * panelHeight)
+            }
+        }
+        .ignoresSafeArea(edges: .bottom)
+    }
+
+    private func openDay(_ entry: DashboardViewModel.WeekEntry) {
+        guard openDayID != nil else {
+            openDayID = entry.id
+            withAnimation(.smooth(duration: 0.5)) { dayProgress = 1 }
+            return
+        }
+        withAnimation(.smooth(duration: 0.35)) { openDayID = entry.id }
+    }
+
+    /// Saves a dragged alarm as a one-day override, like the editor does, with Undo.
+    private func moveAlarm(of plan: WakeUpPlan, to time: Date) {
+        let day = plan.targetDay
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time)
+        let move = AlarmMove(
+            day: day,
+            time: time,
+            previousOverride: appState.preferences.override(for: day),
+            ruleName: plan.reason == .event ? plan.appliedRuleName : nil
+        )
+        alarmMove = move
+        Task {
+            await appState.setDayOverride(
+                DayAlarmOverride(customWakeTime: ClockTime(hour: components.hour ?? 0, minute: components.minute ?? 0)),
+                for: day
+            )
+            try? await Task.sleep(for: .seconds(4))
+            if alarmMove == move { alarmMove = nil }
+        }
+    }
+
+    private func undoAlarmMove(_ move: AlarmMove) {
+        alarmMove = nil
+        Task { await appState.setDayOverride(move.previousOverride, for: move.day) }
+    }
+
+    private func alarmMoveToast(_ move: AlarmMove) -> some View {
+        let dayName = move.day.date.formatted(.dateTime.weekday(.wide))
+
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Alarm moved to \(move.time.formatted(date: .omitted, time: .shortened))")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(WPStyles.primaryText)
+                Text(move.ruleName.map { "Overrides \($0) for \(dayName) only" } ?? "For \(dayName) only")
+                    .font(.caption)
+                    .foregroundStyle(WPStyles.secondaryText)
+            }
+
+            Spacer(minLength: 8)
+
+            Button("Undo") { undoAlarmMove(move) }
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(WPStyles.accent)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(WPStyles.surfaceRaised, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(WPStyles.accent.opacity(0.5), lineWidth: 1))
+        .padding(.horizontal, 16)
+    }
+
+    /// A drag that didn't go far enough springs back open.
+    private func reopenDay() {
+        withAnimation(.smooth(duration: 0.35)) { dayProgress = 1 }
+    }
+
+    private func closeDay() {
+        withAnimation(.smooth(duration: 0.45)) {
+            dayProgress = 0
+        } completion: {
+            if dayProgress == 0 { openDayID = nil }
         }
     }
 
@@ -137,9 +289,7 @@ struct DashboardView: View {
             case .needsAlarmPermission(_),
                  .ready(_),
                  .emptyFallback(_):
-                DashboardWeeklyCardView(viewModel: viewModel) { entry in
-                    selectedDayDetails = DayDetailsPresentation(entry: entry)
-                }
+                DashboardWeeklyCardView(viewModel: viewModel) { _ in }
                 .opacity(0.4)
                 .disabled(true)
                 .accessibilityHidden(true)
@@ -172,12 +322,7 @@ struct DashboardView: View {
                             plan: viewState.plan,
                             viewModel: viewModel,
                             onTap: {
-                                selectedDayDetails = DayDetailsPresentation(
-                                    entry: viewModel.entry(
-                                        for: viewState.plan,
-                                        alarmStatus: viewState.alarmStatus
-                                    )
-                                )
+                                openDay(viewModel.entry(for: viewState.plan, alarmStatus: viewState.alarmStatus))
                             }
                         )
                     }
@@ -190,9 +335,12 @@ struct DashboardView: View {
                     addAlarmPromptCard
                 }
 
-                DashboardWeeklyCardView(viewModel: viewModel) { entry in
-                    selectedDayDetails = DayDetailsPresentation(entry: entry)
-                }
+                DashboardWeeklyCardView(viewModel: viewModel, onSelect: openDay)
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.coordinateSpace)) } action: {
+                        weekCardFrame = $0
+                    }
+                    // The overlay's copy stands in while a day is open.
+                    .opacity(openDayID == nil ? 1 : 0)
             }
         }
     }
@@ -418,6 +566,48 @@ private struct DashboardNoAlarmCardView: View {
     }
 }
 
+/// Sizes shared by the Home week card and its folded copy above the planner.
+private enum WeekStrip {
+    static let pillHeight: CGFloat = 200
+    static let circleSize: CGFloat = 36
+    static let titleHeight: CGFloat = 22
+    /// Day letter, wake label and the gaps around the pill.
+    static let columnChrome: CGFloat = 52
+
+    static func pageHeight(_ collapse: CGFloat) -> CGFloat {
+        columnChrome + lerp(pillHeight, circleSize, collapse)
+    }
+
+    /// Card padding plus a fully folded page.
+    static let collapsedCardHeight = 32 + pageHeight(1)
+}
+
+private func lerp(_ from: CGFloat, _ to: CGFloat, _ progress: CGFloat) -> CGFloat {
+    from + (to - from) * progress
+}
+
+/// The week card's frame: its title folds away as `collapse` goes to 1.
+private struct DashboardWeekCardView<Pages: View>: View {
+    let title: String
+    var collapse: CGFloat = 0
+    @ViewBuilder let pages: Pages
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14 * (1 - collapse)) {
+            Text(title)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(WPStyles.primaryText)
+                .frame(height: WeekStrip.titleHeight * (1 - collapse), alignment: .top)
+                .clipped()
+                .opacity(1 - collapse * 2)
+
+            pages
+                .frame(height: WeekStrip.pageHeight(collapse))
+        }
+        .cardStyle()
+    }
+}
+
 private struct DashboardWeeklyCardView: View {
     let viewModel: DashboardViewModel
     let onSelect: (DashboardViewModel.WeekEntry) -> Void
@@ -435,12 +625,8 @@ private struct DashboardWeeklyCardView: View {
     var body: some View {
         let pages = viewModel.weekPages
 
-        VStack(alignment: .leading, spacing: 14) {
-            if let currentPage = currentPage(in: pages) {
-                Text(viewModel.weekRangeTitle(for: currentPage))
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(WPStyles.primaryText)
-
+        if let currentPage = currentPage(in: pages) {
+            DashboardWeekCardView(title: viewModel.weekRangeTitle(for: currentPage)) {
                 TabView(selection: $selectedWeekIndex) {
                     ForEach(pages) { page in
                         DashboardWeekPageView(
@@ -452,10 +638,8 @@ private struct DashboardWeeklyCardView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 252)
             }
         }
-        .cardStyle()
     }
 
     private func currentPage(in pages: [DashboardViewModel.WeekPage]) -> DashboardViewModel.WeekPage? {
@@ -471,6 +655,8 @@ private struct DashboardWeeklyCardView: View {
 private struct DashboardWeekPageView: View {
     let page: DashboardViewModel.WeekPage
     let viewModel: DashboardViewModel
+    var collapse: CGFloat = 0
+    var selectedDayID: Date? = nil
     let onSelect: (DashboardViewModel.WeekEntry) -> Void
 
     var body: some View {
@@ -486,6 +672,8 @@ private struct DashboardWeekPageView: View {
                         entry: entry,
                         viewModel: viewModel,
                         columnWidth: columnWidth,
+                        collapse: collapse,
+                        isSelected: entry.id == selectedDayID,
                         onSelect: onSelect
                     )
                 }
@@ -500,6 +688,8 @@ private struct DashboardWeekDayColumnView: View {
     let entry: DashboardViewModel.WeekEntry
     let viewModel: DashboardViewModel
     let columnWidth: CGFloat
+    let collapse: CGFloat
+    let isSelected: Bool
     let onSelect: (DashboardViewModel.WeekEntry) -> Void
 
     var body: some View {
@@ -515,34 +705,58 @@ private struct DashboardWeekDayColumnView: View {
                 DashboardWeekPillBarView(
                     entry: entry,
                     isPrimary: viewModel.isPrimary(entry),
+                    isSelected: isSelected,
+                    collapse: collapse,
                     viewModel: viewModel
                 )
-                .frame(width: columnWidth, height: 200)
+                .frame(
+                    width: lerp(columnWidth, WeekStrip.circleSize, collapse),
+                    height: lerp(WeekStrip.pillHeight, WeekStrip.circleSize, collapse)
+                )
 
-                Text(viewModel.wakeLabel(for: entry))
-                    .font(.system(size: 12, weight: viewModel.isPrimary(entry) ? .bold : .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(wakeLabelColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .opacity(viewModel.isElapsed(entry) ? 0.35 : 1)
+                ZStack {
+                    Text(viewModel.wakeLabel(for: entry))
+                        .font(.system(size: 12, weight: viewModel.isPrimary(entry) ? .bold : .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(wakeLabelColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .opacity((viewModel.isElapsed(entry) ? 0.35 : 1) * (1 - collapse * 2))
+
+                    // Folded, the day keeps a hint of what's on it.
+                    HStack(spacing: 3) {
+                        if entry.alarmDate != nil { hintDot(WPStyles.accent) }
+                        if entry.displayedEvent != nil { hintDot(WPStyles.eventTint) }
+                    }
+                    .opacity(collapse * 2 - 1)
+                }
+                .frame(height: 14)
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(viewModel.accessibilityLabel(for: entry))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var wakeLabelColor: Color {
         if entry.alarmDate == nil { return WPStyles.tertiaryText }
         return viewModel.isPrimary(entry) ? WPStyles.primaryText : WPStyles.secondaryText
     }
+
+    private func hintDot(_ color: Color) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: 5, height: 5)
+    }
 }
 
 private struct DashboardWeekPillBarView: View {
     let entry: DashboardViewModel.WeekEntry
     let isPrimary: Bool
+    let isSelected: Bool
+    let collapse: CGFloat
     let viewModel: DashboardViewModel
 
     private let markerPadding: CGFloat = 18
@@ -551,6 +765,8 @@ private struct DashboardWeekPillBarView: View {
         GeometryReader { geometry in
             let isElapsed = viewModel.isElapsed(entry)
             let dimmingOpacity = isElapsed ? 0.35 : 1.0
+            // Markers fade out early in the fold; the date fades in late.
+            let markerOpacity = dimmingOpacity * max(0, 1 - collapse * 1.5)
             let outlineColor = isPrimary
                 ? WPStyles.accentMuted.opacity(0.92)
                 : WPStyles.accentMuted.opacity(0.68)
@@ -558,6 +774,10 @@ private struct DashboardWeekPillBarView: View {
             ZStack {
                 Capsule()
                     .fill(WPStyles.accentMuted.opacity((isPrimary ? 0.16 : 0.09) * dimmingOpacity))
+
+                Capsule()
+                    .fill(WPStyles.accent)
+                    .opacity(isSelected ? collapse : 0)
 
                 Capsule()
                     .stroke(outlineColor.opacity(dimmingOpacity), lineWidth: isPrimary ? 2.4 : 1.8)
@@ -574,16 +794,21 @@ private struct DashboardWeekPillBarView: View {
                         WPStyles.accent.opacity(0.85),
                         style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5])
                     )
-                    .opacity(dimmingOpacity)
+                    .opacity(markerOpacity)
                 }
 
                 if let alarmY = markerY(for: entry.alarmDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.accent, y: alarmY, in: geometry.size, opacity: dimmingOpacity)
+                    marker(color: WPStyles.accent, y: alarmY, in: geometry.size, opacity: markerOpacity)
                 }
 
                 if let eventY = markerY(for: entry.eventDate, on: entry.targetDay, height: geometry.size.height) {
-                    marker(color: WPStyles.eventTint, y: eventY, in: geometry.size, opacity: dimmingOpacity)
+                    marker(color: WPStyles.eventTint, y: eventY, in: geometry.size, opacity: markerOpacity)
                 }
+
+                Text(entry.targetDay.date.formatted(.dateTime.day()))
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isSelected ? WPStyles.onAccent : WPStyles.primaryText)
+                    .opacity(dimmingOpacity * max(0, collapse * 1.6 - 0.6))
             }
         }
     }

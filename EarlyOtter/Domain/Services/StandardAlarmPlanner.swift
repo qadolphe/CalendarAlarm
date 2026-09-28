@@ -51,9 +51,9 @@ struct StandardAlarmPlanner {
             if calendarPlan.setsAlarm, calendarPlan.calculatedWakeTime <= earliestAlarm.calculatedWakeTime {
                 return calendarPlan
             }
-            // Keep the day's event so the week view can still mark it.
+            // Keep the day's events so the week view and planner can still show them.
             var dayPlan = earliestAlarm
-            dayPlan.firstEventOfDay = calendarPlan.firstEventOfDay
+            dayPlan.dayEvents = calendarPlan.dayEvents
             return dayPlan
         }
     }

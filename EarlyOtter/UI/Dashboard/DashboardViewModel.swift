@@ -122,6 +122,10 @@ struct DashboardViewModel {
         }
     }
 
+    func page(containing dayID: Date) -> WeekPage? {
+        weekPages.first { page in page.entries.contains { $0.id == dayID } }
+    }
+
     var defaultWeekPageIndex: Int {
         guard weekPages.count > 1 else {
             return 0

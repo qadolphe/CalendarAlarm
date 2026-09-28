@@ -18,7 +18,8 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 
     let targetDay: TargetDay
     let targetEvent: ParsedEvent?
-    var firstEventOfDay: ParsedEvent?
+    /// The day's events that pass the user's filters, earliest first.
+    var dayEvents: [ParsedEvent]
 
     let calculatedWakeTime: Date
     let eventStartTime: Date?
@@ -34,6 +35,8 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 
     /// Name of the rule that produced the chosen wake time.
     var appliedRuleName: String?
+    /// That rule's icon.
+    var appliedRuleSymbol: RuleSymbol?
 
     /// Names of all rules that matched the chosen event (only populated when >1 rule matched).
     let matchedRuleNames: [String]
@@ -42,7 +45,7 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         id: EarlyOtterID,
         targetDay: TargetDay,
         targetEvent: ParsedEvent?,
-        firstEventOfDay: ParsedEvent? = nil,
+        dayEvents: [ParsedEvent] = [],
         calculatedWakeTime: Date,
         eventStartTime: Date?,
         prepTime: Minutes,
@@ -51,12 +54,13 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         reason: EarlyOtterReason,
         alarmLabel: String? = nil,
         appliedRuleName: String?,
+        appliedRuleSymbol: RuleSymbol? = nil,
         matchedRuleNames: [String]
     ) {
         self.id = id
         self.targetDay = targetDay
         self.targetEvent = targetEvent
-        self.firstEventOfDay = firstEventOfDay ?? targetEvent
+        self.dayEvents = dayEvents.isEmpty ? [targetEvent].compactMap { $0 } : dayEvents
         self.calculatedWakeTime = calculatedWakeTime
         self.eventStartTime = eventStartTime
         self.prepTime = prepTime
@@ -65,7 +69,12 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         self.reason = reason
         self.alarmLabel = alarmLabel
         self.appliedRuleName = appliedRuleName
+        self.appliedRuleSymbol = appliedRuleSymbol
         self.matchedRuleNames = matchedRuleNames
+    }
+
+    var firstEventOfDay: ParsedEvent? {
+        dayEvents.first
     }
 }
 
@@ -73,6 +82,11 @@ extension WakeUpPlan {
     /// A standard alarm's name, as the Clock app shows it: its label, or "Alarm".
     var alarmTitle: String {
         alarmLabel.flatMap { $0.isEmpty ? nil : $0 } ?? "Alarm"
+    }
+
+    /// What the wake-up is called on screen: a standard alarm's label, otherwise "Wake up".
+    var wakeTitle: String {
+        reason == .alarm ? alarmTitle : "Wake up"
     }
 
     /// Whether this plan puts an alarm on the device.
