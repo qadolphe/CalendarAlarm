@@ -109,6 +109,10 @@
 		AA0000000000000000000F10 /* Domain/Models/StandardAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F00 /* Domain/Models/StandardAlarm.swift */; };
 		AA0000000000000000000F11 /* Domain/Services/StandardAlarmPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F01 /* Domain/Services/StandardAlarmPlanner.swift */; };
 		AA0000000000000000000F12 /* Domain/StandardAlarmPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* Domain/StandardAlarmPlannerTests.swift */; };
+		BB1000000000000000000011 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000001 /* Localizable.xcstrings */; };
+		BB1000000000000000000012 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000002 /* InfoPlist.xcstrings */; };
+		BB1000000000000000000013 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000003 /* Localizable.xcstrings */; };
+		BB1000000000000000000014 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000004 /* InfoPlist.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -245,6 +249,10 @@
 		AA0000000000000000000F00 /* Domain/Models/StandardAlarm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Models/StandardAlarm.swift; sourceTree = "<group>"; };
 		AA0000000000000000000F01 /* Domain/Services/StandardAlarmPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/StandardAlarmPlanner.swift; sourceTree = "<group>"; };
 		AA0000000000000000000F02 /* Domain/StandardAlarmPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/StandardAlarmPlannerTests.swift; sourceTree = "<group>"; };
+		BB1000000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		BB1000000000000000000002 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		BB1000000000000000000003 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		BB1000000000000000000004 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -306,6 +314,8 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000C0B /* PrivacyInfo.xcprivacy */,
+				BB1000000000000000000002 /* InfoPlist.xcstrings */,
+				BB1000000000000000000001 /* Localizable.xcstrings */,
 				77BF3AF82FA662C0004F4896 /* Info.plist */,
 				AA000000000000000000014C /* EarlyOtter/EarlyOtter.entitlements */,
 				AA0000000000000000000500 /* Application */,
@@ -567,6 +577,8 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000C0D /* PrivacyInfo.xcprivacy */,
+				BB1000000000000000000004 /* InfoPlist.xcstrings */,
+				BB1000000000000000000003 /* Localizable.xcstrings */,
 				AA0000000000000000000148 /* Info.plist */,
 				AA000000000000000000014B /* NextAlarmWidget.entitlements */,
 				AA000000000000000000014A /* NextAlarmWidgetBundle.swift */,
@@ -748,6 +760,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
 				Base,
 			);
 			mainGroup = AA0000000000000000000002;
@@ -771,6 +784,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000C0C /* PrivacyInfo.xcprivacy in Resources */,
+				BB1000000000000000000012 /* InfoPlist.xcstrings in Resources */,
+				BB1000000000000000000011 /* Localizable.xcstrings in Resources */,
 				AA0000000000000000000224 /* Resources/Assets.xcassets in Resources */,
 				AA0000000000000000000233 /* Resources/AlarmSounds/AlarmSunrise.wav in Resources */,
 				AA0000000000000000000234 /* Resources/AlarmSounds/AlarmStarlight.wav in Resources */,
@@ -785,6 +800,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000C0E /* PrivacyInfo.xcprivacy in Resources */,
+				BB1000000000000000000014 /* InfoPlist.xcstrings in Resources */,
+				BB1000000000000000000013 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -978,6 +995,7 @@
 				PRODUCT_NAME = EarlyOtter;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1016,6 +1034,7 @@
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -1094,6 +1113,7 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1123,6 +1143,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;

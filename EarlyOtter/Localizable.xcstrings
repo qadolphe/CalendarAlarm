@@ -1,0 +1,399 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+
+    },
+    "%lldm" : {
+
+    },
+    "%lldm prep · %lldm commute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lldm prep · %2$lldm commute"
+          }
+        }
+      }
+    },
+    "A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1." : {
+
+    },
+    "About calendar alarms" : {
+
+    },
+    "Action Required" : {
+
+    },
+    "Add a backup alarm" : {
+
+    },
+    "Add alarm" : {
+
+    },
+    "Add Alarm" : {
+
+    },
+    "Add keyword" : {
+
+    },
+    "Add Rule" : {
+
+    },
+    "Add Your Calendar" : {
+
+    },
+    "Alarm" : {
+
+    },
+    "Alarm moved to %@" : {
+
+    },
+    "Alarm set by %@" : {
+
+    },
+    "Alarm set by this event" : {
+
+    },
+    "All calendars" : {
+
+    },
+    "Allow" : {
+
+    },
+    "Allow Calendar Access" : {
+
+    },
+    "Allowed" : {
+
+    },
+    "Calendar access needed" : {
+
+    },
+    "Calendar Alarms" : {
+
+    },
+    "Calendars" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Choose which calendars can contribute events to EarlyOtter's alarm rules." : {
+
+    },
+    "Choose which calendars EarlyOtter should scan." : {
+
+    },
+    "Close day" : {
+
+    },
+    "Connect a calendar source, enable an account, or make sure EarlyOtter still has access to one of your calendars." : {
+
+    },
+    "Connect at least one calendar source to get started." : {
+
+    },
+    "Date" : {
+
+    },
+    "Days" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete Alarm" : {
+
+    },
+    "Dismiss" : {
+
+    },
+    "Done" : {
+
+    },
+    "Duplicate Rule" : {
+
+    },
+    "Earlier events" : {
+
+    },
+    "Edit Alarm" : {
+
+    },
+    "Edits this day's alarm. Hold and drag to move it." : {
+
+    },
+    "Enabled" : {
+
+    },
+    "Enjoy sleeping in!" : {
+
+    },
+    "Every %@" : {
+
+    },
+    "Feedback" : {
+
+    },
+    "Fix Permissions" : {
+
+    },
+    "For %@ only" : {
+
+    },
+    "For days without early events" : {
+
+    },
+    "G" : {
+
+    },
+    "Generating alarms..." : {
+
+    },
+    "Grant Permissions" : {
+
+    },
+    "Home" : {
+
+    },
+    "Ignore Calendar Status" : {
+
+    },
+    "Ignored Events" : {
+
+    },
+    "Ignored Events & Filters" : {
+
+    },
+    "Internal device" : {
+
+    },
+    "Label" : {
+
+    },
+    "Late Alarm Warning" : {
+
+    },
+    "Later events" : {
+
+    },
+    "Matching events will never trigger an alarm." : {
+
+    },
+    "Next Alarm" : {
+
+    },
+    "No alarm scheduled" : {
+
+    },
+    "No Calendars Found" : {
+
+    },
+    "No Events Tomorrow!" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open Settings" : {
+
+    },
+    "Overrides %@ for %@ only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Overrides %1$@ for %2$@ only"
+          }
+        }
+      }
+    },
+    "Perfectly synced with your morning schedule." : {
+
+    },
+    "Pick a date" : {
+
+    },
+    "Pick the days EarlyOtter wakes you for your first event." : {
+
+    },
+    "Preparing EarlyOtter..." : {
+
+    },
+    "Reactivate" : {
+
+    },
+    "Refresh Alarms" : {
+
+    },
+    "Refresh EarlyOtter's rolling wake-up alarms using your latest calendar events." : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove Account" : {
+
+    },
+    "Repeat" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Rule icon" : {
+
+    },
+    "Rule name" : {
+
+    },
+    "Rules" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save Anyway" : {
+
+    },
+    "Schedule" : {
+
+    },
+    "Send feedback" : {
+
+    },
+    "Sending…" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Setup Required" : {
+
+    },
+    "Skip" : {
+
+    },
+    "Skip after calendar alarm" : {
+
+    },
+    "Skip after calendar alarms?" : {
+
+    },
+    "Skip alarm" : {
+
+    },
+    "Skip window" : {
+
+    },
+    "Snooze" : {
+
+    },
+    "Snooze Duration" : {
+
+    },
+    "Sound" : {
+
+    },
+    "Starts before your alarm" : {
+
+    },
+    "Submit Feedback" : {
+
+    },
+    "System disabled" : {
+
+    },
+    "Time" : {
+
+    },
+    "Turn alarm on" : {
+
+    },
+    "Unavailable" : {
+
+    },
+    "Undo" : {
+
+    },
+    "Updated %lld %@ across %lld upcoming %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updated %1$lld %2$@ across %3$lld upcoming %4$@."
+          }
+        }
+      }
+    },
+    "Use All" : {
+
+    },
+    "Wake Time" : {
+
+    },
+    "Wakes you in time for your first event on these days." : {
+
+    },
+    "We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard." : {
+
+    },
+    "We'll subtract this prep and commute time from your first event." : {
+
+    },
+    "Welcome to" : {
+
+    },
+    "Within" : {
+
+    },
+    "You are setting an alarm for the afternoon or after your first event starts. Are you sure?" : {
+
+    },
+    "You're All Set!" : {
+
+    },
+    "Your Default Routine" : {
+
+    },
+    "Your First Auto Alarm" : {
+
+    }
+  },
+  "version" : "1.0"
+}

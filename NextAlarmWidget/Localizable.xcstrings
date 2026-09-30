@@ -1,0 +1,34 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ Sleeping in" : {
+
+    },
+    "in %@" : {
+
+    },
+    "Keep your next wake-up alarm visible on Home, Lock Screen, and StandBy." : {
+
+    },
+    "Next Alarm" : {
+
+    },
+    "No Alarm" : {
+
+    },
+    "No alarms" : {
+
+    }
+  },
+  "version" : "1.0"
+}
