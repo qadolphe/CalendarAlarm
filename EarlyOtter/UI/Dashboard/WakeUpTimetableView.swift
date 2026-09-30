@@ -16,7 +16,7 @@ struct WakeUpTimetableView: View {
 
     /// A standard alarm didn't set its time, so say how the event sits against it.
     private func standardAlarmLabel(for event: ParsedEvent) -> String {
-        event.startDate < plan.calculatedWakeTime ? "Before alarm" : "Next event"
+        event.startDate < plan.calculatedWakeTime ? String(localized: "Before alarm") : String(localized: "Next event")
     }
 
     var body: some View {
@@ -24,7 +24,7 @@ struct WakeUpTimetableView: View {
             TimelineView(.everyMinute) { context in
                 row(
                     title: plan.wakeTitle,
-                    subtitle: TimetableFormat.countdown(from: context.date, to: plan.calculatedWakeTime).map { "in \($0)" },
+                    subtitle: TimetableFormat.countdown(from: context.date, to: plan.calculatedWakeTime).map { String(localized: "in \($0)", comment: "Time left until the alarm, e.g. in 8h 5m") },
                     isHero: true
                 ) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -44,13 +44,13 @@ struct WakeUpTimetableView: View {
 
             if let event {
                 if plan.reason == .event {
-                    row(title: "Prep time") {
+                    row(title: String(localized: "Prep time")) {
                         number(TimetableFormat.duration(plan.prepTime), size: 22, muted: true)
                     } marker: {
                         icon("cup.and.saucer.fill")
                     }
                     Divider()
-                    row(title: "Commute") {
+                    row(title: String(localized: "Commute")) {
                         number(TimetableFormat.duration(plan.commuteTime), size: 22, muted: true)
                     } marker: {
                         icon("car.fill")
@@ -76,20 +76,20 @@ struct WakeUpTimetableView: View {
 
     /// A standard alarm's day has no events; a calendar alarm had nothing early enough.
     private var emptyEventsText: String {
-        guard plan.reason == .alarm else { return "No early events" }
-        switch dayName {
-        case "Today": return "No events today"
-        case "Tomorrow": return "No events tomorrow"
-        default: return "No events on \(dayName)"
-        }
+        guard plan.reason == .alarm else { return String(localized: "No early events") }
+        let calendar = Calendar.current
+        let wake = plan.calculatedWakeTime
+        if calendar.isDateInToday(wake) { return String(localized: "No events today") }
+        if calendar.isDateInTomorrow(wake) { return String(localized: "No events tomorrow") }
+        return String(localized: "No events on \(wake.formatted(.dateTime.weekday(.wide)))")
     }
 
     /// "Today", "Tomorrow", or the weekday.
     private var dayName: String {
         let calendar = Calendar.current
         let wake = plan.calculatedWakeTime
-        if calendar.isDateInToday(wake) { return "Today" }
-        if calendar.isDateInTomorrow(wake) { return "Tomorrow" }
+        if calendar.isDateInToday(wake) { return String(localized: "Today") }
+        if calendar.isDateInTomorrow(wake) { return String(localized: "Tomorrow") }
         return wake.formatted(.dateTime.weekday(.wide))
     }
 
@@ -178,9 +178,9 @@ enum TimetableFormat {
     /// "45" + "min", or "1:30" + "hr" from an hour up.
     static func duration(_ minutes: Minutes) -> Parts {
         let total = minutes.rawValue
-        guard total >= 60 else { return Parts(value: "\(total)", unit: "min") }
+        guard total >= 60 else { return Parts(value: "\(total)", unit: String(localized: "min", comment: "Minutes unit")) }
         let value = total % 60 == 0 ? "\(total / 60)" : String(format: "%d:%02d", total / 60, total % 60)
-        return Parts(value: value, unit: "hr")
+        return Parts(value: value, unit: String(localized: "hr", comment: "Hours unit"))
     }
 
     /// "14h 3m" until the alarm, or nil once it has passed.

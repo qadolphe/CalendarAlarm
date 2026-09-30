@@ -74,7 +74,7 @@ struct SettingsView: View {
 
     private var accountsValue: String {
         let count = appState.accounts.filter(\.isEnabled).count
-        return count == 0 ? "None" : "\(count) connected"
+        return count == 0 ? String(localized: "None") : String(localized: "\(count) connected")
     }
 
     private var missingPermissionCount: Int {
@@ -87,7 +87,7 @@ struct SettingsView: View {
     }
 
     private var permissionsValue: String {
-        missingPermissionCount == 0 ? "All set" : "\(missingPermissionCount) needed"
+        missingPermissionCount == 0 ? String(localized: "All set") : String(localized: "\(missingPermissionCount) needed")
     }
 
     private var isSystemEnabledBinding: Binding<Bool> {
@@ -152,7 +152,7 @@ struct AccountsView: View {
         let icon = account.provider == .apple ? "apple.logo" : "g.circle.fill"
 
         if pendingRemovalID == account.id {
-            SettingsRow(icon: icon, title: account.displayName, subtitle: "Remove this account?") {
+            SettingsRow(icon: icon, title: .verbatim(account.displayName), subtitle: "Remove this account?") {
                 Button("Cancel") { pendingRemovalID = nil }
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.secondaryText)
@@ -167,7 +167,7 @@ struct AccountsView: View {
         } else {
             SettingsToggleRow(
                 icon: icon,
-                title: account.displayName,
+                title: .verbatim(account.displayName),
                 isOn: Binding(
                     get: { account.isEnabled },
                     set: { isOn in
@@ -185,7 +185,7 @@ struct AccountsView: View {
         }
     }
 
-    private func addRow(title: String, action: @escaping () async -> Void) -> some View {
+    private func addRow(title: LocalizedStringResource, action: @escaping () async -> Void) -> some View {
         Button {
             Task { await action() }
         } label: {

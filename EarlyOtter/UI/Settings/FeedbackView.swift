@@ -133,7 +133,7 @@ struct FeedbackView: View {
         .opacity(canSubmit || isSubmitting ? 1 : 0.45)
     }
 
-    private func statusRow(_ text: String, icon: String, tint: Color) -> some View {
+    private func statusRow(_ text: LocalizedStringResource, icon: String, tint: Color) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .foregroundStyle(tint)
@@ -189,7 +189,7 @@ private enum SubmissionState: Equatable {
 }
 
 private extension FeedbackCategory {
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .experience: "Experience"
         case .suggestion: "Suggestion"
@@ -197,7 +197,7 @@ private extension FeedbackCategory {
         }
     }
 
-    var prompt: String {
+    var prompt: LocalizedStringResource {
         switch self {
         case .experience: "How has EarlyOtter been for you?"
         case .suggestion: "What would make EarlyOtter better?"

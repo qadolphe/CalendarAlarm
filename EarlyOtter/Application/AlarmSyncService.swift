@@ -98,7 +98,7 @@ actor AlarmSyncService {
         }
 
         if !obsoleteRemovalErrors.isEmpty {
-            let failureMessage = "Couldn't replace previous alarms. \(obsoleteRemovalErrors.joined(separator: " "))"
+            let failureMessage = String(localized: "Couldn't replace previous alarms. \(obsoleteRemovalErrors.joined(separator: " "))")
 
             for plan in desiredManagedPlans where retainedRecords[plan.id] == nil {
                 statusesByPlanID[plan.id] = .failed(failureMessage)
@@ -291,7 +291,7 @@ private enum AlarmSyncFailure: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .clearStaleRecord(let error):
-            return "Couldn't clear stale alarm record. \(error.localizedDescription)"
+            return String(localized: "Couldn't clear stale alarm record. \(error.localizedDescription)")
         }
     }
 }

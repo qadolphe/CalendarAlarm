@@ -30,7 +30,7 @@ struct NextAlarmWidgetProvider: TimelineProvider {
     }
 
     private func loadSnapshot(now: Date) -> NextAlarmWidgetSnapshot {
-        (try? snapshotStore.load()) ?? .empty(detailText: "Open EarlyOtter", lastUpdatedAt: now)
+        (try? snapshotStore.load()) ?? .empty(detailText: String(localized: "Open EarlyOtter"), lastUpdatedAt: now)
     }
 
     private func nextRefreshDate(for snapshot: NextAlarmWidgetSnapshot, from now: Date) -> Date {
@@ -39,7 +39,7 @@ struct NextAlarmWidgetProvider: TimelineProvider {
 
     private static let previewSnapshot = NextAlarmWidgetSnapshot.scheduled(
         nextAlarmDate: Date().addingTimeInterval(75 * 60),
-        eventTitle: "Design Review",
+        eventTitle: String(localized: "Design Review"),
         context: Date().addingTimeInterval(2 * 60 * 60).formatted(date: .omitted, time: .shortened),
         showsConnectedMarkers: true,
         detailText: nil,
@@ -323,7 +323,7 @@ private struct NextAlarmWidgetEntryView: View {
             return stateDescription
         }
 
-        return "Sleeping in"
+        return String(localized: "Sleeping in")
     }
 
     private var stateIconName: String {
@@ -336,17 +336,17 @@ private struct NextAlarmWidgetEntryView: View {
 
     private var stateDescription: String {
         switch entry.snapshot.state {
-        case .scheduled: return "Scheduled"
-        case .empty: return "No Alarms"
-        case .stale: return "Stale"
+        case .scheduled: return String(localized: "Scheduled")
+        case .empty: return String(localized: "No Alarms")
+        case .stale: return String(localized: "Stale")
         }
     }
 
     private var inlineFallbackText: String {
         switch entry.snapshot.state {
-        case .empty: return "Open EarlyOtter"
-        case .stale: return "Refresh App"
-        default: return "No Alarm"
+        case .empty: return String(localized: "Open EarlyOtter")
+        case .stale: return String(localized: "Refresh App")
+        default: return String(localized: "No Alarm")
         }
     }
 
@@ -369,19 +369,18 @@ private struct NextAlarmWidgetEntryView: View {
         }
 
         if eventTitleText == nil, entry.snapshot.nextAlarmDate != nil {
-            return "No early events"
+            return String(localized: "No early events")
         }
 
         return nil
     }
 
     private var emptyStateSubtitle: String {
-        if let detailText = entry.snapshot.detailText,
-           detailText != "No upcoming alarms." {
+        if let detailText = entry.snapshot.detailText {
             return detailText
         }
 
-        return "Enjoy sleeping in"
+        return String(localized: "Enjoy sleeping in")
     }
 
     private func formattedAlarmTime(for date: Date) -> String {

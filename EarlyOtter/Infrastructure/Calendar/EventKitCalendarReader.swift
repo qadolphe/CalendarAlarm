@@ -348,7 +348,7 @@ struct GoogleCalendarProvider: CalendarEventProviding {
             calendarID: calendarID,
             sourceAccountID: accountID,
             provider: .google,
-            title: item.summary ?? "Untitled Event",
+            title: item.summary ?? String(localized: "Untitled Event"),
             startDate: start,
             endDate: end,
             timeZoneIdentifier: item.start.timeZone ?? item.end.timeZone,
@@ -433,11 +433,11 @@ private enum GoogleCalendarProviderError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingSignedInUser:
-            return "Google Calendar could not find a signed-in user."
+            return String(localized: "Google Calendar could not find a signed-in user.")
         case .missingCalendarScope:
-            return "Google Calendar access expired or was never granted. Reconnect your Google account."
+            return String(localized: "Google Calendar access expired or was never granted. Reconnect your Google account.")
         case .requestFailed(let statusCode):
-            return "Google Calendar request failed with status \(statusCode)."
+            return String(localized: "Google Calendar request failed with status \(statusCode).")
         }
     }
 }

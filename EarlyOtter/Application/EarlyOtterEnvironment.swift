@@ -236,12 +236,10 @@ struct RefreshEarlyOtterAlarmsIntent: AppIntent {
             EarlyOtterEnvironment.live()
         }
         let outcome = try await environment.refreshService.refreshAndSync(reason: .shortcut)
-        let alarmLabel = outcome.result.scheduledCount == 1 ? "alarm" : "alarms"
-        let planLabel = outcome.result.plannedDays == 1 ? "wake plan" : "wake plans"
-
+        // Singular and plural forms live in the String Catalog.
         return .result(
             dialog: IntentDialog(
-                "Updated \(outcome.result.scheduledCount) \(alarmLabel) across \(outcome.result.plannedDays) upcoming \(planLabel)."
+                "Updated \(outcome.result.scheduledCount) alarms across \(outcome.result.plannedDays) upcoming wake plans."
             )
         )
     }

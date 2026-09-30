@@ -6,9 +6,9 @@ struct CalendarSelectionViewModel {
 
     var helperText: String {
         if appState.preferences.selectedCalendarIDs.isEmpty {
-            return "All calendars are currently selected."
+            return String(localized: "All calendars are currently selected.")
         }
 
-        return "Choose which calendars count toward tomorrow's first alarm-worthy event."
+        return String(localized: "Choose which calendars count toward tomorrow's first alarm-worthy event.")
     }
 }

@@ -275,7 +275,7 @@ extension EarlyOtterRefreshService {
             return event.startDate.formatted(date: .omitted, time: .shortened)
         }
 
-        return "Alarm"
+        return String(localized: "Alarm")
     }
 
     func widgetShowsConnectedMarkers(
@@ -292,16 +292,18 @@ extension EarlyOtterRefreshService {
             && shownEvent != nil
     }
 
-    func widgetEmptyDetail(for permissions: PermissionSnapshot) -> String {
+    /// Why the widget has nothing to show, or `nil` when there is simply no
+    /// alarm coming up and the widget's own sleeping-in copy fits.
+    func widgetEmptyDetail(for permissions: PermissionSnapshot) -> String? {
         if permissions.calendar == .denied || permissions.calendar == .restricted {
-            return "Calendar access needed"
+            return String(localized: "Calendar access needed")
         }
 
         if permissions.alarm == .denied || permissions.alarm == .notDetermined {
-            return "Alarm access needed"
+            return String(localized: "Alarm access needed")
         }
 
-        return "No upcoming alarms."
+        return nil
     }
 
     func reloadWidgetTimelines() {

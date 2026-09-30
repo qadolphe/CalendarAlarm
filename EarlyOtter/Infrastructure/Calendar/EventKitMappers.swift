@@ -11,7 +11,7 @@ enum EventKitMappers {
             calendarID: event.calendar.calendarIdentifier,
             sourceAccountID: sourceAccountID,
             provider: .apple,
-            title: event.title ?? "Untitled Event",
+            title: event.title ?? String(localized: "Untitled Event"),
             startDate: event.startDate,
             endDate: event.endDate,
             timeZoneIdentifier: event.timeZone?.identifier,

@@ -113,6 +113,7 @@
 		BB1000000000000000000012 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000002 /* InfoPlist.xcstrings */; };
 		BB1000000000000000000013 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000003 /* Localizable.xcstrings */; };
 		BB1000000000000000000014 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000004 /* InfoPlist.xcstrings */; };
+		BB1000000000000000000015 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000005 /* AppShortcuts.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -253,6 +254,7 @@
 		BB1000000000000000000002 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		BB1000000000000000000003 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BB1000000000000000000004 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		BB1000000000000000000005 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -315,6 +317,7 @@
 			children = (
 				AA0000000000000000000C0B /* PrivacyInfo.xcprivacy */,
 				BB1000000000000000000002 /* InfoPlist.xcstrings */,
+				BB1000000000000000000005 /* AppShortcuts.xcstrings */,
 				BB1000000000000000000001 /* Localizable.xcstrings */,
 				77BF3AF82FA662C0004F4896 /* Info.plist */,
 				AA000000000000000000014C /* EarlyOtter/EarlyOtter.entitlements */,
@@ -785,6 +788,7 @@
 			files = (
 				AA0000000000000000000C0C /* PrivacyInfo.xcprivacy in Resources */,
 				BB1000000000000000000012 /* InfoPlist.xcstrings in Resources */,
+				BB1000000000000000000015 /* AppShortcuts.xcstrings in Resources */,
 				BB1000000000000000000011 /* Localizable.xcstrings in Resources */,
 				AA0000000000000000000224 /* Resources/Assets.xcassets in Resources */,
 				AA0000000000000000000233 /* Resources/AlarmSounds/AlarmSunrise.wav in Resources */,

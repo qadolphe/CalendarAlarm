@@ -265,7 +265,7 @@ struct EarlyOtterCalculator {
             commuteTime: winningRule.commuteTime,
             alarmSettings: winningRule.alarmSettings,
             reason: .event,
-            appliedRuleName: winningRule.name,
+            appliedRuleName: winningRule.displayName,
             appliedRuleSymbol: winningRule.symbol,
             matchedRuleNames: matchedRuleNames
         )

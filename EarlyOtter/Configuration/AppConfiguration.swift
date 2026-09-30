@@ -4,14 +4,14 @@ enum AppConfiguration {
     static let appName = "EarlyOtter"
     static let nextAlarmWidgetKind = "com.quentinadolphe.wakeplan.nextAlarmWidget"
     static let widgetAppGroupIdentifier = "group.com.quentinadolphe.wakeplan.widget"
-    static let genericAlarmTitle = "Wake up"
+    static let genericAlarmTitle = String(localized: "Wake up")
     static let feedbackEndpointURL = URL(string: "https://earlyotter.com/api/feedback")!
     static let telemetryEndpointURL = URL(string: "https://earlyotter.com/api/telemetry")!
     static let telemetryConsentStorageKey = "earlyotter.telemetry.shareUsageData"
     static let telemetryInstallIDStorageKey = "earlyotter.telemetry.installID"
-    static let testAlarmButtonTitle = "Test Alarm in 1 Minute"
+    static let testAlarmButtonTitle = String(localized: "Test Alarm in 1 Minute")
     static let testAlarmDescription =
-        "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm."
+        String(localized: "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm.")
     static let managedAlarmPlanningCount = 7
     static let dashboardWeekLength = 7
     static let dashboardVisibleWeekCount = 2
@@ -51,20 +51,20 @@ enum AppConfiguration {
     }
 
     static let calendarPermissionExplanation =
-        "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time."
+        String(localized: "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time.")
 
     static let alarmPermissionExplanation =
-        "Alarm access lets \(appName) schedule real wake-up alarms for your calendar events. You can enable it later in Settings."
+        String(localized: "Alarm access lets \(appName) schedule real wake-up alarms for your calendar events. You can enable it later in Settings.")
 
     static let onboardingAlarmPermissionExplanation =
-        "These are optional during setup. Enable them now to let \(appName) schedule alarms and notify you on updates automatically."
+        String(localized: "These are optional during setup. Enable them now to let \(appName) schedule alarms and notify you on updates automatically.")
 
-    static let staleSyncReminderTitle = "\(appName) may need to refresh your alarms"
+    static let staleSyncReminderTitle = String(localized: "\(appName) may need to refresh your alarms")
     static let staleSyncReminderBody =
-        "Open the app to keep tomorrow's alarm up to date."
+        String(localized: "Open the app to keep tomorrow's alarm up to date.")
 
     static func testAlarmScheduledMessage(for wakeTime: Date) -> String {
-        "Test alarm scheduled for \(wakeTime.formatted(date: .omitted, time: .shortened))."
+        String(localized: "Test alarm scheduled for \(wakeTime.formatted(date: .omitted, time: .shortened)).")
     }
 }
 

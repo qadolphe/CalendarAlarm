@@ -4,6 +4,9 @@
     "" : {
 
     },
+    "%@" : {
+
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -24,6 +27,78 @@
         }
       }
     },
+    "%@ may need to refresh your alarms" : {
+
+    },
+    "%@ needs calendar access to find your first event tomorrow and calculate your wake-up time." : {
+
+    },
+    "%@, %@" : {
+      "comment" : "Alarm list row: label, then repeat days",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, alarm %@ and first event %@ at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, alarm %2$@ and first event %3$@ at %4$@."
+          }
+        }
+      }
+    },
+    "%@, alarm %@ linked to %@ at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, alarm %2$@ linked to %3$@ at %4$@."
+          }
+        }
+      }
+    },
+    "%@, alarm at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, alarm at %2$@."
+          }
+        }
+      }
+    },
+    "%@, alarm turned off for this day." : {
+
+    },
+    "%@, Auto Alarms are paused for this day." : {
+
+    },
+    "%@, automatic alarms are turned off." : {
+
+    },
+    "%@, EarlyOtter is disabled." : {
+
+    },
+    "%@, first event %@ at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, first event %2$@ at %3$@."
+          }
+        }
+      }
+    },
+    "%@, no event or alarm is scheduled." : {
+
+    },
     "%@%@" : {
       "localizations" : {
         "en" : {
@@ -34,7 +109,22 @@
         }
       }
     },
+    "%lld calendars" : {
+
+    },
+    "%lld connected" : {
+
+    },
+    "%lld Google accounts connected" : {
+
+    },
+    "%lld hours" : {
+
+    },
     "%lld min" : {
+
+    },
+    "%lld needed" : {
 
     },
     "%lldm" : {
@@ -56,10 +146,28 @@
     "About calendar alarms" : {
 
     },
+    "Access" : {
+
+    },
+    "Accounts" : {
+
+    },
     "Action Required" : {
 
     },
+    "Add" : {
+
+    },
     "Add a backup alarm" : {
+
+    },
+    "Add a Calendar to Continue" : {
+
+    },
+    "Add a place or address" : {
+
+    },
+    "Add a word" : {
 
     },
     "Add alarm" : {
@@ -80,7 +188,31 @@
     "Alarm" : {
 
     },
+    "Alarm Access" : {
+
+    },
+    "Alarm access is off, so this won't ring" : {
+
+    },
+    "Alarm access is still needed to schedule wake-up alarms." : {
+
+    },
+    "Alarm access is still pending." : {
+
+    },
+    "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
+
+    },
+    "Alarm access needed" : {
+
+    },
+    "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms." : {
+
+    },
     "Alarm moved to %@" : {
+
+    },
+    "Alarm scheduled for the next valid event." : {
 
     },
     "Alarm set by %@" : {
@@ -89,10 +221,37 @@
     "Alarm set by this event" : {
 
     },
+    "Alarm status unavailable." : {
+
+    },
+    "Alarm turned off for this day" : {
+
+    },
+    "Alarms" : {
+
+    },
+    "All" : {
+
+    },
     "All calendars" : {
 
     },
+    "All calendars are currently selected." : {
+
+    },
+    "All set" : {
+
+    },
+    "All-day" : {
+
+    },
+    "All-Day Events" : {
+
+    },
     "Allow" : {
+
+    },
+    "Allow Alarms to Continue" : {
 
     },
     "Allow Calendar Access" : {
@@ -101,7 +260,46 @@
     "Allowed" : {
 
     },
+    "Allowed Only Keywords" : {
+
+    },
+    "Any" : {
+
+    },
+    "Apple Calendar" : {
+
+    },
+    "Auto Alarms are paused for that day based on your active schedule." : {
+
+    },
+    "Auto Alarms are paused for this day" : {
+
+    },
+    "Auto Alarms are paused for this day." : {
+
+    },
+    "Automatic alarms are turned off" : {
+
+    },
+    "Automatic alarms are turned off." : {
+
+    },
+    "Before alarm" : {
+
+    },
+    "Blocked Keywords" : {
+
+    },
+    "Calendar" : {
+
+    },
+    "Calendar access is still needed to use Apple Calendar." : {
+
+    },
     "Calendar access needed" : {
+
+    },
+    "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar." : {
 
     },
     "Calendar Alarms" : {
@@ -113,13 +311,31 @@
     "Cancel" : {
 
     },
+    "Canceled" : {
+
+    },
+    "Canceled Events" : {
+
+    },
     "Choose which calendars can contribute events to EarlyOtter's alarm rules." : {
+
+    },
+    "Choose which calendars count toward tomorrow's first alarm-worthy event." : {
 
     },
     "Choose which calendars EarlyOtter should scan." : {
 
     },
+    "Classic" : {
+      "comment" : "Alarm sound name"
+    },
     "Close day" : {
+
+    },
+    "Commute" : {
+
+    },
+    "Commute · %lldm" : {
 
     },
     "Connect a calendar source, enable an account, or make sure EarlyOtter still has access to one of your calendars." : {
@@ -128,10 +344,34 @@
     "Connect at least one calendar source to get started." : {
 
     },
+    "Connected" : {
+
+    },
+    "Couldn't clear stale alarm record. %@" : {
+
+    },
+    "Couldn't replace previous alarms. %@" : {
+
+    },
+    "Couldn't schedule alarm: %@" : {
+
+    },
+    "Couldn't send. Try again." : {
+
+    },
+    "Counts only. Never your calendar details." : {
+
+    },
+    "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm." : {
+
+    },
     "Date" : {
 
     },
     "Days" : {
+
+    },
+    "Default Rule" : {
 
     },
     "Delete" : {
@@ -149,7 +389,22 @@
     "Duplicate Rule" : {
 
     },
+    "Duration" : {
+
+    },
     "Earlier events" : {
+
+    },
+    "EarlyOtter Alarms" : {
+
+    },
+    "EarlyOtter is disabled" : {
+
+    },
+    "EarlyOtter is disabled." : {
+
+    },
+    "EarlyOtter needs alarm access before it can schedule a real alarm." : {
 
     },
     "Edit Alarm" : {
@@ -164,10 +419,31 @@
     "Enjoy sleeping in!" : {
 
     },
+    "Events whose location contains all of these use this rule." : {
+
+    },
+    "Events whose title contains all of these words use this rule." : {
+
+    },
+    "Events whose title contains any of these words are ignored." : {
+
+    },
     "Every %@" : {
 
     },
+    "Every day" : {
+
+    },
+    "Experience" : {
+
+    },
     "Feedback" : {
+
+    },
+    "Feedback sent." : {
+
+    },
+    "Finish & Go to Dashboard" : {
 
     },
     "Fix Permissions" : {
@@ -179,10 +455,40 @@
     "For days without early events" : {
 
     },
+    "Free" : {
+
+    },
+    "Free Events" : {
+
+    },
     "G" : {
 
     },
     "Generating alarms..." : {
+
+    },
+    "Get Started" : {
+
+    },
+    "Google Account" : {
+
+    },
+    "Google Calendar" : {
+
+    },
+    "Google Calendar access expired or was never granted. Reconnect your Google account." : {
+
+    },
+    "Google Calendar could not find a signed-in user." : {
+
+    },
+    "Google Calendar request failed with status %lld." : {
+
+    },
+    "Google Sign-In could not find a screen to present from." : {
+
+    },
+    "Google Sign-In did not return an email or account identifier." : {
 
     },
     "Grant Permissions" : {
@@ -190,6 +496,12 @@
     },
     "Home" : {
 
+    },
+    "How has EarlyOtter been for you?" : {
+
+    },
+    "hr" : {
+      "comment" : "Hours unit"
     },
     "Ignore Calendar Status" : {
 
@@ -200,7 +512,13 @@
     "Ignored Events & Filters" : {
 
     },
+    "in %@" : {
+      "comment" : "Time left until the alarm, e.g. in 8h 5m"
+    },
     "Internal device" : {
+
+    },
+    "Issue" : {
 
     },
     "Label" : {
@@ -212,19 +530,85 @@
     "Later events" : {
 
     },
+    "Location contains" : {
+
+    },
+    "Location Contains" : {
+
+    },
+    "Long-press a Google account to remove it." : {
+
+    },
+    "Match" : {
+
+    },
     "Matching events will never trigger an alarm." : {
+
+    },
+    "min" : {
+      "comment" : "Minutes unit"
+    },
+    "Never" : {
+
+    },
+    "New Rule" : {
+
+    },
+    "Next" : {
 
     },
     "Next Alarm" : {
 
     },
+    "Next event" : {
+
+    },
+    "No alarm is currently scheduled." : {
+
+    },
     "No alarm scheduled" : {
+
+    },
+    "No alarms will ring" : {
+
+    },
+    "No calendar events or alarms are coming up." : {
 
     },
     "No Calendars Found" : {
 
     },
+    "No early events" : {
+
+    },
+    "No events on %@" : {
+
+    },
+    "No events today" : {
+
+    },
+    "No events tomorrow" : {
+
+    },
     "No Events Tomorrow!" : {
+
+    },
+    "No scheduled events or alarms." : {
+
+    },
+    "None" : {
+
+    },
+    "Notification access is still needed." : {
+
+    },
+    "Notification access is still pending." : {
+
+    },
+    "Notification access was previously denied. Enable it in Settings." : {
+
+    },
+    "Notifications" : {
 
     },
     "OK" : {
@@ -232,6 +616,12 @@
     },
     "Open Settings" : {
 
+    },
+    "Open the app to keep tomorrow's alarm up to date." : {
+
+    },
+    "Otter" : {
+      "comment" : "Alarm sound name"
     },
     "Overrides %@ for %@ only" : {
       "localizations" : {
@@ -246,13 +636,40 @@
     "Perfectly synced with your morning schedule." : {
 
     },
+    "Permissions" : {
+
+    },
     "Pick a date" : {
 
     },
     "Pick the days EarlyOtter wakes you for your first event." : {
 
     },
+    "Played by iOS when the alarm fires" : {
+
+    },
+    "Please complete setup in settings." : {
+
+    },
+    "Prep" : {
+
+    },
+    "Prep · %lldm" : {
+
+    },
+    "Prep time" : {
+
+    },
     "Preparing EarlyOtter..." : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Privacy Policy" : {
+
+    },
+    "Rate EarlyOtter" : {
 
     },
     "Reactivate" : {
@@ -270,10 +687,16 @@
     "Remove Account" : {
 
     },
+    "Remove this account?" : {
+
+    },
     "Repeat" : {
 
     },
     "Reset" : {
+
+    },
+    "Rule" : {
 
     },
     "Rule icon" : {
@@ -281,6 +704,18 @@
     },
     "Rule name" : {
 
+    },
+    "rule.default" : {
+      "comment" : "Name of the rule that applies to every event",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Default"
+          }
+        }
+      }
     },
     "Rules" : {
 
@@ -297,6 +732,9 @@
     "Send feedback" : {
 
     },
+    "Send Feedback" : {
+
+    },
     "Sending…" : {
 
     },
@@ -304,6 +742,9 @@
 
     },
     "Setup Required" : {
+
+    },
+    "Share Usage Data" : {
 
     },
     "Skip" : {
@@ -330,16 +771,82 @@
     "Sound" : {
 
     },
+    "sound.default" : {
+      "comment" : "Alarm sound: the system alarm tone",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "Starlight" : {
+      "comment" : "Alarm sound name"
+    },
     "Starts before your alarm" : {
+
+    },
+    "Stop" : {
 
     },
     "Submit Feedback" : {
 
     },
+    "Suggestion" : {
+
+    },
+    "Sunrise" : {
+      "comment" : "Alarm sound name"
+    },
+    "Support" : {
+
+    },
+    "Sync events from a Google account" : {
+
+    },
     "System disabled" : {
 
     },
+    "Tentative" : {
+
+    },
+    "Tentative Events" : {
+
+    },
+    "Test Alarm in 1 Minute" : {
+
+    },
+    "Test alarm scheduled for %@." : {
+
+    },
+    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
+
+    },
+    "Tide" : {
+      "comment" : "Alarm sound name"
+    },
     "Time" : {
+
+    },
+    "Timing" : {
+
+    },
+    "Tip: add “Refresh Alarms” to a Shortcut automation to keep alarms synced." : {
+
+    },
+    "Title contains" : {
+
+    },
+    "Title Contains" : {
+
+    },
+    "Today" : {
+
+    },
+    "Tomorrow" : {
 
     },
     "Turn alarm on" : {
@@ -351,12 +858,18 @@
     "Undo" : {
 
     },
-    "Updated %lld %@ across %lld upcoming %@." : {
+    "Unknown Google Account" : {
+
+    },
+    "Untitled Event" : {
+
+    },
+    "Updated %lld alarms across %lld upcoming wake plans." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Updated %1$lld %2$@ across %3$lld upcoming %4$@."
+            "value" : "Updated %1$lld alarms across %2$lld upcoming wake plans."
           }
         }
       }
@@ -364,7 +877,13 @@
     "Use All" : {
 
     },
+    "Use your on-device calendars and subscriptions" : {
+
+    },
     "Wake Time" : {
+
+    },
+    "Wake up" : {
 
     },
     "Wakes you in time for your first event on these days." : {
@@ -376,13 +895,31 @@
     "We'll subtract this prep and commute time from your first event." : {
 
     },
+    "Weekdays" : {
+
+    },
+    "Weekends" : {
+
+    },
     "Welcome to" : {
+
+    },
+    "What went wrong?" : {
+
+    },
+    "What would make EarlyOtter better?" : {
+
+    },
+    "When non-empty, only events matching these words are considered." : {
 
     },
     "Within" : {
 
     },
     "You are setting an alarm for the afternoon or after your first event starts. Are you sure?" : {
+
+    },
+    "You turned off the alarm for this day." : {
 
     },
     "You're All Set!" : {

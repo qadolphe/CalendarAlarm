@@ -136,3 +136,11 @@ private struct CapsuleButtonLabel: View {
             .opacity(configuration.isPressed ? 0.9 : 1)
     }
 }
+
+extension LocalizedStringResource {
+    /// Shows text as-is where a localizable title is expected: user content
+    /// such as an account name, or a string that is already localized.
+    static func verbatim(_ text: String) -> LocalizedStringResource {
+        "\(text)"
+    }
+}

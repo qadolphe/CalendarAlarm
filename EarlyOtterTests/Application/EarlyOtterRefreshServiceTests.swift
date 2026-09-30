@@ -135,7 +135,7 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
 
         XCTAssertEqual(widgetSnapshot.state, .empty)
         XCTAssertNil(widgetSnapshot.nextAlarmDate)
-        XCTAssertEqual(widgetSnapshot.detailText, "No upcoming alarms.")
+        XCTAssertNil(widgetSnapshot.detailText)
     }
 
     func testRefreshAndSyncPublishesStaleSnapshotWhenRefreshFails() async throws {

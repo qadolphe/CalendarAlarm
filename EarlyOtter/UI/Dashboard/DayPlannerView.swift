@@ -254,17 +254,17 @@ struct DayPlannerView: View {
     /// Why the day has no alarm, or why its alarm may not ring.
     private var note: (text: String, tint: Color)? {
         switch entry.alarmStatus {
-        case .failed(let message): return ("Couldn't schedule alarm: \(message)", .red)
-        case .needsPermission: return ("Alarm access is off, so this won't ring", WPStyles.accent)
+        case .failed(let message): return (String(localized: "Couldn't schedule alarm: \(message)"), .red)
+        case .needsPermission: return (String(localized: "Alarm access is off, so this won't ring"), WPStyles.accent)
         case .scheduled, .disabled, .notScheduled, nil: break
         }
 
         let quiet = WPStyles.secondaryText
         switch plan.reason {
-        case .manualSkip: return ("Alarm turned off for this day", quiet)
-        case .inactiveDay: return ("Auto Alarms are paused for this day", quiet)
-        case .disabled: return ("Automatic alarms are turned off", quiet)
-        case .systemDisabled: return ("EarlyOtter is disabled", quiet)
+        case .manualSkip: return (String(localized: "Alarm turned off for this day"), quiet)
+        case .inactiveDay: return (String(localized: "Auto Alarms are paused for this day"), quiet)
+        case .disabled: return (String(localized: "Automatic alarms are turned off"), quiet)
+        case .systemDisabled: return (String(localized: "EarlyOtter is disabled"), quiet)
         case .noSchedule, .event, .alarm, .authorizationMissing, .manualOverride: return nil
         }
     }
@@ -461,11 +461,11 @@ private struct DayTimelineView: View {
         .padding(.horizontal, 7)
         .padding(.vertical, 2)
         .background(WPStyles.accent.opacity(0.15), in: Capsule())
-        .accessibilityLabel(timeline.ruleName.map { "Alarm set by \($0)" } ?? "Alarm set by this event")
+        .accessibilityLabel(timeline.ruleName.map { String(localized: "Alarm set by \($0)") } ?? String(localized: "Alarm set by this event"))
     }
 
-    private func stepBlock(_ title: String, systemImage: String, height: CGFloat) -> some View {
-        Label(title, systemImage: systemImage)
+    private func stepBlock(_ title: LocalizedStringResource, systemImage: String, height: CGFloat) -> some View {
+        Label { Text(title) } icon: { Image(systemName: systemImage) }
             .font(.caption2.weight(.semibold))
             .opacity(height >= 14 ? 1 : 0)
             .foregroundStyle(WPStyles.secondaryText)
@@ -507,7 +507,7 @@ private struct DayTimelineView: View {
             .onTapGesture { if isEditable { onEditAlarm() } }
             .gesture(moveGesture(from: timeline.alarm ?? alarm), isEnabled: isEditable)
             .accessibilityAddTraits(isEditable ? .isButton : [])
-            .accessibilityHint(isEditable ? "Edits this day's alarm. Hold and drag to move it." : "")
+            .accessibilityHint(isEditable ? String(localized: "Edits this day's alarm. Hold and drag to move it.") : "")
         }
         .frame(height: 28)
     }

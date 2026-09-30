@@ -222,7 +222,7 @@ struct ScheduleView: View {
 
     // MARK: Small pieces
 
-    private func sectionHeader(_ title: String) -> some View {
+    private func sectionHeader(_ title: LocalizedStringResource) -> some View {
         Text(title)
             .font(.caption.weight(.bold))
             .tracking(1.2)
@@ -249,7 +249,7 @@ struct WeekdayCircles: View {
                         selection.insert(option.weekday)
                     }
                 } label: {
-                    Text(option.shortLabel.prefix(1))
+                    Text(option.initial)
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(isOn ? WPStyles.onAccent : WPStyles.secondaryText)
                         .frame(width: 40, height: 40)
@@ -290,18 +290,18 @@ struct CalendarDaysRow: View {
 extension StandardAlarm {
     /// "Wake up, Weekdays", like the Clock app's alarm list.
     var listSubtitle: String {
-        let title = label.isEmpty ? "Alarm" : label
+        let title = label.isEmpty ? String(localized: "Alarm") : label
         guard isRepeating else { return title }
-        return "\(title), \(repeatSummary)"
+        return String(localized: "\(title), \(repeatSummary)", comment: "Alarm list row: label, then repeat days")
     }
 
     /// "Never", "Every day", "Weekdays", "Weekends", or short day names.
     var repeatSummary: String {
         switch repeatDays {
-        case []: return "Never"
-        case Set(1...7): return "Every day"
-        case Set(2...6): return "Weekdays"
-        case [1, 7]: return "Weekends"
+        case []: return String(localized: "Never")
+        case Set(1...7): return String(localized: "Every day")
+        case Set(2...6): return String(localized: "Weekdays")
+        case [1, 7]: return String(localized: "Weekends")
         default:
             return EarlyOtterUIConfiguration.sundayFirstWeekdays
                 .filter { repeatDays.contains($0.weekday) }

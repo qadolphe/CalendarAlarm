@@ -122,7 +122,7 @@ struct RulesView: View {
 
     // MARK: Rule cards
 
-    private func sectionHeader(_ title: String) -> some View {
+    private func sectionHeader(_ title: LocalizedStringResource) -> some View {
         Text(title)
             .font(.caption.weight(.bold))
             .tracking(1.2)
@@ -140,7 +140,7 @@ struct RulesView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(rule.name)
+                Text(rule.displayName)
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
                 Text("\(rule.prepTime.rawValue)m prep · \(rule.commuteTime.rawValue)m commute")
@@ -162,13 +162,13 @@ struct RulesView: View {
     private var filterSummary: String {
         let filters = appState.preferences.filters
         let statuses = [
-            (filters.ignoreAllDayEvents, "All-day"),
-            (filters.ignoreTentativeEvents, "Tentative"),
-            (filters.ignoreCanceledEvents, "Canceled"),
-            (filters.ignoreFreeEvents, "Free")
+            (filters.ignoreAllDayEvents, String(localized: "All-day")),
+            (filters.ignoreTentativeEvents, String(localized: "Tentative")),
+            (filters.ignoreCanceledEvents, String(localized: "Canceled")),
+            (filters.ignoreFreeEvents, String(localized: "Free"))
         ].compactMap { $0.0 ? $0.1 : nil }
         let active = statuses + appState.preferences.titleBlocklist
-        return active.isEmpty ? "None" : active.joined(separator: ", ")
+        return active.isEmpty ? String(localized: "None") : active.joined(separator: ", ")
     }
 
     // MARK: Helpers
@@ -488,9 +488,9 @@ struct RuleEditorView: View {
     }
 
     private var navTitle: String {
-        if isDefaultRule { return "Default Rule" }
-        if mode.isAdd { return "New Rule" }
-        return name.isEmpty ? "Rule" : name
+        if isDefaultRule { return String(localized: "Default Rule") }
+        if mode.isAdd { return String(localized: "New Rule") }
+        return name.isEmpty ? String(localized: "Rule") : name
     }
 
     private var headerCard: some View {
@@ -569,7 +569,7 @@ struct RuleEditorView: View {
     }
 
     private func navRow<Destination: View>(
-        _ title: String,
+        _ title: LocalizedStringResource,
         value: String,
         @ViewBuilder destination: () -> Destination
     ) -> some View {
@@ -611,14 +611,14 @@ struct RuleEditorView: View {
     }
 
     private func keywordSummary(_ keywords: [String]) -> String {
-        keywords.isEmpty ? "Any" : keywords.joined(separator: ", ")
+        keywords.isEmpty ? String(localized: "Any") : keywords.joined(separator: ", ")
     }
 
     private var daysSummary: String {
         switch activeWeekdays {
-        case Set(1...7): return "Every day"
-        case Set(2...6): return "Weekdays"
-        case [1, 7]: return "Weekends"
+        case Set(1...7): return String(localized: "Every day")
+        case Set(2...6): return String(localized: "Weekdays")
+        case [1, 7]: return String(localized: "Weekends")
         default:
             let symbols = Calendar.current.shortWeekdaySymbols
             return activeWeekdays.sorted().map { symbols[$0 - 1] }.joined(separator: ", ")
@@ -626,12 +626,12 @@ struct RuleEditorView: View {
     }
 
     private var calendarsSummary: String {
-        if selectedCalendarIDs.isEmpty { return "All" }
+        if selectedCalendarIDs.isEmpty { return String(localized: "All") }
         let titles = appState.calendars.filter { selectedCalendarIDs.contains($0.id) }.map(\.title)
         switch titles.count {
-        case 0: return "None"
+        case 0: return String(localized: "None")
         case 1: return titles[0]
-        default: return "\(titles.count) calendars"
+        default: return String(localized: "\(titles.count) calendars")
         }
     }
 
@@ -721,7 +721,7 @@ struct RuleEditorView: View {
         }
     }
 
-    private func stepperRow(label: String, value: Binding<Minutes>, range: ClosedRange<Int>) -> some View {
+    private func stepperRow(label: LocalizedStringResource, value: Binding<Minutes>, range: ClosedRange<Int>) -> some View {
         Stepper(
             value: Binding(get: { value.wrappedValue.rawValue }, set: { value.wrappedValue = Minutes($0) }),
             in: range,
@@ -740,7 +740,7 @@ struct RuleEditorView: View {
         .padding(.vertical, 14)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
+    private func sectionLabel(_ text: LocalizedStringResource) -> some View {
         Text(text)
             .font(.caption.weight(.bold))
             .tracking(1.4)
@@ -775,7 +775,7 @@ struct RuleEditorView: View {
                 case .add:
                     let newRule = AlarmRule(
                         id: UUID(),
-                        name: name.isEmpty ? "New Rule" : name,
+                        name: name.isEmpty ? String(localized: "New Rule") : name,
                         isDefault: false,
                         activeWeekdays: activeWeekdays,
                         selectedCalendarIDs: selectedCalendarIDs,
@@ -796,7 +796,7 @@ struct RuleEditorView: View {
                     }
                 case .edit(let rule):
                     if let idx = copy.alarmRules.firstIndex(where: { $0.id == rule.id }) {
-                        copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? "Rule" : name)
+                        copy.alarmRules[idx].name = isDefaultRule ? "Default" : (name.isEmpty ? String(localized: "Rule") : name)
                         copy.alarmRules[idx].isEnabled = isDefaultRule ? true : isEnabled
                         copy.alarmRules[idx].activeWeekdays = isDefaultRule ? Set(1...7) : activeWeekdays
                         copy.alarmRules[idx].selectedCalendarIDs = selectedCalendarIDs
@@ -844,9 +844,9 @@ struct RuleEditorView: View {
 
 /// A plain list of keywords: swipe to delete, type and return to add.
 private struct KeywordListEditor: View {
-    let title: String
-    let placeholder: String
-    let footer: String
+    let title: LocalizedStringResource
+    let placeholder: LocalizedStringResource
+    let footer: LocalizedStringResource
     @Binding var keywords: [String]
 
     @State private var draft = ""
@@ -861,7 +861,7 @@ private struct KeywordListEditor: View {
                 }
                 .onDelete { keywords.remove(atOffsets: $0) }
 
-                TextField(placeholder, text: $draft)
+                TextField(text: $draft) { Text(placeholder) }
                     .focused($isFocused)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -874,7 +874,7 @@ private struct KeywordListEditor: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.clear.withAppBackground())
-        .navigationTitle(title)
+        .navigationTitle(Text(title))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { isFocused = keywords.isEmpty }
         .onDisappear(perform: commit)
@@ -1030,8 +1030,8 @@ struct GlobalEventFiltersView: View {
         }
     }
 
-    private func filterToggle(_ label: String, isOn: Binding<Bool>) -> some View {
-        Toggle(label, isOn: isOn)
+    private func filterToggle(_ label: LocalizedStringResource, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) { Text(label) }
             .tint(WPStyles.accent)
             .foregroundStyle(WPStyles.primaryText)
     }
@@ -1046,8 +1046,8 @@ struct GlobalEventFiltersView: View {
     }
 
     private func keywordSection(
-        title: String,
-        footer: String,
+        title: LocalizedStringResource,
+        footer: LocalizedStringResource,
         keywords: Binding<[String]>,
         newKeyword: Binding<String>
     ) -> some View {

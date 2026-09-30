@@ -11,7 +11,25 @@
         }
       }
     },
+    "%@ may need to refresh your alarms" : {
+
+    },
+    "%@ needs calendar access to find your first event tomorrow and calculate your wake-up time." : {
+
+    },
     "%@ Sleeping in" : {
+
+    },
+    "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
+
+    },
+    "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm." : {
+
+    },
+    "Design Review" : {
+
+    },
+    "Enjoy sleeping in" : {
 
     },
     "in %@" : {
@@ -27,6 +45,42 @@
 
     },
     "No alarms" : {
+
+    },
+    "No Alarms" : {
+
+    },
+    "No early events" : {
+
+    },
+    "Open EarlyOtter" : {
+
+    },
+    "Open the app to keep tomorrow's alarm up to date." : {
+
+    },
+    "Refresh App" : {
+
+    },
+    "Scheduled" : {
+
+    },
+    "Sleeping in" : {
+
+    },
+    "Stale" : {
+
+    },
+    "Test Alarm in 1 Minute" : {
+
+    },
+    "Test alarm scheduled for %@." : {
+
+    },
+    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
+
+    },
+    "Wake up" : {
 
     }
   },

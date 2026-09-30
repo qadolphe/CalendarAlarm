@@ -140,7 +140,7 @@ struct AlarmEditorView: View {
         .contentMargins(.top, 0, for: .scrollContent)
         .scrollContentBackground(.hidden)
         .background(Color.clear.withAppBackground())
-        .navigationTitle(mode.isAdd ? "Add Alarm" : "Edit Alarm")
+        .navigationTitle(mode.isAdd ? String(localized: "Add Alarm") : String(localized: "Edit Alarm"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -174,11 +174,11 @@ struct AlarmEditorView: View {
 
         var draft = alarm
         draft.time = clockTime(from: wakeDate)
-        guard let day = draft.armed().oneTimeDay?.date else { return "Never" }
+        guard let day = draft.armed().oneTimeDay?.date else { return String(localized: "Never") }
 
         let calendar = Calendar.current
-        if calendar.isDateInToday(day) { return "Today" }
-        if calendar.isDateInTomorrow(day) { return "Tomorrow" }
+        if calendar.isDateInToday(day) { return String(localized: "Today") }
+        if calendar.isDateInTomorrow(day) { return String(localized: "Tomorrow") }
         return day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
     }
 
@@ -348,7 +348,7 @@ private struct SkipWindowSlider: View {
     }
 
     private var hoursText: String {
-        hours == 1 ? "1 hour" : "\(Int(hours)) hours"
+        String(localized: "\(Int(hours)) hours")
     }
 
     private var windowStart: Date {

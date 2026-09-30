@@ -4,7 +4,7 @@ import SwiftUI
 // section cards, rows, and banners.
 
 struct SettingsPage<Content: View>: View {
-    let title: String
+    let title: LocalizedStringResource
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -17,17 +17,17 @@ struct SettingsPage<Content: View>: View {
             .padding(.bottom, 28)
         }
         .background(Color.clear.withAppBackground())
-        .navigationTitle(title)
+        .navigationTitle(Text(title))
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct SettingsSection<Content: View>: View {
-    let title: String?
-    let footer: String?
+    let title: LocalizedStringResource?
+    let footer: LocalizedStringResource?
     @ViewBuilder let content: Content
 
-    init(_ title: String? = nil, footer: String? = nil, @ViewBuilder content: () -> Content) {
+    init(_ title: LocalizedStringResource? = nil, footer: LocalizedStringResource? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
         self.footer = footer
         self.content = content()
@@ -75,8 +75,8 @@ struct SettingsSection<Content: View>: View {
 struct SettingsRow<Trailing: View>: View {
     let icon: String
     var iconTint: Color = WPStyles.primaryText
-    let title: String
-    var subtitle: String?
+    let title: LocalizedStringResource
+    var subtitle: LocalizedStringResource?
     @ViewBuilder var trailing: Trailing
 
     var body: some View {
@@ -105,7 +105,7 @@ struct SettingsRow<Trailing: View>: View {
 }
 
 extension SettingsRow where Trailing == EmptyView {
-    init(icon: String, iconTint: Color = WPStyles.primaryText, title: String, subtitle: String? = nil) {
+    init(icon: String, iconTint: Color = WPStyles.primaryText, title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil) {
         self.init(icon: icon, iconTint: iconTint, title: title, subtitle: subtitle) { EmptyView() }
     }
 }
@@ -113,7 +113,7 @@ extension SettingsRow where Trailing == EmptyView {
 /// A row that pushes a destination, with an optional value before the chevron.
 struct SettingsNavRow<Destination: View>: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringResource
     var value: String?
     var valueTint: Color = WPStyles.secondaryText
     @ViewBuilder let destination: Destination
@@ -139,7 +139,7 @@ struct SettingsNavRow<Destination: View>: View {
 struct SettingsLinkRow: View {
     let icon: String
     var iconTint: Color = WPStyles.primaryText
-    let title: String
+    let title: LocalizedStringResource
     let url: URL
 
     var body: some View {
@@ -156,13 +156,13 @@ struct SettingsLinkRow: View {
 
 struct SettingsToggleRow: View {
     let icon: String
-    let title: String
-    var subtitle: String?
+    let title: LocalizedStringResource
+    var subtitle: LocalizedStringResource?
     @Binding var isOn: Bool
 
     var body: some View {
         SettingsRow(icon: icon, title: title, subtitle: subtitle) {
-            Toggle(title, isOn: $isOn)
+            Toggle(isOn: $isOn) { Text(title) }
                 .labelsHidden()
                 .tint(WPStyles.accent)
         }

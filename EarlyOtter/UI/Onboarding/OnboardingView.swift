@@ -180,7 +180,7 @@ struct OnboardingView: View {
             VStack(spacing: 16) {
                 calendarSourceRow(
                     title: "Apple Calendar",
-                    subtitle: hasAppleCalendarSource ? nil : "Use your on-device calendars and subscriptions",
+                    subtitle: hasAppleCalendarSource ? nil : String(localized: "Use your on-device calendars and subscriptions"),
                     icon: "apple.logo",
                     isConnected: hasAppleCalendarSource,
                     actionTitle: "Add",
@@ -295,7 +295,7 @@ struct OnboardingView: View {
                                     let isTomorrow = Calendar.current.isDateInTomorrow(plan.calculatedWakeTime)
                                     let isToday = Calendar.current.isDateInToday(plan.calculatedWakeTime)
                                     
-                                    Text(isToday ? "Today" : (isTomorrow ? "Tomorrow" : plan.calculatedWakeTime.formatted(.dateTime.weekday(.wide))))
+                                    Text(isToday ? String(localized: "Today") : (isTomorrow ? String(localized: "Tomorrow") : plan.calculatedWakeTime.formatted(.dateTime.weekday(.wide))))
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(WPStyles.secondaryText)
                                         .textCase(.uppercase)
@@ -467,10 +467,10 @@ struct OnboardingView: View {
     }
     
     private func permissionRow(
-        title: String,
+        title: LocalizedStringResource,
         icon: String,
         isGranted: Bool,
-        actionTitle: String,
+        actionTitle: LocalizedStringResource,
         action: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 16) {
@@ -485,7 +485,7 @@ struct OnboardingView: View {
     }
     
     /// Gold with dark text when the step can advance; a quiet dark capsule while it's blocked.
-    private func nextButton(title: String, isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
+    private func nextButton(title: LocalizedStringResource, isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
         let fill = isEnabled ? WPStyles.accent : Color.black
         return Button(action: action) {
             Text(title)
@@ -500,7 +500,7 @@ struct OnboardingView: View {
         .padding(.bottom, 24)
     }
     
-    private func permissionLabel(title: String, icon: String) -> some View {
+    private func permissionLabel(title: LocalizedStringResource, icon: String) -> some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
@@ -516,7 +516,7 @@ struct OnboardingView: View {
     
     private func permissionTrailingControl(
         isGranted: Bool,
-        actionTitle: String,
+        actionTitle: LocalizedStringResource,
         action: @escaping () -> Void
     ) -> some View {
         Group {
@@ -525,18 +525,18 @@ struct OnboardingView: View {
                     .font(.title2)
                     .foregroundStyle(.green)
             } else {
-                Button(actionTitle, action: action)
+                Button(action: action) { Text(actionTitle) }
                     .buttonStyle(PrimaryCapsuleButtonStyle())
             }
         }
     }
     
     private func calendarSourceRow(
-        title: String,
+        title: LocalizedStringResource,
         subtitle: String?,
         icon: String,
         isConnected: Bool,
-        actionTitle: String,
+        actionTitle: LocalizedStringResource,
         action: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 16) {
@@ -564,7 +564,7 @@ struct OnboardingView: View {
     
     private func sourceTrailingControl(
         isConnected: Bool,
-        actionTitle: String,
+        actionTitle: LocalizedStringResource,
         action: @escaping () -> Void
     ) -> some View {
         Group {
@@ -573,7 +573,7 @@ struct OnboardingView: View {
                     .font(.title2)
                     .foregroundStyle(.green)
             } else {
-                Button(actionTitle, action: action)
+                Button(action: action) { Text(actionTitle) }
                     .buttonStyle(PrimaryCapsuleButtonStyle())
             }
         }
@@ -628,15 +628,15 @@ struct OnboardingView: View {
     private var googleCalendarSubtitle: String {
         switch connectedGoogleAccounts.count {
         case 0:
-            return "Sync events from a Google account"
+            return String(localized: "Sync events from a Google account")
         case 1:
             return connectedGoogleAccounts[0].displayName
         default:
-            return "\(connectedGoogleAccounts.count) Google accounts connected"
+            return String(localized: "\(connectedGoogleAccounts.count) Google accounts connected")
         }
     }
     
-    private func routineRow(title: String, icon: String, value: Int, binding: Binding<Int>) -> some View {
+    private func routineRow(title: LocalizedStringResource, icon: String, value: Int, binding: Binding<Int>) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .foregroundStyle(WPStyles.accent)

@@ -15,12 +15,12 @@ enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
 
     var displayName: String {
         switch self {
-        case .default:      return "Default"
-        case .sunrise:      return "Sunrise"
-        case .starlight:    return "Starlight"
-        case .otter:        return "Otter"
-        case .tide:         return "Tide"
-        case .classic:      return "Classic"
+        case .default:      return String(localized: "sound.default", defaultValue: "Default", comment: "Alarm sound: the system alarm tone")
+        case .sunrise:      return String(localized: "Sunrise", comment: "Alarm sound name")
+        case .starlight:    return String(localized: "Starlight", comment: "Alarm sound name")
+        case .otter:        return String(localized: "Otter", comment: "Alarm sound name")
+        case .tide:         return String(localized: "Tide", comment: "Alarm sound name")
+        case .classic:      return String(localized: "Classic", comment: "Alarm sound name")
         }
     }
 
@@ -37,7 +37,7 @@ enum AlarmSoundOption: String, Codable, CaseIterable, Equatable, Sendable {
     // Shown under the row name to explain why tapping it stays silent.
     var subtitle: String? {
         switch self {
-        case .default:  return "Played by iOS when the alarm fires"
+        case .default:  return String(localized: "Played by iOS when the alarm fires")
         default:        return nil
         }
     }
@@ -132,6 +132,12 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var commuteTime: Minutes
     var alarmSettings: RuleAlarmSettings
     var symbol: RuleSymbol
+
+    /// The name shown on screen. The default rule's stored name predates
+    /// localization, so it is always shown in the current language.
+    var displayName: String {
+        isDefault ? String(localized: "rule.default", defaultValue: "Default", comment: "Name of the rule that applies to every event") : name
+    }
 
     static func makeDefault(
         prepTime: Minutes = Minutes(45),

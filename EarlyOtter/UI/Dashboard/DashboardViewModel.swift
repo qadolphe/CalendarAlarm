@@ -176,21 +176,21 @@ struct DashboardViewModel {
         switch viewState.alarmStatus {
         case .scheduled:
             if plan.reason == .inactiveDay {
-                return "Auto Alarms are paused for that day based on your active schedule."
+                return String(localized: "Auto Alarms are paused for that day based on your active schedule.")
             }
             if plan.reason == .alarm {
                 // The timetable says what's left of the day instead.
                 return nil
             }
-            return "Alarm scheduled for the next valid event."
+            return String(localized: "Alarm scheduled for the next valid event.")
         case .needsPermission:
-            return "EarlyOtter needs alarm access before it can schedule a real alarm."
+            return String(localized: "EarlyOtter needs alarm access before it can schedule a real alarm.")
         case .disabled:
-            return "Automatic alarms are turned off."
+            return String(localized: "Automatic alarms are turned off.")
         case .failed(let message):
-            return "Couldn't schedule alarm: \(message)"
+            return String(localized: "Couldn't schedule alarm: \(message)")
         case .notScheduled:
-            return "No scheduled events or alarms."
+            return String(localized: "No scheduled events or alarms.")
         }
     }
 
@@ -228,6 +228,12 @@ struct DashboardViewModel {
     }
 
     func daySymbol(for date: Date) -> String {
+        // Other languages use the system's one-letter day names; English keeps
+        // "Th" so Tuesday and Thursday read apart.
+        guard Locale.current.language.languageCode == .english else {
+            return calendar.veryShortStandaloneWeekdaySymbols[calendar.component(.weekday, from: date) - 1]
+        }
+
         switch calendar.component(.weekday, from: date) {
         case 1:
             return "S"
@@ -254,31 +260,31 @@ struct DashboardViewModel {
         if let event = entry.displayedEvent,
            let alarmDate = entry.alarmDate {
             if entry.hasConnectedMarkers {
-                return "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) linked to \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+                return String(localized: "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) linked to \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened)).")
             }
 
-            return "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) and first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+            return String(localized: "\(day), alarm \(alarmDate.formatted(date: .omitted, time: .shortened)) and first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened)).")
         }
 
         if let event = entry.displayedEvent {
-            return "\(day), first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened))."
+            return String(localized: "\(day), first event \(event.title) at \(event.startDate.formatted(date: .omitted, time: .shortened)).")
         }
 
         if let alarmDate = entry.alarmDate {
-            return "\(day), alarm at \(alarmDate.formatted(date: .omitted, time: .shortened))."
+            return String(localized: "\(day), alarm at \(alarmDate.formatted(date: .omitted, time: .shortened)).")
         }
 
         switch entry.plan.reason {
         case .inactiveDay:
-            return "\(day), Auto Alarms are paused for this day."
+            return String(localized: "\(day), Auto Alarms are paused for this day.")
         case .disabled:
-            return "\(day), automatic alarms are turned off."
+            return String(localized: "\(day), automatic alarms are turned off.")
         case .systemDisabled:
-            return "\(day), EarlyOtter is disabled."
+            return String(localized: "\(day), EarlyOtter is disabled.")
         case .noSchedule:
-            return "\(day), no event or alarm is scheduled."
+            return String(localized: "\(day), no event or alarm is scheduled.")
         case .manualSkip:
-            return "\(day), alarm turned off for this day."
+            return String(localized: "\(day), alarm turned off for this day.")
         case .event, .alarm, .authorizationMissing, .manualOverride:
             return day
         }

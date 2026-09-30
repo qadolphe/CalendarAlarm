@@ -51,7 +51,7 @@ struct PermissionsView: View {
 
     private func permissionRow(
         icon: String,
-        title: String,
+        title: LocalizedStringResource,
         access: PermissionAccess,
         request: @escaping () async -> Void
     ) -> some View {

@@ -81,12 +81,12 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
 extension WakeUpPlan {
     /// A standard alarm's name, as the Clock app shows it: its label, or "Alarm".
     var alarmTitle: String {
-        alarmLabel.flatMap { $0.isEmpty ? nil : $0 } ?? "Alarm"
+        alarmLabel.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "Alarm")
     }
 
     /// What the wake-up is called on screen: a standard alarm's label, otherwise "Wake up".
     var wakeTitle: String {
-        reason == .alarm ? alarmTitle : "Wake up"
+        reason == .alarm ? alarmTitle : String(localized: "Wake up")
     }
 
     /// Whether this plan puts an alarm on the device.

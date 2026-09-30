@@ -17,19 +17,19 @@ enum AlarmKitMappers {
 
         if #available(iOS 26.1, *) {
             alert = AlarmPresentation.Alert(
-                title: localized(title),
+                title: .verbatim(title),
                 secondaryButton: secondaryButton,
                 secondaryButtonBehavior: secondaryButton == nil ? nil : .countdown
             )
         } else {
             let stopButton = AlarmButton(
-                text: localized("Stop"),
+                text: "Stop",
                 textColor: .white,
                 systemImageName: "stop.fill"
             )
 
             alert = AlarmPresentation.Alert(
-                title: localized(title),
+                title: .verbatim(title),
                 stopButton: stopButton,
                 secondaryButton: secondaryButton,
                 secondaryButtonBehavior: secondaryButton == nil ? nil : .countdown
@@ -67,7 +67,7 @@ enum AlarmKitMappers {
         guard settings.snoozeEnabled else { return nil }
 
         return AlarmButton(
-            text: localized("Snooze"),
+            text: "Snooze",
             textColor: .white,
             systemImageName: "zzz"
         )
@@ -80,10 +80,6 @@ enum AlarmKitMappers {
             preAlert: nil,
             postAlert: TimeInterval(settings.snoozeDuration.rawValue * 60)
         )
-    }
-
-    private static func localized(_ text: String) -> LocalizedStringResource {
-        LocalizedStringResource(String.LocalizationValue(text))
     }
 
     private static func normalizedEventTitle(from plan: WakeUpPlan) -> String? {

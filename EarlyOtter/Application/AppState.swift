@@ -220,7 +220,7 @@ final class AppState {
             permissions = currentPermissions
 
             if currentPermissions.calendar == .denied || currentPermissions.calendar == .restricted {
-                showSettingsNotice("Calendar access was previously denied. Enable it in Settings to connect Apple Calendar.")
+                showSettingsNotice(String(localized: "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar."))
                 return
             }
 
@@ -228,7 +228,7 @@ final class AppState {
             await refreshPermissions()
 
             if requestedState != .authorized {
-                noticeMessage = "Calendar access is still needed to use Apple Calendar."
+                noticeMessage = String(localized: "Calendar access is still needed to use Apple Calendar.")
             }
 
             await load()
@@ -246,7 +246,7 @@ final class AppState {
             permissions = currentPermissions
 
             if currentPermissions.alarm == .denied {
-                showSettingsNotice("Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms.")
+                showSettingsNotice(String(localized: "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms."))
                 return
             }
 
@@ -256,9 +256,9 @@ final class AppState {
             try await refreshDashboard(reason: .manual)
 
             if requestedState == .notDetermined, permissions.alarm == .notDetermined {
-                noticeMessage = "Alarm access is still pending."
+                noticeMessage = String(localized: "Alarm access is still pending.")
             } else if requestedState == .denied {
-                noticeMessage = "Alarm access is still needed to schedule wake-up alarms."
+                noticeMessage = String(localized: "Alarm access is still needed to schedule wake-up alarms.")
             }
         } catch {
             dashboardState = .error(format(error))
@@ -274,7 +274,7 @@ final class AppState {
             permissions = currentPermissions
 
             if currentPermissions.notification == .denied {
-                showSettingsNotice("Notification access was previously denied. Enable it in Settings.")
+                showSettingsNotice(String(localized: "Notification access was previously denied. Enable it in Settings."))
                 return
             }
 
@@ -282,9 +282,9 @@ final class AppState {
             await refreshPermissions()
 
             if requestedState == .notDetermined, permissions.notification == .notDetermined {
-                noticeMessage = "Notification access is still pending."
+                noticeMessage = String(localized: "Notification access is still pending.")
             } else if requestedState == .denied {
-                noticeMessage = "Notification access is still needed."
+                noticeMessage = String(localized: "Notification access is still needed.")
             }
         } catch {
             dashboardState = .error(format(error))
@@ -339,7 +339,7 @@ final class AppState {
             case .failed(let message):
                 dashboardState = .error(message)
             case .disabled, .notScheduled:
-                noticeMessage = "Test alarm was not scheduled."
+                noticeMessage = String(localized: "Test alarm was not scheduled.")
             }
         } catch {
             dashboardState = .error(format(error))
@@ -402,7 +402,7 @@ final class AppState {
             if currentPermissions.calendar == .authorized {
                 authorizationState = .authorized
             } else if currentPermissions.calendar == .denied || currentPermissions.calendar == .restricted {
-                showSettingsNotice("Calendar access was previously denied. Enable it in Settings to connect Apple Calendar.")
+                showSettingsNotice(String(localized: "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar."))
                 return
             } else {
                 authorizationState = try await permissionService.requestCalendarAccess()
@@ -411,7 +411,7 @@ final class AppState {
 
             guard authorizationState == .authorized else {
                 if authorizationState == .denied {
-                    noticeMessage = "Calendar access is still needed to use Apple Calendar."
+                    noticeMessage = String(localized: "Calendar access is still needed to use Apple Calendar.")
                 }
                 await load()
                 return
@@ -626,7 +626,7 @@ final class AppState {
         case .disabled, .inactiveDay, .systemDisabled, .manualSkip:
             return .disabled
         case .event, .alarm, .authorizationMissing, .manualOverride:
-            return .failed("Alarm status unavailable.")
+            return .failed(String(localized: "Alarm status unavailable."))
         }
     }
 }

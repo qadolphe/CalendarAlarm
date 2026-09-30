@@ -216,7 +216,7 @@ struct DashboardView: View {
                 Text("Alarm moved to \(move.time.formatted(date: .omitted, time: .shortened))")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.primaryText)
-                Text(move.ruleName.map { "Overrides \($0) for \(dayName) only" } ?? "For \(dayName) only")
+                Text(move.ruleName.map { String(localized: "Overrides \($0) for \(dayName) only") } ?? String(localized: "For \(dayName) only"))
                     .font(.caption)
                     .foregroundStyle(WPStyles.secondaryText)
             }
@@ -417,17 +417,17 @@ struct DashboardView: View {
     private func noAlarmMessage(for plan: WakeUpPlan) -> String {
         switch plan.reason {
         case .inactiveDay:
-            return "Auto Alarms are paused for this day."
+            return String(localized: "Auto Alarms are paused for this day.")
         case .noSchedule:
-            return "No calendar events or alarms are coming up."
+            return String(localized: "No calendar events or alarms are coming up.")
         case .disabled:
-            return "Automatic alarms are turned off."
+            return String(localized: "Automatic alarms are turned off.")
         case .systemDisabled:
-            return "EarlyOtter is disabled."
+            return String(localized: "EarlyOtter is disabled.")
         case .manualSkip:
-            return "You turned off the alarm for this day."
+            return String(localized: "You turned off the alarm for this day.")
         case .alarm, .authorizationMissing, .manualOverride, .event:
-            return "No alarm is currently scheduled."
+            return String(localized: "No alarm is currently scheduled.")
         }
     }
 
@@ -451,7 +451,7 @@ struct DashboardView: View {
                 .font(.title2.weight(.bold))
                 .foregroundStyle(WPStyles.primaryText)
 
-            Text(viewModel.permissionBanner ?? "Please complete setup in settings.")
+            Text(viewModel.permissionBanner ?? String(localized: "Please complete setup in settings."))
                 .font(.subheadline)
                 .foregroundStyle(WPStyles.secondaryText)
                 .multilineTextAlignment(.center)

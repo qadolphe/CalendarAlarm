@@ -9,9 +9,9 @@ enum GoogleAuthError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingPresentingViewController:
-            return "Google Sign-In could not find a screen to present from."
+            return String(localized: "Google Sign-In could not find a screen to present from.")
         case .missingAccountIdentifier:
-            return "Google Sign-In did not return an email or account identifier."
+            return String(localized: "Google Sign-In did not return an email or account identifier.")
         }
     }
 }
@@ -35,7 +35,7 @@ final class GoogleSignInAuthenticator: GoogleAccountAuthenticating {
 
         let user = result.user
         let profile = user.profile
-        let email = profile?.email ?? "Unknown Google Account"
+        let email = profile?.email ?? String(localized: "Unknown Google Account")
         let name = profile?.name ?? email
         let matchingAccountIDs = GoogleAccountIdentity.matchingIDs(for: user)
 
