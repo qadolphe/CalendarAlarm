@@ -12,6 +12,15 @@
               "Refresh my alarms in ${applicationName}"
             ]
           }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Actualiza las alarmas en ${applicationName}",
+              "Actualizar mis alarmas en ${applicationName}"
+            ]
+          }
         }
       }
     }

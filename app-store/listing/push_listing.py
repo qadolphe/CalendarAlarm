@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Pushes listing.json (copy and screenshots) to the editable App Store version.
+"""Pushes the listing (copy and screenshots) to the editable App Store version.
 
-Usage: ASC_KEY_ID=... ASC_ISSUER_ID=... ./push_listing.py [--dry-run]
+listing.json maps each language to its copy file (copy/<lang>.json), its App
+Store locales and its screenshots; the URLs are shared by every language.
+
+Usage: ASC_KEY_ID=... ASC_ISSUER_ID=... ./push_listing.py [--dry-run] [--only es]
 The .p8 key is read from ~/.appstoreconnect/private_keys/AuthKey_<ASC_KEY_ID>.p8.
 """
 import base64, hashlib, json, os, pathlib, subprocess, sys, time, urllib.error, urllib.request
@@ -11,6 +14,10 @@ DISPLAY_TYPE = "APP_IPHONE_67"  # 6.7" and 6.9" iPhones (1320x2868)
 EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED"}
 HERE = pathlib.Path(__file__).parent
 DRY_RUN = "--dry-run" in sys.argv
+ONLY = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
+# App Store Connect's limits; keywords count UTF-8 bytes, so accents cost two.
+LIMITS = {"name": 30, "subtitle": 30, "promotionalText": 170, "description": 4000, "whatsNew": 4000}
+KEYWORD_BYTES = 100
 
 
 def token():
@@ -91,10 +98,30 @@ def replace_screenshots(localization_id, files):
             "attributes": {"uploaded": True, "sourceFileChecksum": hashlib.md5(data).hexdigest()}}})
 
 
-def main():
+def load_languages():
+    """Each language's copy (with the shared URLs) and screenshots, checked against the limits."""
     listing = json.loads((HERE / "listing.json").read_text())
-    copy = listing["default"]
-    screenshots = [(HERE / p).resolve() for p in listing["screenshots"]]
+    languages = {}
+    problems = []
+    for lang, config in listing["languages"].items():
+        if ONLY and lang != ONLY:
+            continue
+        copy = {**json.loads((HERE / config["copy"]).read_text()), **listing["urls"]}
+        for field, limit in LIMITS.items():
+            if len(copy[field]) > limit:
+                problems.append(f"{lang} {field}: {len(copy[field])} characters, limit {limit}")
+        if len(copy["keywords"].encode()) > KEYWORD_BYTES:
+            problems.append(f"{lang} keywords: {len(copy['keywords'].encode())} bytes, limit {KEYWORD_BYTES}")
+        screenshots = [(HERE / p).resolve() for p in config["screenshots"]]
+        problems += [f"{lang} screenshot missing: {p}" for p in screenshots if not p.exists()]
+        languages[lang] = (copy, config["locales"], screenshots)
+    if problems:
+        sys.exit("\n".join(problems))
+    return languages
+
+
+def main():
+    languages = load_languages()
 
     versions = api("GET", f"/v1/apps/{APP_ID}/appStoreVersions?limit=5")["data"]
     version = next((v for v in versions if v["attributes"]["appStoreState"] in EDITABLE), None)
@@ -110,7 +137,8 @@ def main():
 
     info_locs = localizations(f"/v1/appInfos/{info['id']}/appInfoLocalizations")
 
-    for locale in listing["locales"]:
+    locales = [(locale, copy, shots) for copy, locs, shots in languages.values() for locale in locs]
+    for locale, copy, screenshots in locales:
         print(locale)
         info_attrs = {k: copy[k] for k in ("name", "subtitle", "privacyPolicyUrl")}
         if locale not in info_locs:

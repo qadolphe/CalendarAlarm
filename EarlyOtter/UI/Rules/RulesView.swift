@@ -437,7 +437,7 @@ struct RuleEditorView: View {
                     } label: {
                         HStack {
                             providerIcon(for: account.provider)
-                            Text(account.displayName)
+                            Text(account.localizedName)
                                 .foregroundStyle(WPStyles.primaryText)
                                 .font(.headline)
                             Spacer()

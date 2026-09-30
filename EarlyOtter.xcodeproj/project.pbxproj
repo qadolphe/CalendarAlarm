@@ -114,6 +114,7 @@
 		BB1000000000000000000013 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000003 /* Localizable.xcstrings */; };
 		BB1000000000000000000014 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000004 /* InfoPlist.xcstrings */; };
 		BB1000000000000000000015 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000005 /* AppShortcuts.xcstrings */; };
+		BB1000000000000000000016 /* Tools/ScreenshotSeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000000000000000000006 /* Tools/ScreenshotSeedTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -255,6 +256,7 @@
 		BB1000000000000000000003 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BB1000000000000000000004 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		BB1000000000000000000005 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
+		BB1000000000000000000006 /* Tools/ScreenshotSeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/ScreenshotSeedTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -612,6 +614,7 @@
 			children = (
 				AA0000000000000000000304 /* Application/AccountServiceTests.swift */,
 				AA0000000000000000000303 /* Application/AlarmSyncServiceTests.swift */,
+				BB1000000000000000000006 /* Tools/ScreenshotSeedTests.swift */,
 				AA0000000000000000000305 /* Application/AppStateTests.swift */,
 				AA0000000000000000000306 /* Application/EarlyOtterRefreshServiceTests.swift */,
 			);
@@ -896,6 +899,7 @@
 				AA0000000000000000000C0A /* Infrastructure/WebsiteTelemetryRecorderTests.swift in Sources */,
 				AA0000000000000000000404 /* Application/AccountServiceTests.swift in Sources */,
 				AA0000000000000000000403 /* Application/AlarmSyncServiceTests.swift in Sources */,
+				BB1000000000000000000016 /* Tools/ScreenshotSeedTests.swift in Sources */,
 				AA0000000000000000000405 /* Application/AppStateTests.swift in Sources */,
 				AA0000000000000000000406 /* Application/EarlyOtterRefreshServiceTests.swift in Sources */,
 				AA0000000000000000000814 /* Domain/AppFeedbackTests.swift in Sources */,

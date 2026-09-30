@@ -22,6 +22,12 @@ struct ConnectedCalendarAccount: Identifiable, Codable, Equatable, Sendable {
     let provider: CalendarProvider
     let displayName: String
     var isEnabled: Bool
+
+    /// The name shown on screen. The Apple account's stored name predates
+    /// localization, so it is always shown in the current language.
+    var localizedName: String {
+        provider == .apple ? String(localized: "Apple Calendar") : displayName
+    }
 }
 
 enum ParsedEventStatus: String, Codable, Equatable, Sendable {

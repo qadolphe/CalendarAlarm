@@ -1,0 +1,46 @@
+{
+  "name": "EarlyOtter: Alarma Calendario",
+  "subtitle": "Despertador según tu agenda",
+  "keywords": "universidad,escuela,estudiante,clases,trabajo,reloj,mañana,rutina,horario,reunión,dormir,despertar",
+  "promotionalText": "Tu alarma, puesta por tu calendario. EarlyOtter encuentra tu primer evento, resta preparación y trayecto, y te despierta a tiempo. ¿Sin planes temprano? Duerme más.",
+  "description": "Tu alarma, puesta por tu calendario.\n\nEarlyOtter encuentra tu primer evento, resta el tiempo de preparación y de trayecto, y te despierta justo cuando lo necesitas. ¿Sin planes temprano? Duerme de más.\n\n• Funciona con Calendario de Apple y Google Calendar\n• Reglas personalizadas para distintas mañanas\n• Suena incluso en modo silencio\n• Privada: tus eventos nunca salen de tu iPhone",
+  "whatsNew": "• ¡EarlyOtter ya está en español! Toda la app, las alarmas y el widget.",
+  "screenshots": {
+    "panels": [
+      {
+        "label": "Alarma de calendario",
+        "headline": "Tu alarma,<br>puesta por tu<br><i>calendario.</i>"
+      },
+      {
+        "label": "Cálculo incluido",
+        "headline": "Preparación<br>y trayecto,<br><i>incluidos.</i>"
+      },
+      {
+        "label": "Reglas a tu medida",
+        "headline": "Una regla<br>para cada<br><i>mañana.</i>"
+      },
+      {
+        "label": "Tu horario",
+        "headline": "Control total<br>de tu <i>horario.</i>"
+      }
+    ],
+    "math": [
+      {
+        "title": "Clase de Biología",
+        "meta": "Primer evento del día"
+      },
+      {
+        "title": "Preparación",
+        "meta": "Ducha, café y vestirte"
+      },
+      {
+        "title": "Trayecto",
+        "meta": "De la puerta al salón"
+      },
+      {
+        "title": "Despertar",
+        "meta": "Alarma puesta sola"
+      }
+    ]
+  }
+}

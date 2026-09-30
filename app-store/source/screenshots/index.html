@@ -63,18 +63,22 @@ h1 i { font-style: italic; font-weight: 420; color: var(--accent); font-variatio
 </head>
 <body>
 <div id="root"></div>
+<!-- render.sh writes strings.js from app-store/listing/copy/<lang>.json. -->
+<script src="strings.js"></script>
 <script>
 const P = new URLSearchParams(location.search);
+const S = window.SCREENSHOT_STRINGS;
+const L = S.panels, M = S.math;
 
 const ic = (name, size, color) =>
   `<span class="i" style="width:${size}px;height:${size}px;background:${color};-webkit-mask-image:url('sym/${name}.png')"></span>`;
 
-// Screens are real renders of the app (app/*.png); only the status bar is drawn here.
+// Screens are real renders of the app in this language (app/<lang>/*.png); only the status bar is drawn here.
 const RENDER_TIME = '8:13';
 const statusBar = `<div class="app" style="height:60px;background:none"><div class="island"></div>
   <div class="status"><div class="time">${RENDER_TIME}</div>
     <div class="right" style="color:#fff">${ic('cellularbars', 18, '#fff')}${ic('wifi', 17, '#fff')}${ic('battery.100percent', 27, '#fff')}</div></div></div>`;
-const shot = name => `<img src="app/${name}.png" style="width:100%;display:block">${statusBar}`;
+const shot = name => `<img src="app/${S.lang}/${name}.png" style="width:100%;display:block">${statusBar}`;
 
 function device(x, y, screen, scale = 1, z = 3) {
   return `<div class="device" style="left:${x}px;top:${y}px;transform:scale(${scale});z-index:${z}">
@@ -94,7 +98,7 @@ const panels = [];
 
 /* 01 — Hero */
 panels.push(['ink', () => `
-  ${head('01', 'Calendar alarm', 'Your alarm,<br>set by your<br><i>calendar.</i>', '')}
+  ${head('01', L[0].label, L[0].headline, '')}
   ${device(160, 900, shot('home'))}
 `]);
 
@@ -108,26 +112,26 @@ panels.push(['cream', () => {
       ${marker}</div>`;
   const dot = c => `<div style="width:34px;height:34px;border-radius:50%;background:${c};box-shadow:0 0 0 8px ${c}26"></div>`;
   return `
-  ${head('02', 'Built-in math', 'Prep and<br>commute,<br><i>built in.</i>', '')}
+  ${head('02', L[1].label, L[1].headline, '')}
   <div style="position:absolute;left:var(--M);right:var(--M);top:770px;z-index:5">
-    ${row(`<span class="num" style="font-size:104px;font-weight:500">9:00</span>`, 'Biology Class', 'First event of the day', dot('#6ed3e0'))}
-    ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:35</span>`, 'Prep time', 'Shower, coffee, get dressed', `<div style="opacity:.5">${ic('cup.and.saucer.fill', 40, 'var(--ink)')}</div>`)}
-    ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:30</span>`, 'Commute', 'Door to lecture hall', `<div style="opacity:.5">${ic('car.fill', 40, 'var(--ink)')}</div>`)}
-    ${row(`<span class="num" style="font-size:164px;font-weight:600;color:var(--clay)">7:55</span>`, 'Wake up', 'Alarm set automatically', dot('#f4c66a'), { h: 200, bt: '5px solid var(--ink)', ts: 52 })}
+    ${row(`<span class="num" style="font-size:104px;font-weight:500">9:00</span>`, M[0].title, M[0].meta, dot('#6ed3e0'))}
+    ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:35</span>`, M[1].title, M[1].meta, `<div style="opacity:.5">${ic('cup.and.saucer.fill', 40, 'var(--ink)')}</div>`)}
+    ${row(`<span class="num" style="font-size:104px;font-weight:300;opacity:.5">−0:30</span>`, M[2].title, M[2].meta, `<div style="opacity:.5">${ic('car.fill', 40, 'var(--ink)')}</div>`)}
+    ${row(`<span class="num" style="font-size:164px;font-weight:600;color:var(--clay)">7:55</span>`, M[3].title, M[3].meta, dot('#f4c66a'), { h: 200, bt: '5px solid var(--ink)', ts: 52 })}
   </div>
   ${device(160, 1440, shot('details'))}
 `;}]);
 
 /* 03 — Rules */
 panels.push(['ink', () => `
-  ${head('03', 'Custom rules', 'A rule for<br>every kind<br>of <i>morning.</i>', '')}
+  ${head('03', L[2].label, L[2].headline, '')}
   ${device(56, 850, shot('rules'), .8, 3)}
   ${device(464, 1030, shot('editor'), .8, 4)}
 `]);
 
 /* 04 — Schedule */
 panels.push(['gold', () => `
-  ${head('04', 'Your schedule', 'Full control of<br>your <i>schedule.</i>', '')}
+  ${head('04', L[3].label, L[3].headline, '')}
   <img src="OtterOverlook.png" style="position:absolute;width:380px;left:736px;top:602px;z-index:2">
   ${device(160, 900, shot('schedule'))}
 `]);

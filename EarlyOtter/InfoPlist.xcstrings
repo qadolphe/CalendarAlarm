@@ -25,6 +25,23 @@
         }
       }
     },
+    "NSAlarmKitUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter schedules wake-up alarms based on your calendar events."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter programa alarmas para despertarte según los eventos de tu calendario."
+          }
+        }
+      }
+    },
     "NSCalendarsFullAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Full Access Usage Description",
       "extractionState" : "extracted_with_value",
@@ -33,6 +50,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "EarlyOtter reads your calendar to calculate the right wake-up time for your first event."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter lee tu calendario para calcular la hora ideal para despertarte antes de tu primer evento."
           }
         }
       }

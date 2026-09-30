@@ -9,79 +9,248 @@
             "value" : "%1$@ %2$@"
           }
         }
+      },
+      "shouldTranslate" : false
+    },
+    "%@ Sleeping in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ A dormir de más"
+          }
+        }
       }
     },
     "%@ may need to refresh your alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es posible que %@ tenga que actualizar tus alarmas"
+          }
+        }
+      }
     },
     "%@ needs calendar access to find your first event tomorrow and calculate your wake-up time." : {
-
-    },
-    "%@ Sleeping in" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ necesita acceso a tu calendario para encontrar tu primer evento de mañana y calcular a qué hora despertarte."
+          }
+        }
+      }
     },
     "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas permite que %@ programe alarmas reales para tus eventos del calendario. Puedes activarlo más tarde en Configuración."
+          }
+        }
+      }
     },
     "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea una alarma de prueba única sin cambiar la alarma de mañana."
+          }
+        }
+      }
     },
     "Design Review" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisión de diseño"
+          }
+        }
+      }
     },
     "Enjoy sleeping in" : {
-
-    },
-    "in %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disfruta dormir de más"
+          }
+        }
+      }
     },
     "Keep your next wake-up alarm visible on Home, Lock Screen, and StandBy." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén tu próxima alarma a la vista en la pantalla de inicio, la pantalla bloqueada y StandBy."
+          }
+        }
+      }
     },
     "Next Alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima alarma"
+          }
+        }
+      }
     },
     "No Alarm" : {
-
-    },
-    "No alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin alarma"
+          }
+        }
+      }
     },
     "No Alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin alarmas"
+          }
+        }
+      }
+    },
+    "No alarms" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin alarmas"
+          }
+        }
+      }
     },
     "No early events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin eventos temprano"
+          }
+        }
+      }
     },
     "Open EarlyOtter" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre EarlyOtter"
+          }
+        }
+      }
     },
     "Open the app to keep tomorrow's alarm up to date." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la app para mantener al día la alarma de mañana."
+          }
+        }
+      }
     },
     "Refresh App" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiza la app"
+          }
+        }
+      }
     },
     "Scheduled" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programada"
+          }
+        }
+      }
     },
     "Sleeping in" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormir de más"
+          }
+        }
+      }
     },
     "Stale" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactualizado"
+          }
+        }
+      }
     },
     "Test Alarm in 1 Minute" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma de prueba en 1 minuto"
+          }
+        }
+      }
     },
     "Test alarm scheduled for %@." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma de prueba programada para las %@."
+          }
+        }
+      }
     },
     "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son opcionales durante la configuración. Actívalos ahora para que %@ programe alarmas y te avise de los cambios automáticamente."
+          }
+        }
+      }
     },
     "Wake up" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Despertar"
+          }
+        }
+      }
+    },
+    "in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

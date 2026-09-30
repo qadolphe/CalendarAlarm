@@ -10,6 +10,12 @@
             "state" : "new",
             "value" : "Next Alarm"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima alarma"
+          }
         }
       }
     },

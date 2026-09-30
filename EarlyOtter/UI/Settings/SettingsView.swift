@@ -152,7 +152,7 @@ struct AccountsView: View {
         let icon = account.provider == .apple ? "apple.logo" : "g.circle.fill"
 
         if pendingRemovalID == account.id {
-            SettingsRow(icon: icon, title: .verbatim(account.displayName), subtitle: "Remove this account?") {
+            SettingsRow(icon: icon, title: .verbatim(account.localizedName), subtitle: "Remove this account?") {
                 Button("Cancel") { pendingRemovalID = nil }
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(WPStyles.secondaryText)
@@ -167,7 +167,7 @@ struct AccountsView: View {
         } else {
             SettingsToggleRow(
                 icon: icon,
-                title: .verbatim(account.displayName),
+                title: .verbatim(account.localizedName),
                 isOn: Binding(
                     get: { account.isEnabled },
                     set: { isOn in

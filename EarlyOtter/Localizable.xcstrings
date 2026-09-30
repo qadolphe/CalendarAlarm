@@ -2,20 +2,10 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "shouldTranslate" : false
     },
     "%@" : {
-
-    },
-    "%@ · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "%@ %@" : {
       "localizations" : {
@@ -25,13 +15,50 @@
             "value" : "%1$@ %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ may need to refresh your alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es posible que %@ tenga que actualizar tus alarmas"
+          }
+        }
+      }
     },
     "%@ needs calendar access to find your first event tomorrow and calculate your wake-up time." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ necesita acceso a tu calendario para encontrar tu primer evento de mañana y calcular a qué hora despertarte."
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
     },
     "%@, %@" : {
       "comment" : "Alarm list row: label, then repeat days",
@@ -40,6 +67,32 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, Auto Alarms are paused for this day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, las Alarmas automáticas están en pausa este día."
+          }
+        }
+      }
+    },
+    "%@, EarlyOtter is disabled." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, EarlyOtter está desactivado."
           }
         }
       }
@@ -51,6 +104,12 @@
             "state" : "new",
             "value" : "%1$@, alarm %2$@ and first event %3$@ at %4$@."
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, alarma a las %2$@ y primer evento, %3$@, a las %4$@."
+          }
         }
       }
     },
@@ -60,6 +119,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, alarm %2$@ linked to %3$@ at %4$@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, alarma a las %2$@ para %3$@ a las %4$@."
           }
         }
       }
@@ -71,20 +136,34 @@
             "state" : "new",
             "value" : "%1$@, alarm at %2$@."
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, alarma a las %2$@."
+          }
         }
       }
     },
     "%@, alarm turned off for this day." : {
-
-    },
-    "%@, Auto Alarms are paused for this day." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, alarma desactivada para este día."
+          }
+        }
+      }
     },
     "%@, automatic alarms are turned off." : {
-
-    },
-    "%@, EarlyOtter is disabled." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, las alarmas automáticas están desactivadas."
+          }
+        }
+      }
     },
     "%@, first event %@ at %@." : {
       "localizations" : {
@@ -93,42 +172,244 @@
             "state" : "new",
             "value" : "%1$@, first event %2$@ at %3$@."
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, primer evento, %2$@, a las %3$@."
+          }
         }
       }
     },
     "%@, no event or alarm is scheduled." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, no hay eventos ni alarmas programados."
+          }
+        }
+      }
     },
-    "%@%@" : {
+    "%lld Google accounts connected" : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@%2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Google account connected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Google accounts connected"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuenta de Google conectada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuentas de Google conectadas"
+                }
+              }
+            }
           }
         }
       }
     },
     "%lld calendars" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calendar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calendars"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calendario"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calendarios"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld connected" : {
-
-    },
-    "%lld Google accounts connected" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld connected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld connected"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conectada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld conectadas"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld hours" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hours"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld horas"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld min" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
     },
     "%lld needed" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld needed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld needed"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Falta %lld"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Faltan %lld"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lldm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
     },
     "%lldm prep · %lldm commute" : {
       "localizations" : {
@@ -137,491 +418,1589 @@
             "state" : "new",
             "value" : "%1$lldm prep · %2$lldm commute"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min de preparación · %2$lld min de trayecto"
+          }
         }
       }
     },
     "A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe una regla con los mismos calendarios y condiciones. Ajústala para que las reglas no sean idénticas."
+          }
+        }
+      }
     },
     "About calendar alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre las alarmas del calendario"
+          }
+        }
+      }
     },
     "Access" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso"
+          }
+        }
+      }
     },
     "Accounts" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas"
+          }
+        }
+      }
     },
     "Action Required" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acción necesaria"
+          }
+        }
+      }
     },
     "Add" : {
-
-    },
-    "Add a backup alarm" : {
-
-    },
-    "Add a Calendar to Continue" : {
-
-    },
-    "Add a place or address" : {
-
-    },
-    "Add a word" : {
-
-    },
-    "Add alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
+          }
+        }
+      }
     },
     "Add Alarm" : {
-
-    },
-    "Add keyword" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar alarma"
+          }
+        }
+      }
     },
     "Add Rule" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar regla"
+          }
+        }
+      }
     },
     "Add Your Calendar" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega tu calendario"
+          }
+        }
+      }
+    },
+    "Add a Calendar to Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega un calendario para continuar"
+          }
+        }
+      }
+    },
+    "Add a backup alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar una alarma de respaldo"
+          }
+        }
+      }
+    },
+    "Add a place or address" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega un lugar o dirección"
+          }
+        }
+      }
+    },
+    "Add a word" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega una palabra"
+          }
+        }
+      }
+    },
+    "Add alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar alarma"
+          }
+        }
+      }
+    },
+    "Add keyword" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar palabra clave"
+          }
+        }
+      }
     },
     "Alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma"
+          }
+        }
+      }
     },
     "Alarm Access" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso a alarmas"
+          }
+        }
+      }
     },
     "Alarm access is off, so this won't ring" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas está desactivado, así que no sonará"
+          }
+        }
+      }
     },
     "Alarm access is still needed to schedule wake-up alarms." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún se necesita acceso a alarmas para programar las alarmas."
+          }
+        }
+      }
     },
     "Alarm access is still pending." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas sigue pendiente."
+          }
+        }
+      }
     },
     "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas permite que %@ programe alarmas reales para tus eventos del calendario. Puedes activarlo más tarde en Configuración."
+          }
+        }
+      }
     },
     "Alarm access needed" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita acceso a alarmas"
+          }
+        }
+      }
     },
     "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denegaste el acceso a alarmas. Actívalo en Configuración para programar alarmas."
+          }
+        }
+      }
     },
     "Alarm moved to %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma movida a las %@"
+          }
+        }
+      }
     },
     "Alarm scheduled for the next valid event." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma programada para el próximo evento válido."
+          }
+        }
+      }
     },
     "Alarm set by %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma definida por %@"
+          }
+        }
+      }
     },
     "Alarm set by this event" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma definida por este evento"
+          }
+        }
+      }
     },
     "Alarm status unavailable." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado de la alarma no disponible."
+          }
+        }
+      }
     },
     "Alarm turned off for this day" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma desactivada para este día"
+          }
+        }
+      }
     },
     "Alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas"
+          }
+        }
+      }
     },
     "All" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos"
+          }
+        }
+      }
     },
     "All calendars" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los calendarios"
+          }
+        }
+      }
     },
     "All calendars are currently selected." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los calendarios están seleccionados."
+          }
+        }
+      }
     },
     "All set" : {
-
-    },
-    "All-day" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo listo"
+          }
+        }
+      }
     },
     "All-Day Events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos de todo el día"
+          }
+        }
+      }
+    },
+    "All-day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo el día"
+          }
+        }
+      }
     },
     "Allow" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir"
+          }
+        }
+      }
     },
     "Allow Alarms to Continue" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite las alarmas para continuar"
+          }
+        }
+      }
     },
     "Allow Calendar Access" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir acceso al calendario"
+          }
+        }
+      }
     },
     "Allowed" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitido"
+          }
+        }
+      }
     },
     "Allowed Only Keywords" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo estas palabras clave"
+          }
+        }
+      }
     },
     "Any" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquiera"
+          }
+        }
+      }
     },
     "Apple Calendar" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendario de Apple"
+          }
+        }
+      }
     },
     "Auto Alarms are paused for that day based on your active schedule." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las Alarmas automáticas están en pausa ese día según tus días activos."
+          }
+        }
+      }
     },
     "Auto Alarms are paused for this day" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las Alarmas automáticas están en pausa este día"
+          }
+        }
+      }
     },
     "Auto Alarms are paused for this day." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las Alarmas automáticas están en pausa este día."
+          }
+        }
+      }
     },
     "Automatic alarms are turned off" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las alarmas automáticas están desactivadas"
+          }
+        }
+      }
     },
     "Automatic alarms are turned off." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las alarmas automáticas están desactivadas."
+          }
+        }
+      }
     },
     "Before alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de la alarma"
+          }
+        }
+      }
     },
     "Blocked Keywords" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palabras clave bloqueadas"
+          }
+        }
+      }
     },
     "Calendar" : {
-
-    },
-    "Calendar access is still needed to use Apple Calendar." : {
-
-    },
-    "Calendar access needed" : {
-
-    },
-    "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendario"
+          }
+        }
+      }
     },
     "Calendar Alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas del calendario"
+          }
+        }
+      }
+    },
+    "Calendar access is still needed to use Apple Calendar." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún se necesita acceso al calendario para usar el Calendario de Apple."
+          }
+        }
+      }
+    },
+    "Calendar access needed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita acceso al calendario"
+          }
+        }
+      }
+    },
+    "Calendar access was previously denied. Enable it in Settings to connect Apple Calendar." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denegaste el acceso al calendario. Actívalo en Configuración para conectar el Calendario de Apple."
+          }
+        }
+      }
     },
     "Calendars" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendarios"
+          }
+        }
+      }
     },
     "Cancel" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        }
+      }
     },
     "Canceled" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelados"
+          }
+        }
+      }
     },
     "Canceled Events" : {
-
-    },
-    "Choose which calendars can contribute events to EarlyOtter's alarm rules." : {
-
-    },
-    "Choose which calendars count toward tomorrow's first alarm-worthy event." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos cancelados"
+          }
+        }
+      }
     },
     "Choose which calendars EarlyOtter should scan." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué calendarios debe revisar EarlyOtter."
+          }
+        }
+      }
+    },
+    "Choose which calendars can contribute events to EarlyOtter's alarm rules." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué calendarios aportan eventos a las reglas de alarma de EarlyOtter."
+          }
+        }
+      }
+    },
+    "Choose which calendars count toward tomorrow's first alarm-worthy event." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué calendarios cuentan para el primer evento de mañana que merece alarma."
+          }
+        }
+      }
     },
     "Classic" : {
-      "comment" : "Alarm sound name"
+      "comment" : "Alarm sound name",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clásico"
+          }
+        }
+      }
     },
     "Close day" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar día"
+          }
+        }
+      }
     },
     "Commute" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trayecto"
+          }
+        }
+      }
     },
     "Commute · %lldm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trayecto · %lld min"
+          }
+        }
+      }
     },
     "Connect a calendar source, enable an account, or make sure EarlyOtter still has access to one of your calendars." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecta un calendario, activa una cuenta o asegúrate de que EarlyOtter aún tenga acceso a alguno de tus calendarios."
+          }
+        }
+      }
     },
     "Connect at least one calendar source to get started." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecta al menos un calendario para empezar."
+          }
+        }
+      }
     },
     "Connected" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectadas"
+          }
+        }
+      }
     },
     "Couldn't clear stale alarm record. %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo borrar el registro de una alarma antigua. %@"
+          }
+        }
+      }
     },
     "Couldn't replace previous alarms. %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron reemplazar las alarmas anteriores. %@"
+          }
+        }
+      }
     },
     "Couldn't schedule alarm: %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo programar la alarma: %@"
+          }
+        }
+      }
     },
     "Couldn't send. Try again." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo enviar. Inténtalo de nuevo."
+          }
+        }
+      }
     },
     "Counts only. Never your calendar details." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo conteos. Nunca los detalles de tu calendario."
+          }
+        }
+      }
     },
     "Creates a one-time test alarm without changing tomorrow's managed wake-up alarm." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea una alarma de prueba única sin cambiar la alarma de mañana."
+          }
+        }
+      }
     },
     "Date" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha"
+          }
+        }
+      }
     },
     "Days" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días"
+          }
+        }
+      }
     },
     "Default Rule" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regla predeterminada"
+          }
+        }
+      }
     },
     "Delete" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
     },
     "Delete Alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar alarma"
+          }
+        }
+      }
     },
     "Dismiss" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar"
+          }
+        }
+      }
     },
     "Done" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        }
+      }
     },
     "Duplicate Rule" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regla duplicada"
+          }
+        }
+      }
     },
     "Duration" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duración"
+          }
+        }
+      }
     },
     "Earlier events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos anteriores"
+          }
+        }
+      }
     },
     "EarlyOtter Alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas de EarlyOtter"
+          }
+        }
+      }
     },
     "EarlyOtter is disabled" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter está desactivado"
+          }
+        }
+      }
     },
     "EarlyOtter is disabled." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter está desactivado."
+          }
+        }
+      }
     },
     "EarlyOtter needs alarm access before it can schedule a real alarm." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EarlyOtter necesita acceso a alarmas para poder programar una alarma real."
+          }
+        }
+      }
     },
     "Edit Alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar alarma"
+          }
+        }
+      }
     },
     "Edits this day's alarm. Hold and drag to move it." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edita la alarma de este día. Mantén presionado y arrastra para moverla."
+          }
+        }
+      }
     },
     "Enabled" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activada"
+          }
+        }
+      }
     },
     "Enjoy sleeping in!" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Disfruta dormir de más!"
+          }
+        }
+      }
     },
     "Events whose location contains all of these use this rule." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los eventos cuya ubicación contiene todas estas usan esta regla."
+          }
+        }
+      }
     },
     "Events whose title contains all of these words use this rule." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los eventos cuyo título contiene todas estas palabras usan esta regla."
+          }
+        }
+      }
     },
     "Events whose title contains any of these words are ignored." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ignoran los eventos cuyo título contiene alguna de estas palabras."
+          }
+        }
+      }
     },
     "Every %@" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada %@"
+          }
+        }
+      }
     },
     "Every day" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los días"
+          }
+        }
+      }
     },
     "Experience" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experiencia"
+          }
+        }
+      }
     },
     "Feedback" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comentarios"
+          }
+        }
+      }
     },
     "Feedback sent." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comentarios enviados."
+          }
+        }
+      }
     },
     "Finish & Go to Dashboard" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar e ir al inicio"
+          }
+        }
+      }
     },
     "Fix Permissions" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corregir permisos"
+          }
+        }
+      }
     },
     "For %@ only" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo el %@"
+          }
+        }
+      }
     },
     "For days without early events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para días sin eventos temprano"
+          }
+        }
+      }
     },
     "Free" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libres"
+          }
+        }
+      }
     },
     "Free Events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos libres"
+          }
+        }
+      }
     },
     "G" : {
-
+      "shouldTranslate" : false
     },
     "Generating alarms..." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generando alarmas..."
+          }
+        }
+      }
     },
     "Get Started" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar"
+          }
+        }
+      }
     },
     "Google Account" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de Google"
+          }
+        }
+      }
     },
     "Google Calendar" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google Calendar"
+          }
+        }
+      }
     },
     "Google Calendar access expired or was never granted. Reconnect your Google account." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a Google Calendar venció o nunca se otorgó. Vuelve a conectar tu cuenta de Google."
+          }
+        }
+      }
     },
     "Google Calendar could not find a signed-in user." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google Calendar no encontró una sesión iniciada."
+          }
+        }
+      }
     },
     "Google Calendar request failed with status %lld." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La solicitud a Google Calendar falló con el estado %lld."
+          }
+        }
+      }
     },
     "Google Sign-In could not find a screen to present from." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El inicio de sesión de Google no encontró una pantalla para mostrarse."
+          }
+        }
+      }
     },
     "Google Sign-In did not return an email or account identifier." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El inicio de sesión de Google no devolvió un correo ni un identificador de cuenta."
+          }
+        }
+      }
     },
     "Grant Permissions" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otorgar permisos"
+          }
+        }
+      }
     },
     "Home" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio"
+          }
+        }
+      }
     },
     "How has EarlyOtter been for you?" : {
-
-    },
-    "hr" : {
-      "comment" : "Hours unit"
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué tal te ha ido con EarlyOtter?"
+          }
+        }
+      }
     },
     "Ignore Calendar Status" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorar según estado"
+          }
+        }
+      }
     },
     "Ignored Events" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos ignorados"
+          }
+        }
+      }
     },
     "Ignored Events & Filters" : {
-
-    },
-    "in %@" : {
-      "comment" : "Time left until the alarm, e.g. in 8h 5m"
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos ignorados y filtros"
+          }
+        }
+      }
     },
     "Internal device" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo interno"
+          }
+        }
+      }
     },
     "Issue" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problema"
+          }
+        }
+      }
     },
     "Label" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiqueta"
+          }
+        }
+      }
     },
     "Late Alarm Warning" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma tardía"
+          }
+        }
+      }
     },
     "Later events" : {
-
-    },
-    "Location contains" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos posteriores"
+          }
+        }
+      }
     },
     "Location Contains" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ubicación contiene"
+          }
+        }
+      }
+    },
+    "Location contains" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ubicación contiene"
+          }
+        }
+      }
     },
     "Long-press a Google account to remove it." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén presionada una cuenta de Google para eliminarla."
+          }
+        }
+      }
     },
     "Match" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coincidencia"
+          }
+        }
+      }
     },
     "Matching events will never trigger an alarm." : {
-
-    },
-    "min" : {
-      "comment" : "Minutes unit"
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los eventos que coincidan nunca activarán una alarma."
+          }
+        }
+      }
     },
     "Never" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nunca"
+          }
+        }
+      }
     },
     "New Rule" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva regla"
+          }
+        }
+      }
     },
     "Next" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente"
+          }
+        }
+      }
     },
     "Next Alarm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima alarma"
+          }
+        }
+      }
     },
     "Next event" : {
-
-    },
-    "No alarm is currently scheduled." : {
-
-    },
-    "No alarm scheduled" : {
-
-    },
-    "No alarms will ring" : {
-
-    },
-    "No calendar events or alarms are coming up." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo evento"
+          }
+        }
+      }
     },
     "No Calendars Found" : {
-
-    },
-    "No early events" : {
-
-    },
-    "No events on %@" : {
-
-    },
-    "No events today" : {
-
-    },
-    "No events tomorrow" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron calendarios"
+          }
+        }
+      }
     },
     "No Events Tomorrow!" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Sin eventos mañana!"
+          }
+        }
+      }
+    },
+    "No alarm is currently scheduled." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ninguna alarma programada."
+          }
+        }
+      }
+    },
+    "No alarm scheduled" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin alarma programada"
+          }
+        }
+      }
+    },
+    "No alarms will ring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sonará ninguna alarma"
+          }
+        }
+      }
+    },
+    "No calendar events or alarms are coming up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay eventos ni alarmas próximos."
+          }
+        }
+      }
+    },
+    "No early events" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin eventos temprano"
+          }
+        }
+      }
+    },
+    "No events on %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay eventos el %@"
+          }
+        }
+      }
+    },
+    "No events today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay eventos hoy"
+          }
+        }
+      }
+    },
+    "No events tomorrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay eventos mañana"
+          }
+        }
+      }
     },
     "No scheduled events or alarms." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay eventos ni alarmas programados."
+          }
+        }
+      }
     },
     "None" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
+          }
+        }
+      }
     },
     "Notification access is still needed." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún se necesita acceso a notificaciones."
+          }
+        }
+      }
     },
     "Notification access is still pending." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a notificaciones sigue pendiente."
+          }
+        }
+      }
     },
     "Notification access was previously denied. Enable it in Settings." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denegaste el acceso a notificaciones. Actívalo en Configuración."
+          }
+        }
+      }
     },
     "Notifications" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones"
+          }
+        }
+      }
     },
     "OK" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
     },
     "Open Settings" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Configuración"
+          }
+        }
+      }
     },
     "Open the app to keep tomorrow's alarm up to date." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la app para mantener al día la alarma de mañana."
+          }
+        }
+      }
     },
     "Otter" : {
-      "comment" : "Alarm sound name"
+      "comment" : "Alarm sound name",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutria"
+          }
+        }
+      }
     },
     "Overrides %@ for %@ only" : {
       "localizations" : {
@@ -630,80 +2009,1030 @@
             "state" : "new",
             "value" : "Overrides %1$@ for %2$@ only"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplaza «%1$@» solo el %2$@"
+          }
         }
       }
     },
     "Perfectly synced with your morning schedule." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En perfecta sincronía con tus mañanas."
+          }
+        }
+      }
     },
     "Permissions" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permisos"
+          }
+        }
+      }
     },
     "Pick a date" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una fecha"
+          }
+        }
+      }
     },
     "Pick the days EarlyOtter wakes you for your first event." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige los días en que EarlyOtter te despierta para tu primer evento."
+          }
+        }
+      }
     },
     "Played by iOS when the alarm fires" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo reproduce iOS cuando suena la alarma"
+          }
+        }
+      }
     },
     "Please complete setup in settings." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina la configuración en Configuración."
+          }
+        }
+      }
     },
     "Prep" : {
-
-    },
-    "Prep · %lldm" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparación"
+          }
+        }
+      }
     },
     "Prep time" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo de preparación"
+          }
+        }
+      }
+    },
+    "Prep · %lldm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparación · %lld min"
+          }
+        }
+      }
     },
     "Preparing EarlyOtter..." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando EarlyOtter..."
+          }
+        }
+      }
     },
     "Privacy" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad"
+          }
+        }
+      }
     },
     "Privacy Policy" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política de privacidad"
+          }
+        }
+      }
     },
     "Rate EarlyOtter" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Califica EarlyOtter"
+          }
+        }
+      }
     },
     "Reactivate" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reactivar"
+          }
+        }
+      }
     },
     "Refresh Alarms" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar alarmas"
+          }
+        }
+      }
     },
     "Refresh EarlyOtter's rolling wake-up alarms using your latest calendar events." : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiza las alarmas de EarlyOtter con los eventos más recientes de tu calendario."
+          }
+        }
+      }
     },
     "Remove" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
     },
     "Remove Account" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar cuenta"
+          }
+        }
+      }
     },
     "Remove this account?" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar esta cuenta?"
+          }
+        }
+      }
     },
     "Repeat" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir"
+          }
+        }
+      }
     },
     "Reset" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer"
+          }
+        }
+      }
     },
     "Rule" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regla"
+          }
+        }
+      }
     },
     "Rule icon" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ícono de la regla"
+          }
+        }
+      }
     },
     "Rule name" : {
-
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de la regla"
+          }
+        }
+      }
+    },
+    "Rules" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Save Anyway" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar de todos modos"
+          }
+        }
+      }
+    },
+    "Schedule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horario"
+          }
+        }
+      }
+    },
+    "Send Feedback" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar comentarios"
+          }
+        }
+      }
+    },
+    "Send feedback" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar comentarios"
+          }
+        }
+      }
+    },
+    "Sending…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviando…"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
+          }
+        }
+      }
+    },
+    "Setup Required" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falta configurar"
+          }
+        }
+      }
+    },
+    "Share Usage Data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir datos de uso"
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir"
+          }
+        }
+      }
+    },
+    "Skip after calendar alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir tras alarma del calendario"
+          }
+        }
+      }
+    },
+    "Skip after calendar alarms?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Omitir tras las alarmas del calendario?"
+          }
+        }
+      }
+    },
+    "Skip alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir alarma"
+          }
+        }
+      }
+    },
+    "Skip window" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margen para omitir"
+          }
+        }
+      }
+    },
+    "Snooze" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posponer"
+          }
+        }
+      }
+    },
+    "Snooze Duration" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duración de posponer"
+          }
+        }
+      }
+    },
+    "Sound" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido"
+          }
+        }
+      }
+    },
+    "Starlight" : {
+      "comment" : "Alarm sound name",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz de estrellas"
+          }
+        }
+      }
+    },
+    "Starts before your alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza antes de tu alarma"
+          }
+        }
+      }
+    },
+    "Stop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detener"
+          }
+        }
+      }
+    },
+    "Submit Feedback" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar comentarios"
+          }
+        }
+      }
+    },
+    "Suggestion" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencia"
+          }
+        }
+      }
+    },
+    "Sunrise" : {
+      "comment" : "Alarm sound name",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amanecer"
+          }
+        }
+      }
+    },
+    "Support" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte"
+          }
+        }
+      }
+    },
+    "Sync events from a Google account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincroniza eventos de una cuenta de Google"
+          }
+        }
+      }
+    },
+    "System disabled" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema desactivado"
+          }
+        }
+      }
+    },
+    "Tentative" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentativos"
+          }
+        }
+      }
+    },
+    "Tentative Events" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos tentativos"
+          }
+        }
+      }
+    },
+    "Test Alarm in 1 Minute" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma de prueba en 1 minuto"
+          }
+        }
+      }
+    },
+    "Test alarm scheduled for %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma de prueba programada para las %@."
+          }
+        }
+      }
+    },
+    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son opcionales durante la configuración. Actívalos ahora para que %@ programe alarmas y te avise de los cambios automáticamente."
+          }
+        }
+      }
+    },
+    "Tide" : {
+      "comment" : "Alarm sound name",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marea"
+          }
+        }
+      }
+    },
+    "Time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora"
+          }
+        }
+      }
+    },
+    "Timing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempos"
+          }
+        }
+      }
+    },
+    "Tip: add “Refresh Alarms” to a Shortcut automation to keep alarms synced." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consejo: agrega «Actualizar alarmas» a una automatización de Atajos para mantener tus alarmas sincronizadas."
+          }
+        }
+      }
+    },
+    "Title Contains" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El título contiene"
+          }
+        }
+      }
+    },
+    "Title contains" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El título contiene"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy"
+          }
+        }
+      }
+    },
+    "Tomorrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mañana"
+          }
+        }
+      }
+    },
+    "Turn alarm on" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar alarma"
+          }
+        }
+      }
+    },
+    "Unavailable" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
+          }
+        }
+      }
+    },
+    "Unknown Google Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de Google desconocida"
+          }
+        }
+      }
+    },
+    "Untitled Event" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento sin título"
+          }
+        }
+      }
+    },
+    "Updated %lld alarms across %lld upcoming wake plans." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated %#@alarms@ across %#@plans@."
+          },
+          "substitutions" : {
+            "alarms" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg alarm"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg alarms"
+                    }
+                  }
+                }
+              }
+            },
+            "plans" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg upcoming wake plan"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg upcoming wake plans"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se actualizaron %#@alarms@ en %#@plans@."
+          },
+          "substitutions" : {
+            "alarms" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg alarma"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg alarmas"
+                    }
+                  }
+                }
+              }
+            },
+            "plans" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg día próximo"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg días próximos"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Use All" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar todos"
+          }
+        }
+      }
+    },
+    "Use your on-device calendars and subscriptions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa los calendarios y suscripciones de tu dispositivo"
+          }
+        }
+      }
+    },
+    "Wake Time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de despertar"
+          }
+        }
+      }
+    },
+    "Wake up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Despertar"
+          }
+        }
+      }
+    },
+    "Wakes you in time for your first event on these days." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te despierta a tiempo para tu primer evento en estos días."
+          }
+        }
+      }
+    },
+    "We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no pudimos revisar mañana, pero puedes terminar y ajustar todo desde el inicio."
+          }
+        }
+      }
+    },
+    "We'll subtract this prep and commute time from your first event." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaremos este tiempo de preparación y trayecto a la hora de tu primer evento."
+          }
+        }
+      }
+    },
+    "Weekdays" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre semana"
+          }
+        }
+      }
+    },
+    "Weekends" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fines de semana"
+          }
+        }
+      }
+    },
+    "Welcome to" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te damos la bienvenida a"
+          }
+        }
+      }
+    },
+    "What went wrong?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué salió mal?"
+          }
+        }
+      }
+    },
+    "What would make EarlyOtter better?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué mejorarías de EarlyOtter?"
+          }
+        }
+      }
+    },
+    "When non-empty, only events matching these words are considered." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si agregas palabras, solo se tienen en cuenta los eventos que las contengan."
+          }
+        }
+      }
+    },
+    "Within" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dentro de"
+          }
+        }
+      }
+    },
+    "You are setting an alarm for the afternoon or after your first event starts. Are you sure?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás poniendo una alarma por la tarde o después de que empiece tu primer evento. ¿Seguro?"
+          }
+        }
+      }
+    },
+    "You turned off the alarm for this day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivaste la alarma de este día."
+          }
+        }
+      }
+    },
+    "You're All Set!" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Todo listo!"
+          }
+        }
+      }
+    },
+    "Your Default Routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu rutina predeterminada"
+          }
+        }
+      }
+    },
+    "Your First Auto Alarm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu primera alarma automática"
+          }
+        }
+      }
+    },
+    "hr" : {
+      "comment" : "Hours unit",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "h"
+          }
+        }
+      }
+    },
+    "in %@" : {
+      "comment" : "Time left until the alarm, e.g. in 8h 5m",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en %@"
+          }
+        }
+      }
+    },
+    "min" : {
+      "comment" : "Minutes unit",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "min"
+          }
+        }
+      }
     },
     "rule.default" : {
       "comment" : "Name of the rule that applies to every event",
@@ -714,62 +3043,14 @@
             "state" : "new",
             "value" : "Default"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predeterminada"
+          }
         }
       }
-    },
-    "Rules" : {
-
-    },
-    "Save" : {
-
-    },
-    "Save Anyway" : {
-
-    },
-    "Schedule" : {
-
-    },
-    "Send feedback" : {
-
-    },
-    "Send Feedback" : {
-
-    },
-    "Sending…" : {
-
-    },
-    "Settings" : {
-
-    },
-    "Setup Required" : {
-
-    },
-    "Share Usage Data" : {
-
-    },
-    "Skip" : {
-
-    },
-    "Skip after calendar alarm" : {
-
-    },
-    "Skip after calendar alarms?" : {
-
-    },
-    "Skip alarm" : {
-
-    },
-    "Skip window" : {
-
-    },
-    "Snooze" : {
-
-    },
-    "Snooze Duration" : {
-
-    },
-    "Sound" : {
-
     },
     "sound.default" : {
       "comment" : "Alarm sound: the system alarm tone",
@@ -780,156 +3061,14 @@
             "state" : "new",
             "value" : "Default"
           }
-        }
-      }
-    },
-    "Starlight" : {
-      "comment" : "Alarm sound name"
-    },
-    "Starts before your alarm" : {
-
-    },
-    "Stop" : {
-
-    },
-    "Submit Feedback" : {
-
-    },
-    "Suggestion" : {
-
-    },
-    "Sunrise" : {
-      "comment" : "Alarm sound name"
-    },
-    "Support" : {
-
-    },
-    "Sync events from a Google account" : {
-
-    },
-    "System disabled" : {
-
-    },
-    "Tentative" : {
-
-    },
-    "Tentative Events" : {
-
-    },
-    "Test Alarm in 1 Minute" : {
-
-    },
-    "Test alarm scheduled for %@." : {
-
-    },
-    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
-
-    },
-    "Tide" : {
-      "comment" : "Alarm sound name"
-    },
-    "Time" : {
-
-    },
-    "Timing" : {
-
-    },
-    "Tip: add “Refresh Alarms” to a Shortcut automation to keep alarms synced." : {
-
-    },
-    "Title contains" : {
-
-    },
-    "Title Contains" : {
-
-    },
-    "Today" : {
-
-    },
-    "Tomorrow" : {
-
-    },
-    "Turn alarm on" : {
-
-    },
-    "Unavailable" : {
-
-    },
-    "Undo" : {
-
-    },
-    "Unknown Google Account" : {
-
-    },
-    "Untitled Event" : {
-
-    },
-    "Updated %lld alarms across %lld upcoming wake plans." : {
-      "localizations" : {
-        "en" : {
+        },
+        "es" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Updated %1$lld alarms across %2$lld upcoming wake plans."
+            "state" : "translated",
+            "value" : "Predeterminado"
           }
         }
       }
-    },
-    "Use All" : {
-
-    },
-    "Use your on-device calendars and subscriptions" : {
-
-    },
-    "Wake Time" : {
-
-    },
-    "Wake up" : {
-
-    },
-    "Wakes you in time for your first event on these days." : {
-
-    },
-    "We couldn't check tomorrow yet, but you can finish and adjust things from the dashboard." : {
-
-    },
-    "We'll subtract this prep and commute time from your first event." : {
-
-    },
-    "Weekdays" : {
-
-    },
-    "Weekends" : {
-
-    },
-    "Welcome to" : {
-
-    },
-    "What went wrong?" : {
-
-    },
-    "What would make EarlyOtter better?" : {
-
-    },
-    "When non-empty, only events matching these words are considered." : {
-
-    },
-    "Within" : {
-
-    },
-    "You are setting an alarm for the afternoon or after your first event starts. Are you sure?" : {
-
-    },
-    "You turned off the alarm for this day." : {
-
-    },
-    "You're All Set!" : {
-
-    },
-    "Your Default Routine" : {
-
-    },
-    "Your First Auto Alarm" : {
-
     }
   },
   "version" : "1.0"
