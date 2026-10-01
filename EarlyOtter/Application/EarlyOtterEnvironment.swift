@@ -45,12 +45,10 @@ actor StaleSyncReminderService: StaleSyncReminderScheduling {
     }
 
     func updateReminder(for result: EarlyOtterRefreshResult) async {
-        let settings = await center.notificationSettingsAsync()
-
-        switch settings.authorizationStatus {
+        switch await center.authorizationStatus() {
         case .authorized, .ephemeral, .provisional:
             break
-        case .denied, .notDetermined:
+        case .denied, .notDetermined, nil:
             return
         @unknown default:
             return
@@ -203,12 +201,6 @@ struct EarlyOtterEnvironment {
 }
 
 private extension UNUserNotificationCenter {
-    func notificationSettingsAsync() async -> UNNotificationSettings {
-        await withCheckedContinuation { continuation in
-            getNotificationSettings { continuation.resume(returning: $0) }
-        }
-    }
-
     func addAsync(_ request: UNNotificationRequest) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             add(request) { error in

@@ -36,12 +36,12 @@ final class PermissionService {
     }
 
     func currentStatus() async -> PermissionSnapshot {
-        let settings = await notificationCenter.notificationSettings()
         let notificationState: NotificationAuthorizationState
-        switch settings.authorizationStatus {
+        switch await notificationCenter.authorizationStatus() {
         case .notDetermined: notificationState = .notDetermined
         case .authorized, .provisional, .ephemeral: notificationState = .authorized
         case .denied: notificationState = .denied
+        case nil: notificationState = .unknown
         @unknown default: notificationState = .unknown
         }
 
@@ -63,5 +63,40 @@ final class PermissionService {
     func requestNotificationAccess() async throws -> NotificationAuthorizationState {
         let granted = try await notificationCenter.requestAuthorization(options: [.alert, .sound, .badge])
         return granted ? .authorized : .denied
+    }
+}
+
+extension UNUserNotificationCenter {
+    /// The current authorization, or `nil` if the notification center doesn't
+    /// answer in time. It sometimes never answers (seen on simulators after a cold
+    /// boot), and app launch waits on this, so it must not hang the dashboard.
+    func authorizationStatus(within seconds: TimeInterval = 2) async -> UNAuthorizationStatus? {
+        await withCheckedContinuation { continuation in
+            let resume = ResumeOnce(continuation)
+            getNotificationSettings { settings in
+                resume(settings.authorizationStatus)
+            }
+            DispatchQueue.global().asyncAfter(deadline: .now() + seconds) {
+                resume(nil)
+            }
+        }
+    }
+}
+
+/// Resumes a continuation with whichever value arrives first and ignores the rest.
+private final class ResumeOnce<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Value, Never>?
+
+    init(_ continuation: CheckedContinuation<Value, Never>) {
+        self.continuation = continuation
+    }
+
+    func callAsFunction(_ value: Value) {
+        lock.lock()
+        let pending = continuation
+        continuation = nil
+        lock.unlock()
+        pending?.resume(returning: value)
     }
 }
