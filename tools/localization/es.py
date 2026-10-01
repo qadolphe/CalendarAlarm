@@ -271,6 +271,7 @@ STRINGS = {
     "Skip window": "Margen para omitir",
     "Sleeping in": "Dormir de más",
     "Snooze": "Posponer",
+    "Snoozed": "Pospuesta",
     "Snooze Duration": "Duración de posponer",
     "Sound": "Sonido",
     "sound.default": "Predeterminado",
