@@ -17,6 +17,8 @@ enum AppConfiguration {
     static let dashboardVisibleWeekCount = 2
     static let dashboardPlanningCount = dashboardWeekLength * dashboardVisibleWeekCount
     static let dashboardUpcomingDisplayCount = 3
+    /// Clock silences a ringing alarm after 15 minutes; past that, an alerting alarm is stuck.
+    static let stuckAlertingAlarmAge: TimeInterval = 15 * 60
     static let backgroundRefreshTaskIdentifier = "com.earlyotter.calendaralarm.refresh"
     static let backgroundRefreshEarliestInterval: TimeInterval = 6 * 60 * 60
     static let staleSyncReminderIdentifier = "com.earlyotter.calendaralarm.stale-sync-reminder"

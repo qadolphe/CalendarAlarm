@@ -5,5 +5,6 @@ import WidgetKit
 struct NextAlarmWidgetBundle: WidgetBundle {
     var body: some Widget {
         NextAlarmWidget()
+        AlarmLiveActivity()
     }
 }

@@ -1,5 +1,4 @@
 #if canImport(AlarmKit)
-import ActivityKit
 import AlarmKit
 import CryptoKit
 import Foundation
@@ -74,45 +73,26 @@ final class AlarmKitScheduler: AlarmScheduling {
 
     func cancel(nativeAlarmID: String) async throws {
         guard let alarmID = UUID(uuidString: nativeAlarmID) else { return }
+        // Cancel alone leaves an alerting alarm (and its Live Activity) up.
+        try? AlarmManager.shared.stop(id: alarmID)
         try AlarmManager.shared.cancel(id: alarmID)
-        await endLiveActivities(matching: [nativeAlarmID])
     }
 
     func pendingNativeAlarmIDs() async throws -> [String] {
-        try AlarmManager.shared.alarms
-            .filter { $0.state == .scheduled }
+        let now = Date()
+        return try AlarmManager.shared.alarms
+            .filter { alarm in
+                if alarm.state == .scheduled { return true }
+                guard alarm.state == .alerting, case .fixed(let fireDate) = alarm.schedule else { return false }
+                return Self.isStuckAlerting(firedAt: fireDate, now: now)
+            }
             .map(\.id.uuidString)
     }
 
-    func endOrphanedLiveActivities(keepingNativeAlarmIDs: Set<String>) async {
-        let activities = Activity<AlarmAttributes<EarlyOtterAlarmMetadata>>.activities
-        let normalizedKeep = Set(keepingNativeAlarmIDs.map { $0.lowercased() })
-
-        for activity in activities {
-            let activityAlarmID = activity.content.state.alarmID.uuidString.lowercased()
-            let stillScheduled = normalizedKeep.contains(activityAlarmID)
-
-            // Always end activities that are no longer tied to a scheduled
-            // alarm, or that the system has already marked as ended/dismissed
-            // but somehow still surface in the Dynamic Island.
-            if !stillScheduled
-                || activity.activityState == .ended
-                || activity.activityState == .dismissed
-                || activity.activityState == .stale {
-                await activity.end(nil, dismissalPolicy: .immediate)
-            }
-        }
-    }
-
-    private func endLiveActivities(matching nativeAlarmIDs: Set<String>) async {
-        let normalized = Set(nativeAlarmIDs.map { $0.lowercased() })
-        let activities = Activity<AlarmAttributes<EarlyOtterAlarmMetadata>>.activities
-
-        for activity in activities {
-            let activityAlarmID = activity.content.state.alarmID.uuidString.lowercased()
-            guard normalized.contains(activityAlarmID) else { continue }
-            await activity.end(nil, dismissalPolicy: .immediate)
-        }
+    /// An alarm still alerting long after it fired is stuck (e.g. a snooze re-alert
+    /// that never presented); iOS keeps it as an empty Dynamic Island circle.
+    static func isStuckAlerting(firedAt fireDate: Date, now: Date) -> Bool {
+        now.timeIntervalSince(fireDate) > AppConfiguration.stuckAlertingAlarmAge
     }
 
     private func deterministicAlarmID(for rawPlanID: String) -> UUID {
