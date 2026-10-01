@@ -422,7 +422,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min de preparación · %2$lld min de trayecto"
+            "value" : "%1$lld min prep. · %2$lld min trayecto"
           }
         }
       }
@@ -2093,7 +2093,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiempo de preparación"
+            "value" : "Preparación"
           }
         }
       }

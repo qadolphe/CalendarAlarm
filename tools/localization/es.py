@@ -30,7 +30,7 @@ STRINGS = {
     "%@, no event or alarm is scheduled.": "%@, no hay eventos ni alarmas programados.",
     "%lld min": "%lld min",
     "%lldm": "%lld min",
-    "%lldm prep · %lldm commute": "%1$lld min de preparación · %2$lld min de trayecto",
+    "%lldm prep · %lldm commute": "%1$lld min prep. · %2$lld min trayecto",
     "%@ Sleeping in": "%@ A dormir de más",
 
     # A
@@ -232,7 +232,7 @@ STRINGS = {
     "Please complete setup in settings.": "Termina la configuración en Configuración.",
     "Prep": "Preparación",
     "Prep · %lldm": "Preparación · %lld min",
-    "Prep time": "Tiempo de preparación",
+    "Prep time": "Preparación",
     "Preparing EarlyOtter...": "Preparando EarlyOtter...",
     "Privacy": "Privacidad",
     "Privacy Policy": "Política de privacidad",

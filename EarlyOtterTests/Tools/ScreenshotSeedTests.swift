@@ -77,8 +77,8 @@ final class ScreenshotSeedTests: XCTestCase {
         preferences.schedule.activeDays = Set(2...6)
         preferences.schedule.alarms = [
             StandardAlarm(time: ClockTime(hour: 5, minute: 15), label: copy.alarms[0], isEnabled: false),
-            StandardAlarm(time: ClockTime(hour: 6, minute: 30), repeatDays: [2, 4, 6], label: copy.alarms[1]),
-            StandardAlarm(time: ClockTime(hour: 7, minute: 45), repeatDays: Set(2...6), label: copy.alarms[2]),
+            StandardAlarm(time: ClockTime(hour: 6, minute: 30), repeatDays: [2, 4, 6], label: copy.alarms[1], calendarSkip: .within(CalendarSkipRule.defaultWindow)),
+            StandardAlarm(time: ClockTime(hour: 7, minute: 45), repeatDays: Set(2...6), label: copy.alarms[2], calendarSkip: .within(CalendarSkipRule.defaultWindow)),
             StandardAlarm(time: ClockTime(hour: 9, minute: 30), repeatDays: [1, 7], label: copy.alarms[3]),
         ]
         try UserDefaultsPreferencesStore().save(preferences)
