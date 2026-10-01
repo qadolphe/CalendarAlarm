@@ -51,7 +51,7 @@ STRINGS = {
     "Add Rule": "Agregar regla",
     "Add Your Calendar": "Agrega tu calendario",
     "Alarm": "Alarma",
-    "Alarm Access": "Acceso a alarmas",
+    "Alarm Access": "Alarmas",
     "Alarm access is off, so this won't ring": "El acceso a alarmas está desactivado, así que no sonará",
     "Alarm access is still needed to schedule wake-up alarms.": "Aún se necesita acceso a alarmas para programar las alarmas.",
     "Alarm access is still pending.": "El acceso a alarmas sigue pendiente.",

@@ -592,7 +592,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acceso a alarmas"
+            "value" : "Alarmas"
           }
         }
       }
