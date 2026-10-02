@@ -520,15 +520,23 @@ struct CompositeCalendarProvider: CalendarEventProviding {
     }
 
     func events(for targetDay: TargetDay) async throws -> [ParsedEvent] {
-        try await mergeProviderResults { provider in
-            try await provider.events(for: targetDay)
-        }
+        try await eventsFromEveryProvider { try await $0.events(for: targetDay) }
     }
 
     func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] {
-        try await mergeProviderResults { provider in
-            try await provider.events(in: interval, calendar: calendar)
+        try await eventsFromEveryProvider { try await $0.events(in: interval, calendar: calendar) }
+    }
+
+    /// Events come from every source or none: planning with one source missing
+    /// would empty those days and cancel their alarms until the next refresh.
+    private func eventsFromEveryProvider(
+        _ loader: (CalendarEventProviding) async throws -> [ParsedEvent]
+    ) async throws -> [ParsedEvent] {
+        var merged: [ParsedEvent] = []
+        for provider in providers {
+            merged += try await loader(provider)
         }
+        return merged
     }
 
     private func mergeProviderResults<T>(

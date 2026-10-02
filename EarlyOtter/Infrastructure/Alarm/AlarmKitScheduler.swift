@@ -72,10 +72,28 @@ final class AlarmKitScheduler: AlarmScheduling {
     }
 
     func cancel(nativeAlarmID: String) async throws {
-        guard let alarmID = UUID(uuidString: nativeAlarmID) else { return }
-        // Cancel alone leaves an alerting alarm (and its Live Activity) up.
-        try? AlarmManager.shared.stop(id: alarmID)
-        try AlarmManager.shared.cancel(id: alarmID)
+        // AlarmKit throws when asked to cancel an alarm it no longer has, and an
+        // alarm that's gone is all we wanted.
+        guard let alarmID = UUID(uuidString: nativeAlarmID),
+              let alarm = try existingAlarm(alarmID) else { return }
+
+        // Cancel alone leaves an alerting alarm (and its Live Activity) up, so a
+        // ringing alarm is stopped first. Stopping can itself remove the alarm.
+        if alarm.state != .scheduled {
+            try? AlarmManager.shared.stop(id: alarmID)
+            guard try existingAlarm(alarmID) != nil else { return }
+        }
+
+        do {
+            try AlarmManager.shared.cancel(id: alarmID)
+        } catch {
+            // AlarmKit's errors say nothing useful on their own; the state helps.
+            throw AlarmKitScheduleError(message: "\(error.localizedDescription) Alarm state: \(alarm.state).")
+        }
+    }
+
+    private func existingAlarm(_ id: UUID) throws -> Alarm? {
+        try AlarmManager.shared.alarms.first { $0.id == id }
     }
 
     func pendingNativeAlarmIDs() async throws -> [String] {

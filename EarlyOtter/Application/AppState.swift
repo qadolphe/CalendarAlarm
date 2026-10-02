@@ -32,6 +32,8 @@ final class AppState {
     var upcomingPlans: [WakeUpPlan] = []
     var alarmStatusesByPlanID: [EarlyOtterID: AlarmScheduleStatus] = [:]
     var noticeMessage: String?
+    /// Why the last refresh failed; the dashboard and alarms keep their previous state.
+    var refreshFailureMessage: String?
     var settingsAlertMessage: String?
     var isUsageSharingEnabled: Bool
     var isInternalDevice: Bool
@@ -142,7 +144,8 @@ final class AppState {
         } catch is CancellationError {
             dashboardState = previousDashboardState
         } catch {
-            dashboardState = .error(format(error))
+            dashboardState = previousDashboardState
+            refreshFailureMessage = Self.refreshFailureMessage(for: error)
         }
     }
 
@@ -187,6 +190,7 @@ final class AppState {
             dashboardState = previousDashboardState
         } catch {
             dashboardState = previousDashboardState
+            refreshFailureMessage = Self.refreshFailureMessage(for: error)
         }
     }
 
@@ -204,6 +208,7 @@ final class AppState {
             dashboardState = previousDashboardState
         } catch {
             dashboardState = previousDashboardState
+            refreshFailureMessage = Self.refreshFailureMessage(for: error)
         }
     }
 
@@ -475,6 +480,10 @@ final class AppState {
         }
     }
 
+    static func refreshFailureMessage(for error: Error) -> String {
+        "Couldn't refresh your calendars, so your alarms weren't updated. \(error.localizedDescription)"
+    }
+
     private func format(_ error: Error) -> String {
         error.localizedDescription
     }
@@ -521,6 +530,7 @@ final class AppState {
 
         guard isCurrentRefresh(refreshGeneration) else { return }
 
+        refreshFailureMessage = nil
         permissions = snapshot.permissions
         accounts = snapshot.accounts
         calendars = snapshot.calendars

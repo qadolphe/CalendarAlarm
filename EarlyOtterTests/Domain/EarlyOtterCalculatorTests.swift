@@ -455,6 +455,121 @@ final class EarlyOtterCalculatorTests: XCTestCase {
         XCTAssertTrue(plan.matchedRuleNames.isEmpty)
     }
 
+    // MARK: Extra alarms
+
+    func testExtraAlarmsRingBeforeTheWakeUpAndEndAtIt() {
+        let plan = calendarPlan(extraAlarms: ExtraAlarms(count: 2, spacing: Minutes(5)))
+
+        let series = plan.alarmSeries
+
+        XCTAssertEqual(series.map(\.calculatedWakeTime), [
+            plan.calculatedWakeTime.addingTimeInterval(-600),
+            plan.calculatedWakeTime.addingTimeInterval(-300),
+            plan.calculatedWakeTime
+        ])
+        XCTAssertEqual(series.map(\.minutesEarly), [10, 5, nil])
+        XCTAssertEqual(series.last, plan, "The wake-up itself keeps its ID")
+        XCTAssertEqual(Set(series.map(\.id)).count, 3)
+        XCTAssertEqual(series.map(\.id), calendarPlan(extraAlarms: ExtraAlarms(count: 2, spacing: Minutes(5))).alarmSeries.map(\.id))
+    }
+
+    func testNoExtraAlarmsLeavesJustTheWakeUp() {
+        let plan = calendarPlan(extraAlarms: .none)
+
+        XCTAssertEqual(plan.alarmSeries, [plan])
+    }
+
+    func testDaysWithoutAnAlarmRingNoExtraAlarms() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+
+        let plan = calculator.calculate(
+            events: [],
+            preferences: preferences(extraAlarms: ExtraAlarms(count: 3, spacing: Minutes(10))),
+            targetDay: targetDay,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(plan.reason, .noSchedule)
+        XCTAssertEqual(plan.alarmSeries, [plan])
+    }
+
+    func testMovedAlarmKeepsTheDaysExtraAlarms() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = preferences(extraAlarms: .none)
+        let extras = ExtraAlarms(count: 2, spacing: Minutes(5))
+        preferences.setOverride(DayAlarmOverride(customWakeTime: ClockTime(hour: 6, minute: 30), extraAlarms: extras), for: targetDay, calendar: calendar)
+
+        let plan = calculator.calculate(events: [], preferences: preferences, targetDay: targetDay, calendar: calendar)
+
+        XCTAssertEqual(plan.reason, .manualOverride)
+        XCTAssertEqual(plan.alarmSeries.map(\.minutesEarly), [10, 5, nil])
+    }
+
+    func testDaysOwnExtraAlarmsReplaceTheRules() {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        var preferences = preferences(extraAlarms: ExtraAlarms(count: 3, spacing: Minutes(5)))
+        preferences.setOverride(DayAlarmOverride(customWakeTime: nil, extraAlarms: ExtraAlarms(count: 1, spacing: Minutes(20))), for: targetDay, calendar: calendar)
+
+        let plan = calendarPlan(preferences: preferences)
+
+        XCTAssertEqual(plan.reason, .event)
+        XCTAssertEqual(plan.extraAlarms, ExtraAlarms(count: 1, spacing: Minutes(20)))
+    }
+
+    func testExtraAlarmsAreClamped() {
+        let extras = ExtraAlarms(count: 9, spacing: Minutes(90))
+
+        XCTAssertEqual(extras.count, 3)
+        XCTAssertEqual(extras.spacing, Minutes(30))
+    }
+
+    func testSoundChangeReplacesThePlanButExtraAlarmsDoNot() {
+        let plan = calendarPlan(extraAlarms: .none)
+        var newSound = preferences(extraAlarms: .none)
+        newSound.alarmRules[0].alarmSettings.sound = .tide
+
+        XCTAssertNotEqual(calendarPlan(preferences: newSound).id, plan.id)
+        XCTAssertEqual(calendarPlan(extraAlarms: ExtraAlarms(count: 1, spacing: Minutes(5))).id, plan.id)
+    }
+
+    func testRuleSavedBeforeExtraAlarmsDecodesWithNone() throws {
+        let data = try JSONEncoder().encode(AlarmRule.makeDefault())
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        json.removeValue(forKey: "extraAlarms")
+
+        let rule = try JSONDecoder().decode(AlarmRule.self, from: JSONSerialization.data(withJSONObject: json))
+
+        XCTAssertEqual(rule.extraAlarms, .none)
+    }
+
+    private func preferences(extraAlarms: ExtraAlarms) -> AlarmPreferences {
+        var rule = AlarmRule.makeDefault()
+        rule.extraAlarms = extraAlarms
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [rule]
+        return preferences
+    }
+
+    private func calendarPlan(extraAlarms: ExtraAlarms) -> WakeUpPlan {
+        calendarPlan(preferences: preferences(extraAlarms: extraAlarms))
+    }
+
+    private func calendarPlan(preferences: AlarmPreferences) -> WakeUpPlan {
+        let calendar = configuredCalendar()
+        let targetDay = TargetDay(date: makeDate(year: 2026, month: 5, day: 2, hour: 0, minute: 0, calendar: calendar), calendar: calendar)
+        let start = makeDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0, calendar: calendar)
+
+        return calculator.calculate(
+            events: [event(id: "class", startDate: start, endDate: start.addingTimeInterval(3_600))],
+            preferences: preferences,
+            targetDay: targetDay,
+            calendar: calendar
+        )
+    }
+
     private func configuredCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/Detroit")!

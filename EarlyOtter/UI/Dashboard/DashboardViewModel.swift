@@ -284,6 +284,11 @@ struct DashboardViewModel {
         }
     }
 
+    /// The most extra alarms any day in view has, so the week can leave room above its markers.
+    var maxExtraAlarmCount: Int {
+        appState.dailyPlans.map(\.extraAlarmTimes.count).max() ?? 0
+    }
+
     func markerFraction(for date: Date?, on targetDay: TargetDay) -> CGFloat? {
         guard let date else { return nil }
 

@@ -20,11 +20,16 @@ struct DayTimeline {
     }
 
     static let hourHeight: CGFloat = 58
+    /// Extra alarms are minutes apart, too close for the grid, so their times climb
+    /// the hour column above the alarm one rung each.
+    static let ladderStep: CGFloat = 18
 
     let dayStart: Date
     let firstHour: Int
     let lastHour: Int
     let alarm: Date?
+    /// Extra alarms that ring before `alarm`, earliest first.
+    let extraAlarms: [Date]
     let blocks: [Block]
     let allDayEvents: [ParsedEvent]
     /// The rule that timed the alarm, when a calendar event set it.
@@ -63,19 +68,26 @@ struct DayTimeline {
         }
         blocks += Self.columned(events)
 
-        let starts = blocks.map(\.start) + [alarm].compactMap { $0 }
+        let extraAlarms = alarm == nil ? [] : plan.extraAlarmTimes
+        // The ladder's top, in time, so the grid starts early enough to show it.
+        let ladderTop = alarm.map {
+            $0.addingTimeInterval(-TimeInterval(CGFloat(extraAlarms.count) * Self.ladderStep / Self.hourHeight * 3600))
+        }
+        let starts = blocks.map(\.start) + [alarm, ladderTop].compactMap { $0 }
         let ends = blocks.map(\.end) + [alarm?.addingTimeInterval(30 * 60)].compactMap { $0 }
         let hour = { (date: Date) in date.timeIntervalSince(dayStart) / 3600 }
 
         self.dayStart = dayStart
         self.alarm = alarm
+        self.extraAlarms = extraAlarms
         self.blocks = blocks
         self.allDayEvents = plan.dayEvents.filter(\.isAllDay)
         self.ruleName = plan.reason == .event ? plan.appliedRuleName : nil
         self.ruleSymbol = plan.appliedRuleSymbol ?? .general
         self.items = starts.min().flatMap { first in ends.max().map { first...max(first, $0) } }
-        // A morning by default, stretched to fit whatever the day holds.
-        self.firstHour = max(0, min(6, Int((starts.map(hour).min().map { $0 - 0.5 } ?? 6).rounded(.down))))
+        // A morning by default, stretched to fit whatever the day holds, back into
+        // the evening before when an alarm rings ahead of an early-morning event.
+        self.firstHour = min(6, Int((starts.map(hour).min().map { $0 - 0.5 } ?? 6).rounded(.down)))
         self.lastHour = min(24, max(firstHour + minimumHours, Int((ends.map(hour).max().map { $0 + 0.5 } ?? 12).rounded(.up))))
     }
 
@@ -90,6 +102,17 @@ struct DayTimeline {
     /// Scrolled so the day's first item sits just below the top.
     var initialOffset: CGFloat {
         items.map { max(0, y($0.lowerBound) - 24) } ?? 0
+    }
+
+    /// Where each extra alarm's rung sits, nearest the alarm first. Given a dragged
+    /// alarm time, the extra alarms move with it, keeping their spacing.
+    func ladderRungs(movedTo moved: Date? = nil) -> [(date: Date, y: CGFloat)] {
+        guard let alarm else { return [] }
+        let anchor = moved ?? alarm
+        let shift = anchor.timeIntervalSince(alarm)
+        return extraAlarms.reversed().enumerated().map { index, date in
+            (date.addingTimeInterval(shift), y(anchor) - Self.ladderStep * CGFloat(index + 1))
+        }
     }
 
     func y(_ date: Date) -> CGFloat {
@@ -340,6 +363,7 @@ private struct DayTimelineView: View {
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(WPStyles.tertiaryText)
                             .frame(width: labelWidth, alignment: .leading)
+                            .opacity(ladderCovers(timeline.y(mark)) ? 0 : 1)
                         Rectangle()
                             .fill(WPStyles.surfaceOutline.opacity(0.5))
                             .frame(height: 0.5)
@@ -356,6 +380,8 @@ private struct DayTimelineView: View {
                         .frame(width: columnWidth - 4, height: height)
                         .offset(x: labelWidth + 4 + columnWidth * CGFloat(block.column), y: timeline.y(block.start) + 1)
                 }
+
+                extraAlarmsLadder
 
                 if let alarm = movedAlarm ?? timeline.alarm {
                     alarmLine(alarm)
@@ -476,6 +502,41 @@ private struct DayTimelineView: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(WPStyles.surfaceOutline, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
             )
+    }
+
+    /// The extra alarms' times stacked up the hour column, each on a dot, joined
+    /// to the alarm's dot by a thread.
+    @ViewBuilder
+    private var extraAlarmsLadder: some View {
+        let rungs = timeline.ladderRungs(movedTo: movedAlarm)
+        if let alarm = movedAlarm ?? timeline.alarm, let top = rungs.last?.y {
+            let alarmY = timeline.y(alarm)
+            Capsule()
+                .fill(WPStyles.accent.opacity(0.55))
+                .frame(width: 2, height: alarmY - top)
+                .offset(x: labelWidth - 1, y: top)
+
+            ForEach(rungs, id: \.date) { rung in
+                Text(rung.date.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute()))
+                    .font(.caption2.weight(.bold))
+                    .monospacedDigit()
+                    .foregroundStyle(WPStyles.accent)
+                    .frame(width: labelWidth - 6, height: 14, alignment: .leading)
+                    .offset(y: rung.y - 7)
+                Circle()
+                    .fill(WPStyles.accent)
+                    .frame(width: 6, height: 6)
+                    .offset(x: labelWidth - 3, y: rung.y - 3)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Extra alarms at " + rungs.reversed().map { $0.date.formatted(date: .omitted, time: .shortened) }.joined(separator: ", "))
+        }
+    }
+
+    /// Whether an hour label at `y` would sit under the ladder.
+    private func ladderCovers(_ y: CGFloat) -> Bool {
+        guard let alarm = movedAlarm ?? timeline.alarm, let top = timeline.ladderRungs(movedTo: movedAlarm).last?.y else { return false }
+        return y > top - 12 && y < timeline.y(alarm) + 4
     }
 
     private func alarmLine(_ alarm: Date) -> some View {

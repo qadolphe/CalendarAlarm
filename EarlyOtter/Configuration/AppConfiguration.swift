@@ -56,10 +56,10 @@ enum AppConfiguration {
         "\(appName) needs calendar access to find your first event tomorrow and calculate your wake-up time."
 
     static let alarmPermissionExplanation =
-        "Alarm access lets \(appName) schedule real wake-up alarms for your calendar events. You can enable it later in Settings."
+        "Alarm access is off, so \(appName) can't set your wake-up alarms. Tap to turn it on in Settings."
 
     static let onboardingAlarmPermissionExplanation =
-        "These are optional during setup. Enable them now to let \(appName) schedule alarms and notify you on updates automatically."
+        "Alarm access lets \(appName) set your wake-up alarms. Notifications are optional."
 
     static let staleSyncReminderTitle = "\(appName) may need to refresh your alarms"
     static let staleSyncReminderBody =

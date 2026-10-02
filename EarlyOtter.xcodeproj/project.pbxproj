@@ -26,6 +26,7 @@
 		AA000000000000000000020C /* Domain/Services/EarlyOtterHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */; };
 		AA000000000000000000020D /* Domain/ValueObjects/ClockTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010D /* Domain/ValueObjects/ClockTime.swift */; };
 		AA000000000000000000020E /* Domain/ValueObjects/Minutes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010E /* Domain/ValueObjects/Minutes.swift */; };
+		AA0000000000000000000F21 /* Domain/ValueObjects/ExtraAlarms.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F20 /* Domain/ValueObjects/ExtraAlarms.swift */; };
 		AA000000000000000000020F /* Domain/ValueObjects/TargetDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010F /* Domain/ValueObjects/TargetDay.swift */; };
 		AA0000000000000000000210 /* Domain/ValueObjects/EarlyOtterID.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000110 /* Domain/ValueObjects/EarlyOtterID.swift */; };
 		AA0000000000000000000211 /* Infrastructure/Alarm/AlarmKitMappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000111 /* Infrastructure/Alarm/AlarmKitMappers.swift */; };
@@ -75,6 +76,7 @@
 		AA0000000000000000000251 /* UI/Dashboard/DashboardLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */; };
 		AA0000000000000000000252 /* UI/Schedule/ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */; };
 		AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */; };
+		AA0000000000000000000F23 /* UI/Rules/ExtraAlarmsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F22 /* UI/Rules/ExtraAlarmsPickerView.swift */; };
 		AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */; };
 		AA0000000000000000000400 /* Domain/ClockTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000300 /* Domain/ClockTimeTests.swift */; };
 		AA0000000000000000000401 /* Domain/EventFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000301 /* Domain/EventFilterTests.swift */; };
@@ -166,6 +168,7 @@
 		AA000000000000000000010C /* Domain/Services/EarlyOtterHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/Services/EarlyOtterHasher.swift; sourceTree = "<group>"; };
 		AA000000000000000000010D /* Domain/ValueObjects/ClockTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/ClockTime.swift; sourceTree = "<group>"; };
 		AA000000000000000000010E /* Domain/ValueObjects/Minutes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/Minutes.swift; sourceTree = "<group>"; };
+		AA0000000000000000000F20 /* Domain/ValueObjects/ExtraAlarms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/ExtraAlarms.swift; sourceTree = "<group>"; };
 		AA000000000000000000010F /* Domain/ValueObjects/TargetDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/TargetDay.swift; sourceTree = "<group>"; };
 		AA0000000000000000000110 /* Domain/ValueObjects/EarlyOtterID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ValueObjects/EarlyOtterID.swift; sourceTree = "<group>"; };
 		AA0000000000000000000111 /* Infrastructure/Alarm/AlarmKitMappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Alarm/AlarmKitMappers.swift; sourceTree = "<group>"; };
@@ -214,6 +217,7 @@
 		AA0000000000000000000151 /* UI/Dashboard/DashboardLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Dashboard/DashboardLoadingView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000152 /* UI/Schedule/ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Schedule/ScheduleView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/AlarmSoundPickerView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000F22 /* UI/Rules/ExtraAlarmsPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Rules/ExtraAlarmsPickerView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000156 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Infrastructure/Audio/AlarmSoundPreviewPlayer.swift; sourceTree = "<group>"; };
 		AA0000000000000000000300 /* Domain/ClockTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/ClockTimeTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000301 /* Domain/EventFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain/EventFilterTests.swift; sourceTree = "<group>"; };
@@ -458,6 +462,7 @@
 			children = (
 				AA000000000000000000010D /* Domain/ValueObjects/ClockTime.swift */,
 				AA000000000000000000010E /* Domain/ValueObjects/Minutes.swift */,
+				AA0000000000000000000F20 /* Domain/ValueObjects/ExtraAlarms.swift */,
 				AA000000000000000000010F /* Domain/ValueObjects/TargetDay.swift */,
 				AA0000000000000000000110 /* Domain/ValueObjects/EarlyOtterID.swift */,
 			);
@@ -564,6 +569,7 @@
 			children = (
 				AA0000000000000000000127 /* UI/Rules/RulesView.swift */,
 				AA0000000000000000000155 /* UI/Rules/AlarmSoundPickerView.swift */,
+				AA0000000000000000000F22 /* UI/Rules/ExtraAlarmsPickerView.swift */,
 			);
 			name = Rules;
 			sourceTree = "<group>";
@@ -833,6 +839,7 @@
 				AA0000000000000000000A10 /* Domain/Services/NextAlarmWidgetDisplayPolicy.swift in Sources */,
 				AA000000000000000000020D /* Domain/ValueObjects/ClockTime.swift in Sources */,
 				AA000000000000000000020E /* Domain/ValueObjects/Minutes.swift in Sources */,
+				AA0000000000000000000F21 /* Domain/ValueObjects/ExtraAlarms.swift in Sources */,
 				AA000000000000000000020F /* Domain/ValueObjects/TargetDay.swift in Sources */,
 				AA0000000000000000000210 /* Domain/ValueObjects/EarlyOtterID.swift in Sources */,
 				AA0000000000000000000211 /* Infrastructure/Alarm/AlarmKitMappers.swift in Sources */,
@@ -868,6 +875,7 @@
 				AA0000000000000000000226 /* UI/Root/EarlyOtterRootView.swift in Sources */,
 				AA0000000000000000000227 /* UI/Rules/RulesView.swift in Sources */,
 				AA0000000000000000000255 /* UI/Rules/AlarmSoundPickerView.swift in Sources */,
+				AA0000000000000000000F23 /* UI/Rules/ExtraAlarmsPickerView.swift in Sources */,
 				AA0000000000000000000256 /* Infrastructure/Audio/AlarmSoundPreviewPlayer.swift in Sources */,
 				AA0000000000000000000229 /* UI/Schedule/AlarmEditorView.swift in Sources */,
 				9363927702F16CFA0B76D76F /* DesignSystem.swift in Sources */,
@@ -963,7 +971,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = EarlyOtter/EarlyOtter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -982,7 +990,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -1003,7 +1011,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = EarlyOtter/EarlyOtter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				EXECUTABLE_NAME = EarlyOtter;
@@ -1021,7 +1029,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan;
 				PRODUCT_MODULE_NAME = EarlyOtter;
 				PRODUCT_NAME = EarlyOtter;
@@ -1087,7 +1095,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NextAlarmWidget/NextAlarmWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NextAlarmWidget/Info.plist;
@@ -1097,7 +1105,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1117,7 +1125,7 @@
 				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NextAlarmWidget/NextAlarmWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 64GRGCS25S;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NextAlarmWidget/Info.plist;
@@ -1127,7 +1135,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.quentinadolphe.wakeplan.nextalarmwidget;
 				PRODUCT_MODULE_NAME = NextAlarmWidgetExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";

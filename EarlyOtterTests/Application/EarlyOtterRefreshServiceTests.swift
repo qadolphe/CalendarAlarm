@@ -87,6 +87,77 @@ final class EarlyOtterRefreshWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(widgetSnapshot.lastUpdatedAt, now)
     }
 
+    func testRefreshAndSyncSkipsExtraAlarmsThatHavePassed() async throws {
+        let calendar = configuredCalendar()
+        let now = makeDate(year: 2026, month: 5, day: 16, hour: 7, minute: 48, second: 0, calendar: calendar)
+        let eventStart = makeDate(year: 2026, month: 5, day: 16, hour: 9, minute: 0, second: 0, calendar: calendar)
+        var rule = AlarmRule.makeDefault()
+        rule.extraAlarms = ExtraAlarms(count: 2, spacing: Minutes(5))
+        var preferences = AlarmPreferences.default
+        preferences.alarmRules = [rule]
+        let alarmScheduler = FakeAlarmScheduler()
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: EarlyOtterService(
+                calendarProvider: StubCalendarProvider(
+                    events: [makeEvent(id: "event-1", title: "Class", startDate: eventStart, calendarID: "work")]
+                ),
+                preferencesStore: InMemoryPreferencesStore(preferences: preferences)
+            ),
+            permissionService: PermissionService(
+                calendarReader: StubCalendarReader(),
+                alarmScheduler: alarmScheduler
+            ),
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: FakeScheduledAlarmStore()
+            ),
+            planningWindowCount: 3
+        )
+
+        let outcome = try await service.refreshAndSync(reason: .manual, now: now, calendar: calendar)
+
+        // Wake-up at 7:55; the 7:45 extra has passed, the 7:50 one still rings.
+        XCTAssertEqual(
+            outcome.snapshot.scheduledPlans.filter { $0.targetEvent?.id == "event-1" }.map(\.minutesEarly),
+            [5, nil]
+        )
+    }
+
+    func testRefreshFailsWithoutTouchingAlarmsWhenOneCalendarSourceFails() async throws {
+        let calendar = configuredCalendar()
+        let now = makeDate(year: 2026, month: 5, day: 15, hour: 18, minute: 0, second: 0, calendar: calendar)
+        let eventStart = makeDate(year: 2026, month: 5, day: 16, hour: 9, minute: 0, second: 0, calendar: calendar)
+        let alarmScheduler = FakeAlarmScheduler()
+        let service = EarlyOtterRefreshService(
+            earlyOtterService: EarlyOtterService(
+                calendarProvider: CompositeCalendarProvider(providers: [
+                    StubCalendarProvider(
+                        events: [makeEvent(id: "event-1", title: "Class", startDate: eventStart, calendarID: "work")]
+                    ),
+                    UnreachableCalendarProvider()
+                ]),
+                preferencesStore: InMemoryPreferencesStore(preferences: .default)
+            ),
+            permissionService: PermissionService(
+                calendarReader: StubCalendarReader(),
+                alarmScheduler: alarmScheduler
+            ),
+            alarmSyncService: AlarmSyncService(
+                alarmScheduler: alarmScheduler,
+                alarmStore: FakeScheduledAlarmStore()
+            ),
+            planningWindowCount: 3
+        )
+
+        do {
+            _ = try await service.refreshAndSync(reason: .manual, now: now, calendar: calendar)
+            XCTFail("Expected the refresh to fail")
+        } catch {}
+
+        XCTAssertTrue(alarmScheduler.scheduledPlans.isEmpty)
+        XCTAssertTrue(alarmScheduler.canceledIDs.isEmpty, "A missing source must not cancel its days' alarms")
+    }
+
     func testRefreshAndSyncPublishesEmptyWidgetSnapshotWhenNoAlarmIsScheduled() async throws {
         let calendar = configuredCalendar()
         let now = makeDate(
@@ -367,6 +438,14 @@ private enum TestFailure: LocalizedError {
     }
 }
 
+/// A calendar source that can't be reached, like Google Calendar while offline.
+private struct UnreachableCalendarProvider: CalendarEventProviding {
+    func accounts() async throws -> [ConnectedCalendarAccount] { [] }
+    func calendars() async throws -> [CalendarSource] { [] }
+    func events(for targetDay: TargetDay) async throws -> [ParsedEvent] { throw URLError(.notConnectedToInternet) }
+    func events(in interval: DateInterval, calendar: Calendar) async throws -> [ParsedEvent] { throw URLError(.notConnectedToInternet) }
+}
+
 private struct StubCalendarProvider: CalendarEventProviding {
     var events: [ParsedEvent]
     var calendarsResult: [CalendarSource] = [
@@ -453,6 +532,8 @@ private final class StubCalendarReader: CalendarReading {
 
 private final class FakeAlarmScheduler: AlarmScheduling {
     var state: AlarmAuthorizationState = .authorized
+    var scheduledPlans: [WakeUpPlan] = []
+    var canceledIDs: [String] = []
 
     func authorizationState() async -> AlarmAuthorizationState {
         state
@@ -463,7 +544,8 @@ private final class FakeAlarmScheduler: AlarmScheduling {
     }
 
     func schedule(plan: WakeUpPlan) async throws -> ScheduledAlarmRecord {
-        ScheduledAlarmRecord(
+        scheduledPlans.append(plan)
+        return ScheduledAlarmRecord(
             planID: plan.id,
             nativeAlarmID: "native-1",
             scheduledWakeTime: plan.calculatedWakeTime,
@@ -473,7 +555,9 @@ private final class FakeAlarmScheduler: AlarmScheduling {
         )
     }
 
-    func cancel(nativeAlarmID: String) async throws {}
+    func cancel(nativeAlarmID: String) async throws {
+        canceledIDs.append(nativeAlarmID)
+    }
 }
 
 private final class FakeScheduledAlarmStore: ScheduledAlarmStoring {

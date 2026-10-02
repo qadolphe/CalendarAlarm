@@ -440,7 +440,8 @@ final class CompositeCalendarProviderTests: XCTestCase {
         XCTAssertEqual(calendars, [appleCalendar])
     }
 
-    func testEventsIgnoreFailingProviderWhenAnotherProviderSucceeds() async throws {
+    /// Planning without one source would empty its days and cancel their alarms.
+    func testEventsFailWhenAnyProviderFails() async {
         let targetDay = TargetDay(date: Date().addingTimeInterval(86_400))
         let event = ParsedEvent(
             id: "apple-event",
@@ -462,9 +463,12 @@ final class CompositeCalendarProviderTests: XCTestCase {
             StubCalendarProvider(error: StubCalendarProviderError.googleExpired)
         ])
 
-        let events = try await provider.events(for: targetDay)
-
-        XCTAssertEqual(events, [event])
+        do {
+            _ = try await provider.events(for: targetDay)
+            XCTFail("Expected the missing source to fail the load")
+        } catch {
+            XCTAssertEqual(error as? StubCalendarProviderError, .googleExpired)
+        }
     }
 
     func testCompositeProviderThrowsWhenEveryProviderFails() async {

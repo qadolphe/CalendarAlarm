@@ -10,10 +10,13 @@ struct DayAlarmOverride: Codable, Equatable, Sendable {
     var customWakeTime: ClockTime?
     /// When true, no alarm fires this day (the underlying time source is kept).
     var isSkipped: Bool
+    /// This day's extra alarms. `nil` keeps whatever the automatic alarm has.
+    var extraAlarms: ExtraAlarms?
 
-    init(customWakeTime: ClockTime?, isSkipped: Bool = false) {
+    init(customWakeTime: ClockTime?, isSkipped: Bool = false, extraAlarms: ExtraAlarms? = nil) {
         self.customWakeTime = customWakeTime
         self.isSkipped = isSkipped
+        self.extraAlarms = extraAlarms
     }
 }
 
@@ -21,6 +24,7 @@ extension DayAlarmOverride {
     private enum CodingKeys: String, CodingKey {
         case customWakeTime
         case isSkipped
+        case extraAlarms
         case wakeTime // legacy: a non-optional chosen time
         case kind     // legacy: an either/or custom-time-or-skip enum
     }
@@ -57,12 +61,14 @@ extension DayAlarmOverride {
         // Current shape: optional `customWakeTime` (nil = automatic) + `isSkipped`.
         customWakeTime = try container.decodeIfPresent(ClockTime.self, forKey: .customWakeTime)
         isSkipped = try container.decodeIfPresent(Bool.self, forKey: .isSkipped) ?? false
+        extraAlarms = try container.decodeIfPresent(ExtraAlarms.self, forKey: .extraAlarms)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(customWakeTime, forKey: .customWakeTime)
         try container.encode(isSkipped, forKey: .isSkipped)
+        try container.encodeIfPresent(extraAlarms, forKey: .extraAlarms)
     }
 }
 

@@ -8,9 +8,11 @@ import SwiftUI
 enum AlarmKitMappers {
     static func configuration(from plan: WakeUpPlan) throws -> AlarmManager.AlarmConfiguration<EarlyOtterAlarmMetadata> {
         // Titled with the event it wakes you for, or a standard alarm's label.
-        let title = plan.reason == .alarm
+        // An extra alarm also says how early it is.
+        let baseTitle = plan.reason == .alarm
             ? plan.alarmTitle
             : normalizedEventTitle(from: plan) ?? AppConfiguration.genericAlarmTitle
+        let title = plan.minutesEarly.map { "\(baseTitle) · \($0) min early" } ?? baseTitle
         let secondaryButton = snoozeButton(for: plan.alarmSettings)
         let countdownDuration = snoozeCountdownDuration(for: plan.alarmSettings)
         let alert: AlarmPresentation.Alert
