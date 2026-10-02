@@ -10,6 +10,7 @@ struct DayAlarmEditView: View {
 
     @State private var wakeDate: Date
     @State private var isSkipped: Bool
+    @State private var extraAlarms: ExtraAlarms
     @State private var showingLateAlarmAlert = false
 
     private let seedWakeDate: Date
@@ -42,6 +43,7 @@ struct DayAlarmEditView: View {
         seedWakeDate = seed
         _wakeDate = State(initialValue: seed)
         _isSkipped = State(initialValue: skip)
+        _extraAlarms = State(initialValue: plan.extraAlarms)
     }
 
     var body: some View {
@@ -52,6 +54,7 @@ struct DayAlarmEditView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     skipCard
                     wakeTimeCard
+                    extraAlarmsCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -153,6 +156,36 @@ struct DayAlarmEditView: View {
         .animation(.easeInOut(duration: 0.2), value: isSkipped)
     }
 
+    // MARK: Extra alarms
+
+    private var extraAlarmsCard: some View {
+        NavigationLink {
+            ExtraAlarmsPickerView(selection: $extraAlarms)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "bell.and.waves.left.and.right.fill")
+                    .font(.title3)
+                    .foregroundStyle(WPStyles.accent)
+                Text("Extra alarms")
+                    .font(.headline)
+                    .foregroundStyle(WPStyles.primaryText)
+                Spacer()
+                Text(ExtraAlarmsPickerView.rowValue(for: extraAlarms))
+                    .foregroundStyle(WPStyles.secondaryText)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(WPStyles.tertiaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(WPStyles.surface))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .opacity(isSkipped ? 0.4 : 1)
+        .disabled(isSkipped)
+    }
+
     // MARK: Skip
 
     private var skipCard: some View {
@@ -221,12 +254,21 @@ struct DayAlarmEditView: View {
         // or changed it now; otherwise the day stays on the automatic schedule.
         let seedComponents = Calendar.current.dateComponents([.hour, .minute], from: seedWakeDate)
         let timeChanged = seedComponents.hour != components.hour || seedComponents.minute != components.minute
-        let customWakeTime: ClockTime? = (startedCustom || timeChanged) ? clock : nil
+        let extrasChanged = extraAlarms != plan.extraAlarms
+        // Only a calendar alarm can keep following its rule with the day's own extra
+        // alarms; any other alarm becomes this day's custom alarm to carry them.
+        let pinsTime = startedCustom || timeChanged || (extrasChanged && plan.reason != .event)
+        let customWakeTime: ClockTime? = pinsTime ? clock : nil
+        // A custom time keeps the extra alarms the day had; otherwise they're stored
+        // only once the user has set them for this day.
+        let dayExtraAlarms: ExtraAlarms? = (customWakeTime != nil || extrasChanged || initialOverride?.extraAlarms != nil)
+            ? extraAlarms
+            : nil
 
-        // Automatic + not skipped means there's nothing to override.
-        let newOverride: DayAlarmOverride? = (customWakeTime == nil && !isSkipped)
+        // Automatic, not skipped and with the rule's extra alarms: nothing to override.
+        let newOverride: DayAlarmOverride? = (customWakeTime == nil && !isSkipped && dayExtraAlarms == nil)
             ? nil
-            : DayAlarmOverride(customWakeTime: customWakeTime, isSkipped: isSkipped)
+            : DayAlarmOverride(customWakeTime: customWakeTime, isSkipped: isSkipped, extraAlarms: dayExtraAlarms)
 
         // Skip the write (and refresh) when nothing actually changed.
         guard newOverride != initialOverride else {

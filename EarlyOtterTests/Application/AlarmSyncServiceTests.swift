@@ -130,6 +130,34 @@ final class AlarmSyncServiceTests: XCTestCase {
         XCTAssertEqual(missingRecord.planID, missingPlan.id)
     }
 
+    func testDroppingAnExtraAlarmCancelsOnlyThatAlarm() async throws {
+        let twoExtras = makeManagedEventPlan(
+            id: "event-plan",
+            wakeOffset: 3_600,
+            eventStartOffset: 7_200,
+            extraAlarms: ExtraAlarms(count: 2, spacing: Minutes(5))
+        )
+        let oneExtra = makeManagedEventPlan(
+            id: "event-plan",
+            wakeOffset: 3_600,
+            eventStartOffset: 7_200,
+            extraAlarms: ExtraAlarms(count: 1, spacing: Minutes(5))
+        )
+        let alarmStore = FakeScheduledAlarmStore()
+        let alarmScheduler = FakeAlarmScheduler()
+        let service = AlarmSyncService(
+            alarmScheduler: alarmScheduler,
+            alarmStore: alarmStore
+        )
+
+        _ = try await service.sync(plans: twoExtras.alarmSeries)
+        let result = try await service.sync(plans: oneExtra.alarmSeries)
+
+        XCTAssertEqual(alarmScheduler.scheduledPlans.count, 3)
+        XCTAssertEqual(alarmScheduler.canceledIDs, ["native-1"], "Only the 10-minutes-early alarm goes")
+        XCTAssertEqual(result.records.map(\.planID), oneExtra.alarmSeries.map(\.id))
+    }
+
     func testConcurrentPlanUpdatesReplaceEarlierAlarm() async throws {
         let originalPlan = makeManagedEventPlan(
             id: "event-plan-1",
@@ -470,7 +498,8 @@ final class AlarmSyncServiceTests: XCTestCase {
     private func makeManagedEventPlan(
         id: String,
         wakeOffset: TimeInterval,
-        eventStartOffset: TimeInterval
+        eventStartOffset: TimeInterval,
+        extraAlarms: ExtraAlarms = .none
     ) -> WakeUpPlan {
         let baseDate = Date().addingTimeInterval(86_400)
         let event = ParsedEvent(
@@ -496,6 +525,7 @@ final class AlarmSyncServiceTests: XCTestCase {
             prepTime: Minutes(45),
             commuteTime: Minutes(20),
             alarmSettings: .default,
+            extraAlarms: extraAlarms,
             reason: .event,
             appliedRuleName: "Default",
             matchedRuleNames: []

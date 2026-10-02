@@ -4,7 +4,7 @@
   "keywords": "college,student,school,career,job,wake,up,clock,smart,morning,routine,schedule,meeting,commute,sleep",
   "promotionalText": "Your alarm, set by your calendar. EarlyOtter finds your first event, subtracts prep and commute, and wakes you right on time. No early plans? Sleep in.",
   "description": "Your alarm, set by your calendar.\n\nEarlyOtter finds your first event, subtracts prep and commute, and wakes you exactly when you need to. No early plans? Sleep in.\n\n• Works with Apple and Google Calendar\n• Custom rules for different mornings\n• Rings even on silent\n• Private: your events never leave your iPhone",
-  "whatsNew": "• A new look, inspired by a starry night swim\n• Regular alarms: repeat days, one-time dates, labels and snooze, right next to your calendar alarms\n• Original alarm tones, made for EarlyOtter\n• Alarms now show your event's name\n• Tap any day to see it as a planner: your alarm, prep, commute and every event\n• Hold and drag the alarm to move it for just that day\n• Simpler rule editing and a cleaner Settings screen\n• Fixed an old alarm ringing after a restart\n• New: anonymous usage data (Settings → Permissions). Counts only, never your calendar details. You can turn it off at any time.",
+  "whatsNew": "• Extra alarms: have a rule ring up to 3 more times before your wake-up, 5 to 30 minutes apart. Find it under Rules → a rule → Extra alarms.\n• Changing a rule's sound or snooze now updates alarms that are already set",
   "screenshots": {
     "panels": [
       {

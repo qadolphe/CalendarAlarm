@@ -33,7 +33,27 @@ STRINGS = {
     "%lldm prep · %lldm commute": "%1$lld min prep. · %2$lld min trayecto",
     "%@ Sleeping in": "%@ A dormir de más",
 
+    # Extra alarms
+    "%@ · %lld min early": "%1$@ · %2$lld min antes",
+    "%lld · %lld min apart": "%1$lld · cada %2$lld min",
+    "%lld minutes apart": "Cada %lld minutos",
+    "Before wake-up": "Antes de despertar",
+    "Extra alarms": "Alarmas extra",
+    "Extra Alarms": "Alarmas extra",
+    "Extra alarms at %@": "Alarmas extra a las %@",
+    "Extra alarms ring before your wake-up time, and each rings on its own: stopping one doesn't stop the rest. The last alarm is always your wake-up.":
+        "Las alarmas extra suenan antes de tu hora de despertar y cada una suena por separado: apagar una no apaga las demás. La última siempre es la de despertar.",
+    "One alarm, at your wake-up time.": "Una sola alarma, a tu hora de despertar.",
+    "Spacing": "Separación",
+    "Wake-up": "Despertar",
+
     # A
+    "Alarm access is off, so %@ can't set your wake-up alarms. Tap to turn it on in Settings.":
+        "El acceso a alarmas está desactivado, así que %@ no puede programar tus alarmas. Toca para activarlo en Configuración.",
+    "Alarm access lets %@ set your wake-up alarms. Notifications are optional.":
+        "El acceso a alarmas permite que %@ programe tus alarmas. Las notificaciones son opcionales.",
+    "Couldn't refresh your calendars, so your alarms weren't updated. %@":
+        "No se pudieron actualizar tus calendarios, así que tus alarmas no cambiaron. %@",
     "A rule with the same calendars and conditions already exists. Adjust the config so rules don't overlap 1-to-1.":
         "Ya existe una regla con los mismos calendarios y condiciones. Ajústala para que las reglas no sean idénticas.",
     "About calendar alarms": "Sobre las alarmas del calendario",
@@ -55,8 +75,6 @@ STRINGS = {
     "Alarm access is off, so this won't ring": "El acceso a alarmas está desactivado, así que no sonará",
     "Alarm access is still needed to schedule wake-up alarms.": "Aún se necesita acceso a alarmas para programar las alarmas.",
     "Alarm access is still pending.": "El acceso a alarmas sigue pendiente.",
-    "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings.":
-        "El acceso a alarmas permite que %@ programe alarmas reales para tus eventos del calendario. Puedes activarlo más tarde en Configuración.",
     "Alarm access needed": "Se necesita acceso a alarmas",
     "Alarm access was previously denied. Enable it in Settings to schedule wake-up alarms.":
         "Denegaste el acceso a alarmas. Actívalo en Configuración para programar alarmas.",
@@ -291,8 +309,6 @@ STRINGS = {
     "Tentative Events": "Eventos tentativos",
     "Test Alarm in 1 Minute": "Alarma de prueba en 1 minuto",
     "Test alarm scheduled for %@.": "Alarma de prueba programada para las %@.",
-    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically.":
-        "Son opcionales durante la configuración. Actívalos ahora para que %@ programe alarmas y te avise de los cambios automáticamente.",
     "Tide": "Marea",
     "Time": "Hora",
     "Timing": "Tiempos",
@@ -341,6 +357,7 @@ PLURALS = {
         "es": ("%lld cuenta de Google conectada", "%lld cuentas de Google conectadas"),
     },
     "%lld hours": {"en": ("%lld hour", "%lld hours"), "es": ("%lld hora", "%lld horas")},
+    "%lld alarms": {"en": ("%lld alarm", "%lld alarms"), "es": ("%lld alarma", "%lld alarmas")},
     "%lld needed": {"en": ("%lld needed", "%lld needed"), "es": ("Falta %lld", "Faltan %lld")},
 }
 

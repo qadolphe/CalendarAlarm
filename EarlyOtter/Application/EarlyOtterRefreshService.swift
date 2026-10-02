@@ -118,14 +118,19 @@ actor EarlyOtterRefreshService {
                 earlyOtterService.displayPlans(from: dailyPlans, now: now)
                     .prefix(planningWindowCount)
             )
-            // Every alarm rings, not just each day's earliest: the calendar alarms
-            // as before, plus standard alarms over the same number of days.
+            // Every alarm rings, not just each day's earliest: the calendar alarms,
+            // plus standard alarms over the same number of days, each with its
+            // extra alarms.
             let alarmHorizon = calendar.date(byAdding: .day, value: planningWindowCount, to: now) ?? now
-            let scheduledPlans = Array(
-                earlyOtterService.displayPlans(from: calendarPlans, now: now)
-                    .prefix(planningWindowCount)
-            ) + earlyOtterService.displayPlans(from: alarmPlans, now: now)
+            let calendarAlarms = earlyOtterService.displayPlans(from: calendarPlans, now: now)
+                .prefix(planningWindowCount)
+            let standardAlarms = earlyOtterService.displayPlans(from: alarmPlans, now: now)
                 .filter { $0.calculatedWakeTime < alarmHorizon }
+            // Filtered again to drop extra alarms that have already passed.
+            let scheduledPlans = earlyOtterService.displayPlans(
+                from: (calendarAlarms + standardAlarms).flatMap(\.alarmSeries),
+                now: now
+            )
             let syncResult = try await alarmSyncService.sync(plans: scheduledPlans)
 
             let snapshot = EarlyOtterRefreshSnapshot(

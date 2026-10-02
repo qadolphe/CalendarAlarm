@@ -131,6 +131,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
     var prepTime: Minutes
     var commuteTime: Minutes
     var alarmSettings: RuleAlarmSettings
+    var extraAlarms: ExtraAlarms
     var symbol: RuleSymbol
 
     /// The name shown on screen. The default rule's stored name predates
@@ -209,6 +210,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         case prepTime
         case commuteTime
         case alarmSettings
+        case extraAlarms
         case symbol
     }
 
@@ -223,6 +225,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         prepTime: Minutes,
         commuteTime: Minutes,
         alarmSettings: RuleAlarmSettings,
+        extraAlarms: ExtraAlarms = .none,
         symbol: RuleSymbol = .general
     ) {
         self.id = id
@@ -235,6 +238,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         self.prepTime = prepTime
         self.commuteTime = commuteTime
         self.alarmSettings = alarmSettings
+        self.extraAlarms = extraAlarms
         self.symbol = symbol
     }
 
@@ -250,6 +254,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         prepTime = try container.decodeIfPresent(Minutes.self, forKey: .prepTime) ?? Minutes(45)
         commuteTime = try container.decodeIfPresent(Minutes.self, forKey: .commuteTime) ?? Minutes(20)
         alarmSettings = try container.decodeIfPresent(RuleAlarmSettings.self, forKey: .alarmSettings) ?? .default
+        extraAlarms = try container.decodeIfPresent(ExtraAlarms.self, forKey: .extraAlarms) ?? .none
         // Rules saved before icons existed, or with an unknown icon, fall back to the generic one.
         symbol = (try? container.decodeIfPresent(RuleSymbol.self, forKey: .symbol)) ?? .general
     }
@@ -266,6 +271,7 @@ struct AlarmRule: Codable, Equatable, Identifiable, Sendable {
         try container.encode(prepTime, forKey: .prepTime)
         try container.encode(commuteTime, forKey: .commuteTime)
         try container.encode(alarmSettings, forKey: .alarmSettings)
+        try container.encode(extraAlarms, forKey: .extraAlarms)
         try container.encode(symbol, forKey: .symbol)
     }
 }

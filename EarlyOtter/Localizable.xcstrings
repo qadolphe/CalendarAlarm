@@ -49,6 +49,22 @@
       },
       "shouldTranslate" : false
     },
+    "%@ · %lld min early" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld min early"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$lld min antes"
+          }
+        }
+      }
+    },
     "%@%@" : {
       "localizations" : {
         "en" : {
@@ -231,6 +247,46 @@
         }
       }
     },
+    "%lld alarms" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld alarm"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld alarms"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld alarma"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld alarmas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld calendars" : {
       "localizations" : {
         "en" : {
@@ -361,6 +417,16 @@
         }
       }
     },
+    "%lld minutes apart" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada %lld minutos"
+          }
+        }
+      }
+    },
     "%lld needed" : {
       "localizations" : {
         "en" : {
@@ -397,6 +463,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld · %lld min apart" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld · %2$lld min apart"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld · cada %2$lld min"
           }
         }
       }
@@ -597,6 +679,16 @@
         }
       }
     },
+    "Alarm access is off, so %@ can't set your wake-up alarms. Tap to turn it on in Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas está desactivado, así que %@ no puede programar tus alarmas. Toca para activarlo en Configuración."
+          }
+        }
+      }
+    },
     "Alarm access is off, so this won't ring" : {
       "localizations" : {
         "es" : {
@@ -627,12 +719,12 @@
         }
       }
     },
-    "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
+    "Alarm access lets %@ set your wake-up alarms. Notifications are optional." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El acceso a alarmas permite que %@ programe alarmas reales para tus eventos del calendario. Puedes activarlo más tarde en Configuración."
+            "value" : "El acceso a alarmas permite que %@ programe tus alarmas. Las notificaciones son opcionales."
           }
         }
       }
@@ -917,6 +1009,16 @@
         }
       }
     },
+    "Before wake-up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de despertar"
+          }
+        }
+      }
+    },
     "Blocked Keywords" : {
       "localizations" : {
         "es" : {
@@ -1124,6 +1226,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo borrar el registro de una alarma antigua. %@"
+          }
+        }
+      }
+    },
+    "Couldn't refresh your calendars, so your alarms weren't updated. %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron actualizar tus calendarios, así que tus alarmas no cambiaron. %@"
           }
         }
       }
@@ -1414,6 +1526,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Experiencia"
+          }
+        }
+      }
+    },
+    "Extra Alarms" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas extra"
+          }
+        }
+      }
+    },
+    "Extra alarms" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas extra"
+          }
+        }
+      }
+    },
+    "Extra alarms at %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmas extra a las %@"
+          }
+        }
+      }
+    },
+    "Extra alarms ring before your wake-up time, and each rings on its own: stopping one doesn't stop the rest. The last alarm is always your wake-up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las alarmas extra suenan antes de tu hora de despertar y cada una suena por separado: apagar una no apaga las demás. La última siempre es la de despertar."
           }
         }
       }
@@ -1971,6 +2123,16 @@
         }
       }
     },
+    "One alarm, at your wake-up time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una sola alarma, a tu hora de despertar."
+          }
+        }
+      }
+    },
     "Open Settings" : {
       "localizations" : {
         "es" : {
@@ -2438,6 +2600,16 @@
         }
       }
     },
+    "Spacing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separación"
+          }
+        }
+      }
+    },
     "Starlight" : {
       "comment" : "Alarm sound name",
       "localizations" : {
@@ -2566,16 +2738,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alarma de prueba programada para las %@."
-          }
-        }
-      }
-    },
-    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Son opcionales durante la configuración. Actívalos ahora para que %@ programe alarmas y te avise de los cambios automáticamente."
           }
         }
       }
@@ -2842,6 +3004,16 @@
       }
     },
     "Wake up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Despertar"
+          }
+        }
+      }
+    },
+    "Wake-up" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {

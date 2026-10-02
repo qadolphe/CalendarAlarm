@@ -71,6 +71,7 @@ struct EarlyOtterCalculator {
                 targetDay: targetDay,
                 customTime: customTime,
                 isSkipped: override.isSkipped,
+                extraAlarms: override.extraAlarms ?? .none,
                 dayEvents: dayEvents,
                 timingRules: timingRules,
                 defaultAlarmSettings: defaultAlarmSettings,
@@ -90,6 +91,7 @@ struct EarlyOtterCalculator {
             placeholderWakeTime: placeholderWakeTime,
             defaultAlarmSettings: defaultAlarmSettings,
             dayEvents: dayEvents,
+            dayExtraAlarms: override?.extraAlarms,
             calendar: calendar
         )
 
@@ -114,6 +116,7 @@ struct EarlyOtterCalculator {
         placeholderWakeTime: Date,
         defaultAlarmSettings: RuleAlarmSettings,
         dayEvents: [ParsedEvent],
+        dayExtraAlarms: ExtraAlarms?,
         calendar: Calendar
     ) -> WakeUpPlan {
         if !scheduleRules.activeDays.contains(weekday) {
@@ -254,7 +257,7 @@ struct EarlyOtterCalculator {
                     timestamp(winnerWakeTime),
                     "\(winningRule.prepTime.rawValue)",
                     "\(winningRule.commuteTime.rawValue)"
-                ]
+                ] + alarmSettingsComponents(winningRule.alarmSettings)
             ),
             targetDay: targetDay,
             targetEvent: winningEvent,
@@ -264,6 +267,8 @@ struct EarlyOtterCalculator {
             prepTime: winningRule.prepTime,
             commuteTime: winningRule.commuteTime,
             alarmSettings: winningRule.alarmSettings,
+            // A day's own extra alarms, set from the week view, win over the rule's.
+            extraAlarms: dayExtraAlarms ?? winningRule.extraAlarms,
             reason: .event,
             appliedRuleName: winningRule.displayName,
             appliedRuleSymbol: winningRule.symbol,
@@ -276,6 +281,7 @@ struct EarlyOtterCalculator {
         targetDay: TargetDay,
         customTime: ClockTime,
         isSkipped: Bool,
+        extraAlarms: ExtraAlarms,
         dayEvents: [ParsedEvent],
         timingRules: TimingRules,
         defaultAlarmSettings: RuleAlarmSettings,
@@ -290,7 +296,7 @@ struct EarlyOtterCalculator {
                     timestamp(targetDay.date),
                     "\(customTime.hour)",
                     "\(customTime.minute)"
-                ]
+                ] + alarmSettingsComponents(defaultAlarmSettings)
             ),
             targetDay: targetDay,
             targetEvent: nil,
@@ -300,6 +306,7 @@ struct EarlyOtterCalculator {
             prepTime: timingRules.prepTime,
             commuteTime: timingRules.defaultCommuteTime,
             alarmSettings: defaultAlarmSettings,
+            extraAlarms: extraAlarms,
             reason: isSkipped ? .manualSkip : .manualOverride,
             appliedRuleName: nil,
             matchedRuleNames: []
@@ -326,6 +333,12 @@ struct EarlyOtterCalculator {
             appliedRuleName: nil,
             matchedRuleNames: []
         )
+    }
+
+    /// Hashed into the ID of every plan that rings, so a sound or snooze edit
+    /// replaces alarms already scheduled with the old settings.
+    private func alarmSettingsComponents(_ settings: RuleAlarmSettings) -> [String] {
+        [settings.sound.rawValue, "\(settings.snoozeEnabled)", "\(settings.snoozeDuration.rawValue)"]
     }
 
     private func timestamp(_ date: Date) -> String {

@@ -87,6 +87,7 @@ struct StandardAlarmPlanner {
             prepTime: Minutes(0),
             commuteTime: Minutes(0),
             alarmSettings: alarm.settings,
+            extraAlarms: alarm.extraAlarms,
             reason: .alarm,
             alarmLabel: alarm.label,
             appliedRuleName: nil,

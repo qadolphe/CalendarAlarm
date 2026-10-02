@@ -14,6 +14,30 @@ final class StandardAlarmPlannerTests: XCTestCase {
         TargetDay(date: date(hour: 0, minute: 0), calendar: calendar)
     }
 
+    func testStandardAlarmRingsItsExtraAlarms() {
+        let alarm = StandardAlarm(
+            time: ClockTime(hour: 6, minute: 45),
+            repeatDays: Set(1...7),
+            extraAlarms: ExtraAlarms(count: 2, spacing: Minutes(10))
+        )
+
+        let plans = planner.plans(for: [saturday], calendarPlans: [], preferences: preferences(with: [alarm]), calendar: calendar)
+
+        XCTAssertEqual(plans.first?.alarmSeries.map(\.calculatedWakeTime), [
+            date(hour: 6, minute: 25), date(hour: 6, minute: 35), date(hour: 6, minute: 45)
+        ])
+    }
+
+    func testAlarmSavedBeforeExtraAlarmsDecodesWithNone() throws {
+        let data = try JSONEncoder().encode(StandardAlarm(time: ClockTime(hour: 7, minute: 0)))
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        json.removeValue(forKey: "extraAlarms")
+
+        let alarm = try JSONDecoder().decode(StandardAlarm.self, from: JSONSerialization.data(withJSONObject: json))
+
+        XCTAssertEqual(alarm.extraAlarms, .none)
+    }
+
     func testSkipsWhenCalendarAlarmRingsInsideWindow() {
         let alarm = StandardAlarm(
             time: ClockTime(hour: 6, minute: 45),

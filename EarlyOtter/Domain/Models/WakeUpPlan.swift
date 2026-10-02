@@ -27,6 +27,10 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
     let prepTime: Minutes
     let commuteTime: Minutes
     let alarmSettings: RuleAlarmSettings
+    /// Alarms that ring before this one: a rule's, a standard alarm's, or a day's own.
+    let extraAlarms: ExtraAlarms
+    /// Set on the copies `alarmSeries` makes for extra alarms; `nil` on the wake-up itself.
+    let minutesEarly: Int?
 
     let reason: EarlyOtterReason
 
@@ -51,6 +55,8 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         prepTime: Minutes,
         commuteTime: Minutes,
         alarmSettings: RuleAlarmSettings,
+        extraAlarms: ExtraAlarms = .none,
+        minutesEarly: Int? = nil,
         reason: EarlyOtterReason,
         alarmLabel: String? = nil,
         appliedRuleName: String?,
@@ -66,6 +72,8 @@ struct WakeUpPlan: Codable, Equatable, Identifiable, Sendable {
         self.prepTime = prepTime
         self.commuteTime = commuteTime
         self.alarmSettings = alarmSettings
+        self.extraAlarms = extraAlarms
+        self.minutesEarly = minutesEarly
         self.reason = reason
         self.alarmLabel = alarmLabel
         self.appliedRuleName = appliedRuleName
@@ -87,6 +95,37 @@ extension WakeUpPlan {
     /// What the wake-up is called on screen: a standard alarm's label, otherwise "Wake up".
     var wakeTitle: String {
         reason == .alarm ? alarmTitle : String(localized: "Wake up")
+    }
+
+    /// When this plan's extra alarms ring, earliest first.
+    var extraAlarmTimes: [Date] {
+        guard setsAlarm else { return [] }
+        return extraAlarms.offsets.map { calculatedWakeTime.addingTimeInterval(-TimeInterval($0.rawValue * 60)) }
+    }
+
+    /// Every alarm this plan rings, earliest first: its extra alarms, then the
+    /// wake-up itself, which keeps its ID. Each extra's ID is derived from the
+    /// wake-up's, so changing the count or spacing only replaces the alarms that moved.
+    var alarmSeries: [WakeUpPlan] {
+        zip(extraAlarms.offsets, extraAlarmTimes).map { offset, time in
+            WakeUpPlan(
+                id: EarlyOtterID(rawValue: "\(id.rawValue)~early-\(offset.rawValue)"),
+                targetDay: targetDay,
+                targetEvent: targetEvent,
+                dayEvents: dayEvents,
+                calculatedWakeTime: time,
+                eventStartTime: eventStartTime,
+                prepTime: prepTime,
+                commuteTime: commuteTime,
+                alarmSettings: alarmSettings,
+                minutesEarly: offset.rawValue,
+                reason: reason,
+                alarmLabel: alarmLabel,
+                appliedRuleName: appliedRuleName,
+                appliedRuleSymbol: appliedRuleSymbol,
+                matchedRuleNames: matchedRuleNames
+            )
+        } + [self]
     }
 
     /// Whether this plan puts an alarm on the device.

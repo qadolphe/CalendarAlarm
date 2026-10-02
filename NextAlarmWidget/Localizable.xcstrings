@@ -42,12 +42,22 @@
         }
       }
     },
-    "Alarm access lets %@ schedule real wake-up alarms for your calendar events. You can enable it later in Settings." : {
+    "Alarm access is off, so %@ can't set your wake-up alarms. Tap to turn it on in Settings." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El acceso a alarmas permite que %@ programe alarmas reales para tus eventos del calendario. Puedes activarlo más tarde en Configuración."
+            "value" : "El acceso a alarmas está desactivado, así que %@ no puede programar tus alarmas. Toca para activarlo en Configuración."
+          }
+        }
+      }
+    },
+    "Alarm access lets %@ set your wake-up alarms. Notifications are optional." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a alarmas permite que %@ programe tus alarmas. Las notificaciones son opcionales."
           }
         }
       }
@@ -228,16 +238,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alarma de prueba programada para las %@."
-          }
-        }
-      }
-    },
-    "These are optional during setup. Enable them now to let %@ schedule alarms and notify you on updates automatically." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Son opcionales durante la configuración. Actívalos ahora para que %@ programe alarmas y te avise de los cambios automáticamente."
           }
         }
       }

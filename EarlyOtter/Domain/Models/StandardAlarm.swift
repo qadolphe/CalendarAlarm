@@ -26,6 +26,7 @@ struct StandardAlarm: Codable, Equatable, Identifiable, Sendable {
     var label: String
     var isEnabled: Bool
     var settings: RuleAlarmSettings
+    var extraAlarms: ExtraAlarms
     var calendarSkip: CalendarSkipRule
     /// A specific date the user picked for a one-time alarm.
     var chosenDay: TargetDay?
@@ -39,6 +40,7 @@ struct StandardAlarm: Codable, Equatable, Identifiable, Sendable {
         label: String = "",
         isEnabled: Bool = true,
         settings: RuleAlarmSettings = .default,
+        extraAlarms: ExtraAlarms = .none,
         calendarSkip: CalendarSkipRule = .never,
         chosenDay: TargetDay? = nil,
         oneTimeDay: TargetDay? = nil
@@ -49,6 +51,7 @@ struct StandardAlarm: Codable, Equatable, Identifiable, Sendable {
         self.label = label
         self.isEnabled = isEnabled
         self.settings = settings
+        self.extraAlarms = extraAlarms
         self.calendarSkip = calendarSkip
         self.chosenDay = chosenDay
         self.oneTimeDay = oneTimeDay
@@ -119,5 +122,28 @@ struct StandardAlarm: Codable, Equatable, Identifiable, Sendable {
                     calendarSkip: .within(CalendarSkipRule.defaultWindow)
                 )
             }
+    }
+}
+
+extension StandardAlarm {
+    private enum CodingKeys: String, CodingKey {
+        case id, time, repeatDays, label, isEnabled, settings, extraAlarms, calendarSkip, chosenDay, oneTimeDay
+    }
+
+    // Alarms saved before extra alarms existed load with none.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(UUID.self, forKey: .id),
+            time: try container.decode(ClockTime.self, forKey: .time),
+            repeatDays: try container.decode(Set<Int>.self, forKey: .repeatDays),
+            label: try container.decode(String.self, forKey: .label),
+            isEnabled: try container.decode(Bool.self, forKey: .isEnabled),
+            settings: try container.decode(RuleAlarmSettings.self, forKey: .settings),
+            extraAlarms: try container.decodeIfPresent(ExtraAlarms.self, forKey: .extraAlarms) ?? .none,
+            calendarSkip: try container.decode(CalendarSkipRule.self, forKey: .calendarSkip),
+            chosenDay: try container.decodeIfPresent(TargetDay.self, forKey: .chosenDay),
+            oneTimeDay: try container.decodeIfPresent(TargetDay.self, forKey: .oneTimeDay)
+        )
     }
 }

@@ -51,6 +51,16 @@ struct DashboardView: View {
                                 VStack(alignment: .leading, spacing: 24) {
                                     if let permissionBanner = viewModel.permissionBanner {
                                         banner(permissionBanner, tint: WPStyles.accent, icon: "bell.badge.fill")
+                                            // Alarm access can only be turned back on in Settings.
+                                            .onTapGesture {
+                                                if case .needsAlarmPermission = appState.dashboardState {
+                                                    appState.openSettings()
+                                                }
+                                            }
+                                    }
+
+                                    if let refreshFailureMessage = appState.refreshFailureMessage {
+                                        banner(refreshFailureMessage, tint: WPStyles.accent, icon: "exclamationmark.triangle.fill")
                                     }
 
                                     if let noticeMessage = appState.noticeMessage {
@@ -94,9 +104,12 @@ struct DashboardView: View {
             await appState.loadIfNeeded()
         }
         .sheet(item: $editingPlan) { plan in
-            DayAlarmEditView(appState: appState, plan: plan) { editingPlan = nil }
+            NavigationStack {
+                DayAlarmEditView(appState: appState, plan: plan) { editingPlan = nil }
+                    .toolbar(.hidden, for: .navigationBar)
+            }
                 .withAppBackground()
-                .presentationDetents([.fraction(0.6)])
+                .presentationDetents([.fraction(0.7)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isShowingFeedback) {
@@ -195,7 +208,10 @@ struct DashboardView: View {
         alarmMove = move
         Task {
             await appState.setDayOverride(
-                DayAlarmOverride(customWakeTime: ClockTime(hour: components.hour ?? 0, minute: components.minute ?? 0)),
+                DayAlarmOverride(
+                    customWakeTime: ClockTime(hour: components.hour ?? 0, minute: components.minute ?? 0),
+                    extraAlarms: plan.extraAlarms
+                ),
                 for: day
             )
             try? await Task.sleep(for: .seconds(4))
@@ -785,19 +801,31 @@ private struct DashboardWeekPillBarView: View {
                 if entry.hasConnectedMarkers,
                    let eventY = markerY(for: entry.eventDate, on: entry.targetDay, height: geometry.size.height),
                    let alarmY = markerY(for: entry.alarmDate, on: entry.targetDay, height: geometry.size.height) {
-                    Path { path in
-                        let x = geometry.size.width / 2
-                        path.move(to: CGPoint(x: x, y: min(eventY, alarmY)))
-                        path.addLine(to: CGPoint(x: x, y: max(eventY, alarmY)))
-                    }
-                    .stroke(
-                        WPStyles.accent.opacity(0.85),
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5])
-                    )
-                    .opacity(markerOpacity)
+                    // Fades from the alarm's gold into the event's aqua.
+                    Capsule()
+                        .fill(LinearGradient(
+                            colors: [WPStyles.accent, WPStyles.eventTint],
+                            startPoint: alarmY < eventY ? .top : .bottom,
+                            endPoint: alarmY < eventY ? .bottom : .top
+                        ))
+                        // Stops at each dot's edge, so it never shows through a dimmed dot.
+                        .frame(width: 2, height: max(0, abs(eventY - alarmY) - markerSize - 4))
+                        .opacity(0.5 * markerOpacity)
+                        .position(x: geometry.size.width / 2, y: (eventY + alarmY) / 2)
                 }
 
                 if let alarmY = markerY(for: entry.alarmDate, on: entry.targetDay, height: geometry.size.height) {
+                    // Extra alarms are only minutes apart, too close to draw to scale,
+                    // so they stack just above the wake-up marker, one dot each.
+                    let extraCount = entry.plan.extraAlarmTimes.count
+                    ForEach(0..<extraCount, id: \.self) { index in
+                        Circle()
+                            .fill(WPStyles.accent.opacity(0.7))
+                            .frame(width: 5, height: 5)
+                            .opacity(markerOpacity)
+                            .position(x: geometry.size.width / 2, y: alarmY - 12 - CGFloat(extraCount - 1 - index) * Self.extraAlarmSpacing)
+                    }
+
                     marker(color: WPStyles.accent, y: alarmY, in: geometry.size, opacity: markerOpacity)
                 }
 
@@ -813,25 +841,29 @@ private struct DashboardWeekPillBarView: View {
         }
     }
 
+    private var markerSize: CGFloat { isPrimary ? 11 : 9 }
+
+    /// A plain dot, with a soft glow on the primary day; no ring, so markers
+    /// that sit close together stay clean.
     private func marker(color: Color, y: CGFloat, in size: CGSize, opacity: Double) -> some View {
         Circle()
-            .fill(WPStyles.background)
-            .frame(width: isPrimary ? 18 : 16, height: isPrimary ? 18 : 16)
-            .overlay {
-                Circle()
-                    .fill(color)
-                    .padding(isPrimary ? 4 : 3)
-            }
-            .shadow(color: color.opacity(0.35), radius: isPrimary ? 6 : 3)
+            .fill(color)
+            .frame(width: markerSize, height: markerSize)
+            .shadow(color: color.opacity(isPrimary ? 0.6 : 0), radius: 5)
             .opacity(opacity)
             .position(x: size.width / 2, y: y)
     }
 
+    private static let extraAlarmSpacing: CGFloat = 7
+
+    /// Every day shares the same scale; the top keeps room for the tallest stack of
+    /// extra alarms, so an early alarm's dots stay inside the pill.
     private func markerY(for date: Date?, on targetDay: TargetDay, height: CGFloat) -> CGFloat? {
         guard let fraction = viewModel.markerFraction(for: date, on: targetDay) else {
             return nil
         }
 
-        return markerPadding + (height - (markerPadding * 2)) * fraction
+        let topPadding = markerPadding + CGFloat(viewModel.maxExtraAlarmCount) * Self.extraAlarmSpacing
+        return topPadding + (height - topPadding - markerPadding) * fraction
     }
 }

@@ -98,7 +98,8 @@ actor AlarmSyncService {
         }
 
         if !obsoleteRemovalErrors.isEmpty {
-            let failureMessage = String(localized: "Couldn't replace previous alarms. \(obsoleteRemovalErrors.joined(separator: " "))")
+            let reasons = obsoleteRemovalErrors.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+            let failureMessage = String(localized: "Couldn't replace previous alarms. \(reasons.joined(separator: " "))")
 
             for plan in desiredManagedPlans where retainedRecords[plan.id] == nil {
                 statusesByPlanID[plan.id] = .failed(failureMessage)

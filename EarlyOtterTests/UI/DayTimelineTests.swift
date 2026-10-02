@@ -30,6 +30,17 @@ final class DayTimelineTests: XCTestCase {
         XCTAssertEqual(timeline.lastHour, 20)
     }
 
+    func testAlarmTheEveningBeforeStartsTheGridOnThePreviousDay() {
+        let timeline = DayTimeline(
+            plan: plan(events: [event("race", 0, 30)]),
+            alarm: time(0, 0).addingTimeInterval(-25 * 60),
+            calendar: calendar
+        )
+
+        XCTAssertEqual(timeline.firstHour, -1)
+        XCTAssertGreaterThanOrEqual(timeline.y(timeline.alarm!), 0)
+    }
+
     func testEventBeforeTheAlarmIsFlagged() {
         let timeline = DayTimeline(
             plan: plan(events: [event("gym", 6, 0), event("standup", 9, 0)]),

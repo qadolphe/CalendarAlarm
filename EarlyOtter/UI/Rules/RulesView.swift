@@ -131,6 +131,12 @@ struct RulesView: View {
             .padding(.top, 8)
     }
 
+    private func ruleSummary(_ rule: AlarmRule) -> String {
+        let timing = String(localized: "\(rule.prepTime.rawValue)m prep · \(rule.commuteTime.rawValue)m commute")
+        let count = rule.extraAlarms.count
+        return count == 0 ? timing : "\(timing) · \(String(localized: "\(count + 1) alarms"))"
+    }
+
     private func ruleCard(_ rule: AlarmRule) -> some View {
         HStack(spacing: 14) {
             if rule.isDefault {
@@ -143,7 +149,7 @@ struct RulesView: View {
                 Text(rule.displayName)
                     .font(.headline)
                     .foregroundStyle(WPStyles.primaryText)
-                Text("\(rule.prepTime.rawValue)m prep · \(rule.commuteTime.rawValue)m commute")
+                Text(ruleSummary(rule))
                     .font(.subheadline)
                     .foregroundStyle(WPStyles.secondaryText)
             }
@@ -207,6 +213,7 @@ struct RuleEditorView: View {
     @State private var sound: AlarmSoundOption
     @State private var snoozeEnabled: Bool
     @State private var snoozeDuration: Minutes
+    @State private var extraAlarms: ExtraAlarms
     @State private var symbol: RuleSymbol
     @State private var isChoosingSymbol = false
 
@@ -234,6 +241,7 @@ struct RuleEditorView: View {
             _sound = State(initialValue: dr.alarmSettings.sound)
             _snoozeEnabled = State(initialValue: dr.alarmSettings.snoozeEnabled)
             _snoozeDuration = State(initialValue: dr.alarmSettings.snoozeDuration)
+            _extraAlarms = State(initialValue: dr.extraAlarms)
             _symbol = State(initialValue: .general)
         case .edit(let rule):
             _name = State(initialValue: rule.name)
@@ -246,6 +254,7 @@ struct RuleEditorView: View {
             _sound = State(initialValue: rule.alarmSettings.sound)
             _snoozeEnabled = State(initialValue: rule.alarmSettings.snoozeEnabled)
             _snoozeDuration = State(initialValue: rule.alarmSettings.snoozeDuration)
+            _extraAlarms = State(initialValue: rule.extraAlarms)
             _symbol = State(initialValue: rule.symbol)
         }
     }
@@ -702,6 +711,29 @@ struct RuleEditorView: View {
 
                 Divider().padding(.leading, 16)
 
+                NavigationLink {
+                    ExtraAlarmsPickerView(selection: $extraAlarms)
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("Extra alarms")
+                            .font(.body)
+                            .foregroundStyle(WPStyles.primaryText)
+                        Spacer(minLength: 8)
+                        Text(ExtraAlarmsPickerView.rowValue(for: extraAlarms))
+                            .font(.body)
+                            .foregroundStyle(WPStyles.secondaryText)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(WPStyles.tertiaryText)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Divider().padding(.leading, 16)
+
                 Toggle(isOn: $snoozeEnabled) {
                     Text("Snooze")
                         .font(.body)
@@ -787,6 +819,7 @@ struct RuleEditorView: View {
                             snoozeEnabled: snoozeEnabled,
                             snoozeDuration: snoozeDuration
                         ),
+                        extraAlarms: extraAlarms,
                         symbol: symbol
                     )
                     if let idx = copy.alarmRules.firstIndex(where: { $0.isDefault }) {
@@ -809,6 +842,7 @@ struct RuleEditorView: View {
                             snoozeEnabled: snoozeEnabled,
                             snoozeDuration: snoozeDuration
                         )
+                        copy.alarmRules[idx].extraAlarms = extraAlarms
                     }
                 }
             }

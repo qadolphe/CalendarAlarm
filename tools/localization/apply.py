@@ -52,6 +52,8 @@ def main(lang):
 
     for path in CATALOGS:
         catalog = load(path)
+        # Strings the code no longer uses.
+        catalog["strings"] = {k: v for k, v in catalog["strings"].items() if v.get("extractionState") != "stale"}
         for key, entry in catalog["strings"].items():
             locs = entry.setdefault("localizations", {})
             if key in skip:
@@ -93,6 +95,12 @@ def main(lang):
             continue
         entry["localizations"][lang] = {"stringSet": {"state": "translated", "values": phrases}}
     save(shortcuts, catalog)
+
+    used = {k for path in CATALOGS for k in load(path)["strings"]}
+    unused = [k for table in (strings, plurals, multi) for k in table if k not in used]
+    if unused:
+        print(f"{len(unused)} {lang} entries are no longer used; remove them:")
+        print("\n".join(f"  {k!r}" for k in unused))
 
     if missing:
         print(f"{len(missing)} keys have no {lang} translation:")

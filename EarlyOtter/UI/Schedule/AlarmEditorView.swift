@@ -89,6 +89,12 @@ struct AlarmEditorView: View {
                     LabeledContent("Sound", value: alarm.settings.sound.displayName)
                 }
 
+                NavigationLink {
+                    ExtraAlarmsPickerView(selection: $alarm.extraAlarms)
+                } label: {
+                    LabeledContent("Extra alarms", value: ExtraAlarmsPickerView.rowValue(for: alarm.extraAlarms))
+                }
+
                 Toggle("Snooze", isOn: $alarm.settings.snoozeEnabled)
                     .tint(WPStyles.accent)
 
